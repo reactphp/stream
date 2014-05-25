@@ -7,16 +7,22 @@
         "php": ">=5.4.0",
         "evenement/evenement": "~2.0"
     },
+    "require-dev": {
+        "react/event-loop": "0.4.*",
+        "react/promise": "~2.0"
+    },
     "suggest": {
         "react/event-loop": "0.4.*",
         "react/promise": "~2.0"
     },
     "autoload": {
-        "psr-4": { "React\\Stream\\": "" }
+        "psr-4": {
+            "React\\Stream\\": "src"
+        }
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.4-dev"
+            "dev-master": "0.5-dev"
         }
     }
 }
