@@ -56,7 +56,7 @@ This component depends on `événement`, which is an implementation of the
   the buffer, then close it.
 
 ## Usage
-
+```php
     $loop = React\EventLoop\Factory::create();
 
     $source = new React\Stream\Stream(fopen('omg.txt', 'r'), $loop);
@@ -65,3 +65,4 @@ This component depends on `événement`, which is an implementation of the
     $source->pipe($dest);
 
     $loop->run();
+```
