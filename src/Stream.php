@@ -50,7 +50,9 @@ class Stream extends EventEmitter implements ReadableStreamInterface, WritableSt
 
     public function resume()
     {
-        $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+        if ($this->readable) {
+            $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+        }
     }
 
     public function write($data)
