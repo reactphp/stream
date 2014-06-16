@@ -9,8 +9,7 @@
     },
     "require-dev": {
         "react/event-loop": "0.4.*",
-        "react/promise": "~2.0",
-        "phpunit/phpunit": "4.*"
+        "react/promise": "~2.0"
     },
     "suggest": {
         "react/event-loop": "0.4.*",
