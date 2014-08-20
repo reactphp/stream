@@ -5,7 +5,7 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 
-class Stream extends EventEmitter implements ReadableStreamInterface, WritableStreamInterface
+class Stream extends EventEmitter implements DuplexStreamInterface
 {
     public $bufferSize = 4096;
     public $stream;

@@ -4,7 +4,7 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 
-class CompositeStream extends EventEmitter implements ReadableStreamInterface, WritableStreamInterface
+class CompositeStream extends EventEmitter implements DuplexStreamInterface
 {
     protected $readable;
     protected $writable;
