@@ -61,8 +61,13 @@ This component depends on `événement`, which is an implementation of the
 ```php
     $loop = React\EventLoop\Factory::create();
 
-    $source = new React\Stream\Stream(fopen('omg.txt', 'r'), $loop);
-    $dest = new React\Stream\Stream(fopen('wtf.txt', 'w'), $loop);
+    $sourceFile = fopen('omg.txt', 'r');
+    stream_set_blocking($sourceFile, 0);
+    $source = new React\Stream\Stream($sourceFile, $loop);
+    
+    $destFile = fopen('wtf.txt', 'w');
+    stream_set_blocking($destFile, 0);
+    $dest = new React\Stream\Stream($destFile, $loop);
 
     $source->pipe($dest);
 
