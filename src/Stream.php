@@ -18,7 +18,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     public function __construct($stream, LoopInterface $loop)
     {
         $this->stream = $stream;
-        if (get_resource_type($this->stream) === "stream") {
+        if (is_resource($this->stream) && get_resource_type($this->stream) === "stream") {
             stream_set_blocking($this->stream, 0);
         }
 
