@@ -20,7 +20,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     {
         $this->stream = $stream;
         if (!is_resource($this->stream) || get_resource_type($this->stream) !== "stream") {
-             throw new InvalidArgumentException('Invalid stream resource passed as the first argument to '. __METHOD__);
+             throw new InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
         stream_set_blocking($this->stream, 0);
