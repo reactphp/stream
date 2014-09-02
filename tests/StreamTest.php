@@ -19,6 +19,16 @@ class StreamTest extends TestCase
 
     /**
      * @covers React\Stream\Stream::__construct
+     */
+    public function testConstructorThrowsExceptionOnInvalidStream()
+    {
+        $this->setExpectedException('InvalidArgumentException');
+        $loop = $this->createLoopMock();
+        $conn = new Stream('breakme', $loop);
+    }
+
+    /**
+     * @covers React\Stream\Stream::__construct
      * @covers React\Stream\Stream::handleData
      */
     public function testDataEvent()
@@ -53,19 +63,6 @@ class StreamTest extends TestCase
 
         rewind($stream);
         $this->assertSame("foo\n", fgets($stream));
-    }
-
-    /**
-     * @covers React\Stream\Stream::write
-     */
-    public function testWriteError()
-    {
-        $stream = "Silly developer, you can't write to to a string!";
-        $loop = $this->createWriteableLoopMock();
-
-        $conn = new Stream($stream, $loop);
-        $conn->on('error', $this->expectCallableOnce());
-        $conn->write('Attempting to write to a string');
     }
 
     /**
