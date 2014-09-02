@@ -4,6 +4,7 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
+use InvalidArgumentException;
 
 class Stream extends EventEmitter implements DuplexStreamInterface
 {
@@ -18,6 +19,12 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     public function __construct($stream, LoopInterface $loop)
     {
         $this->stream = $stream;
+        if (!is_resource($this->stream) || get_resource_type($this->stream) !== "stream") {
+             throw new InvalidArgumentException('First parameter must be a valid stream resource');
+        }
+
+        stream_set_blocking($this->stream, 0);
+
         $this->loop = $loop;
         $this->buffer = new Buffer($this->stream, $this->loop);
 
