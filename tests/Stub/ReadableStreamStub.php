@@ -35,6 +35,11 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
         $this->emit('end', array());
     }
 
+    public function read()
+    {
+        return '';
+    }
+
     public function pause()
     {
         $this->paused = true;

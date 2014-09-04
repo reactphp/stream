@@ -46,7 +46,7 @@ class StreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
         $this->assertSame("foobar\n", $capturedData);
     }
 

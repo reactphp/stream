@@ -34,6 +34,11 @@ class CompositeStream extends EventEmitter implements DuplexStreamInterface
         return $this->readable->isReadable();
     }
 
+    public function read()
+    {
+        return $this->readable->read();
+    }
+
     public function pause()
     {
         if ($this->pipeSource) {

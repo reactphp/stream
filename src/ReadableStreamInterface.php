@@ -13,6 +13,7 @@ use Evenement\EventEmitterInterface;
 interface ReadableStreamInterface extends EventEmitterInterface
 {
     public function isReadable();
+    public function read();
     public function pause();
     public function resume();
     public function pipe(WritableStreamInterface $dest, array $options = array());
