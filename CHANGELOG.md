@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 (2014-09-09)
+
+* Added DuplexStreamInterface
+* Stream sets stream resources to non-blocking
+* Fixed potential race condition in pipe
+
 ## 0.4.1 (2014-04-13)
 
 * Bug fix: v0.3.4 changes merged for v0.4.1
