@@ -13,6 +13,10 @@ class ReadableStream extends EventEmitter implements ReadableStreamInterface
         return !$this->closed;
     }
 
+    public function read()
+    {
+    }
+
     public function pause()
     {
     }

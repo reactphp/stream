@@ -50,6 +50,11 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         return $this->writable;
     }
 
+    public function read()
+    {
+        return fread($this->stream, $this->bufferSize);
+    }
+
     public function pause()
     {
         $this->loop->removeReadStream($this->stream);
@@ -116,13 +121,13 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         return $dest;
     }
 
-    public function handleData($stream)
+    public function handleData()
     {
-        $data = fread($stream, $this->bufferSize);
+        $data = $this->read();
 
         $this->emit('data', array($data, $this));
 
-        if (!is_resource($stream) || feof($stream)) {
+        if (!is_resource($this->stream) || feof($this->stream)) {
             $this->end();
         }
     }
