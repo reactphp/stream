@@ -121,6 +121,26 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $data = fread($stream, $this->bufferSize);
 
         $this->emit('data', array($data, $this));
+        
+        // When used on nginx to proxy pass ratchet websocket over https and extending Ratchet as a client on RaPI
+        // We found a weird issue where nginx will end each response with a EOF
+        // So, if we do a fread then we will only get one communication message at a time
+        // This caused a weird issue, where the message seemed to lag by one message
+        // Here is the proposed fix
+        
+        // Drain everything that is current on the socket
+        $additionalData = NULL;
+        try{
+            while(($additionalData = fread($stream, $this->bufferSize))) {
+                // Drain anything that is in the buffer before initializing other handlers
+                $this->emit('data', array($additionalData, $this));
+            }
+        }
+        catch(Exception $ex) {
+            // No addition data found
+            // Or the resource was probably close due to some reason
+            // Skipping it silently isn't recommended but this is our best best on this case
+        }
 
         if (!is_resource($stream) || feof($stream)) {
             $this->end();
