@@ -129,7 +129,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         // Here is the proposed fix
         
         // Drain everything that is current on the socket
-        
+        $additionalData = NULL;
         try{
             while(($additionalData = fread($stream, $this->bufferSize))) {
                 // Drain anything that is in the buffer before initializing other handlers
