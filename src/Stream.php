@@ -124,7 +124,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         
         $additionalData = NULL;
         
-        while($stream && ($additionalData = fread($stream, $this->bufferSize))) {
+        while(is_resource($stream) && ($additionalData = fread($stream, $this->bufferSize))) {
             $this->emit('data', array($additionalData, $this));
         }
 
