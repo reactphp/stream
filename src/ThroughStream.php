@@ -2,6 +2,8 @@
 
 namespace React\Stream;
 
+use React\Promise\FulfilledPromise;
+
 class ThroughStream extends CompositeStream
 {
     public function __construct()
@@ -20,6 +22,7 @@ class ThroughStream extends CompositeStream
     public function write($data)
     {
         $this->readable->emit('data', array($this->filter($data), $this));
+        return new FulfilledPromise();
     }
 
     public function end($data = null)

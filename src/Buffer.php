@@ -4,8 +4,13 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\FulfilledPromise;
 
-/** @event full-drain */
+/**
+ * @event full
+ * @event full-drain
+ */
 class Buffer extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
@@ -14,6 +19,9 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     private $writable = true;
     private $loop;
     private $data = '';
+    private $byteProgress = 0;
+    private $deferredWrites = array();
+
     private $lastError = array(
         'number'  => 0,
         'message' => '',
@@ -38,7 +46,17 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
+        if (strlen($data) == 0) {
+            return new FulfilledPromise();
+        }
+
         $this->data .= $data;
+
+        // $data is written when the byte-progress reaches $writtenWhen bytes
+        $deferred = new Deferred();
+        $writtenWhen = $this->byteProgress + strlen($this->data);
+        $this->deferredWrites[$writtenWhen] = $deferred;
+        ksort($this->deferredWrites);
 
         if (!$this->listening) {
             $this->listening = true;
@@ -46,9 +64,12 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));
         }
 
-        $belowSoftLimit = strlen($this->data) < $this->softLimit;
+        $bufferFull = strlen($this->data) >= $this->softLimit;
+        if ($bufferFull) {
+            $this->emit('full', [$this]);
+        }
 
-        return $belowSoftLimit;
+        return $deferred->promise();
     }
 
     public function end($data = null)
@@ -83,12 +104,12 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
+        // write, but handle fwrite's errors internally
         set_error_handler(array($this, 'errorHandler'));
-
         $sent = fwrite($this->stream, $this->data);
-
         restore_error_handler();
 
+        // handle write-error
         if (false === $sent) {
             $this->emit('error', array(
                 new \ErrorException(
@@ -104,19 +125,35 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
+        // handle EOF
         if (0 === $sent && feof($this->stream)) {
             $this->emit('error', array(new \RuntimeException('Tried to write to closed stream.'), $this));
 
             return;
         }
 
+        // update buffer state
+        $this->byteProgress += $sent;
+        $this->data = (string) substr($this->data, $sent);
+
+        // resolve transmission promises
+        foreach ($this->deferredWrites as $threshold => $promise) {
+            if ($threshold <= $this->byteProgress) {
+                unset($this->deferredWrites[$threshold]);
+                ksort($this->deferredWrites);
+                $promise->resolve();
+            } else {
+                break;
+            }
+        }
+
+        // check if buffer was full and is writable again
         $len = strlen($this->data);
-        if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
+        if ($len < $this->softLimit && ($len + $sent) >= $this->softLimit) {
             $this->emit('drain', [$this]);
         }
 
-        $this->data = (string) substr($this->data, $sent);
-
+        // check if buffer is empty
         if (0 === strlen($this->data)) {
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;

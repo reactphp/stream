@@ -2,6 +2,7 @@
 
 namespace React\Stream;
 
+use React\Promise\FulfilledPromise;
 use Evenement\EventEmitter;
 
 class WritableStream extends EventEmitter implements WritableStreamInterface
@@ -10,6 +11,7 @@ class WritableStream extends EventEmitter implements WritableStreamInterface
 
     public function write($data)
     {
+        return new FulfilledPromise();
     }
 
     public function end($data = null)

@@ -2,6 +2,8 @@
 
 namespace React\Stream;
 
+use React\Promise;
+
 // TODO: move to a trait
 
 class Util
@@ -14,12 +16,12 @@ class Util
 
         $dest->emit('pipe', array($source));
 
-        $source->on('data', function ($data) use ($source, $dest) {
-            $feedMore = $dest->write($data);
+        $source->on('data', function ($data) use ($source, $dest, &$promises) {
+            $dest->write($data);
+        });
 
-            if (false === $feedMore) {
-                $source->pause();
-            }
+        $dest->on('full', function () use ($source) {
+            $source->pause();
         });
 
         $dest->on('drain', function () use ($source) {

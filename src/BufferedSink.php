@@ -4,6 +4,7 @@ namespace React\Stream;
 
 use React\Promise\Deferred;
 use React\Promise\PromisorInterface;
+use React\Promise\FulfilledPromise;
 
 class BufferedSink extends WritableStream implements PromisorInterface
 {
@@ -32,6 +33,7 @@ class BufferedSink extends WritableStream implements PromisorInterface
     {
         $this->buffer .= $data;
         $this->deferred->progress($data);
+        return new FulfilledPromise();
     }
 
     public function close()

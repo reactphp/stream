@@ -39,19 +39,36 @@ class BufferTest extends TestCase
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
-    public function testWriteReturnsFalseWhenBufferIsFull()
+    public function testWritePromiseIsResolved()
     {
-        $stream = fopen('php://temp', 'r+');
+        // create a stream that writes at max 4 bytes but without signalling EOF
+        // after 4 bytes fwrite will always return 0
+        stream_wrapper_register("limited-stream", '\React\Tests\Stream\Stub\LimitedStreamStub');
+        $stream = fopen('limited-stream://4', 'r+');
+
+        // Don't write to stream at first
         $loop = $this->createWriteableLoopMock();
         $loop->preventWrites = true;
-
+        
+        // Setup buffer and write <=4 bytes
+        // The promise is expected to be resolved as soon the loop writes data
         $buffer = new Buffer($stream, $loop);
-        $buffer->softLimit = 4;
-        $buffer->on('error', $this->expectCallableNever());
+        $firstWrite = $buffer->write("foo");
+        $firstWrite->then($this->expectCallableOnce());
 
-        $this->assertTrue($buffer->write("foo"));
+
+        // close buffer after first writes, so other writes can not resolve
+        $firstWrite->then(function() use ($buffer) {
+            $buffer->close();
+        });
+
+        // Open & trigger loop/buffer for writing
         $loop->preventWrites = false;
-        $this->assertFalse($buffer->write("bar\n"));
+        $buffer->listening = false;
+
+        // Since we already wrote 3 bytes("foo") and then closed the stream
+        // "bar" should not be resolved as written
+        $buffer->write("bar")->then($this->expectCallableNever());
     }
 
     /**
@@ -77,15 +94,16 @@ class BufferTest extends TestCase
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
-    public function testDrain()
+    public function testBufferFullAndDrain()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
         $loop->preventWrites = true;
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->softLimit = 4;
+        $buffer->softLimit = 3;
         $buffer->on('error', $this->expectCallableNever());
+        $buffer->on('full', $this->expectCallableOnce());
         $buffer->on('drain', $this->expectCallableOnce());
 
         $buffer->write("foo");
