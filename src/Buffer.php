@@ -72,7 +72,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->listening = false;
         $this->data = '';
 
-        $this->emit('close', [$this]);
+        $this->emit('close', array($this));
     }
 
     public function handleWrite()
@@ -112,7 +112,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         $len = strlen($this->data);
         if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
-            $this->emit('drain', [$this]);
+            $this->emit('drain', array($this));
         }
 
         $this->data = (string) substr($this->data, $sent);
@@ -121,7 +121,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;
 
-            $this->emit('full-drain', [$this]);
+            $this->emit('full-drain', array($this));
         }
     }
 

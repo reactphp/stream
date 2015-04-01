@@ -9,12 +9,12 @@ class StreamIntegrationTest extends TestCase
 {
     public function loopProvider()
     {
-        return [
-            [function() { return true; }, function() { return new rel\StreamSelectLoop; }],
-            [function() { return function_exists('event_base_new'); }, function() { return new rel\LibEventLoop; }],
-            [function() { return class_exists('libev\EventLoop'); }, function() { return new rel\LibEvLoop; }],
-            [function() { return class_exists('EventBase'); }, function() { return new rel\ExtEventLoop; }]
-        ];
+        return array(
+            array(function() { return true; }, function() { return new rel\StreamSelectLoop; }),
+            array(function() { return function_exists('event_base_new'); }, function() { return new rel\LibEventLoop; }),
+            array(function() { return class_exists('libev\EventLoop'); }, function() { return new rel\LibEvLoop; }),
+            array(function() { return class_exists('EventBase'); }, function() { return new rel\ExtEventLoop; })
+        );
     }
 
     /**

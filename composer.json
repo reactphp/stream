@@ -4,12 +4,12 @@
     "keywords": ["stream", "pipe"],
     "license": "MIT",
     "require": {
-        "php": ">=5.4.0",
-        "evenement/evenement": "^2.0"
+        "php": ">=5.3.8",
+        "evenement/evenement": "^2.0|^1.0"
     },
     "require-dev": {
-        "react/event-loop": "^0.4",
-        "react/promise": "^2.0"
+        "react/event-loop": "^0.4|^0.3",
+        "react/promise": "^2.0|^1.0"
     },
     "suggest": {
         "react/event-loop": "^0.4",
