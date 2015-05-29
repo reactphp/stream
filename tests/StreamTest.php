@@ -113,6 +113,40 @@ class StreamTest extends TestCase
         $conn->handleData($stream);
     }
 
+    public function testBufferReadsLargeChunks() {
+        $loop = \React\EventLoop\Factory::create();
+        if ($loop instanceof \React\EventLoop\StreamSelectLoop) {
+            return $this->markTestSkipped('Regression bug only works on extension loops');
+        }
+
+        list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+
+        $streamA = new Stream($sockA, $loop);
+        $streamB = new Stream($sockB, $loop);
+
+        $bufferSize = 4096;
+        $streamA->bufferSize = $bufferSize;
+        $streamB->bufferSize = $bufferSize;
+
+        $testString = str_repeat("*", $streamA->bufferSize + 1);
+
+        $buffer = "";
+        $streamB->on('data', function ($data, $streamB) use (&$buffer, &$testString) {
+            $buffer .= $data;
+        });
+
+        $streamA->write($testString);
+
+        $loop->tick();
+        $loop->tick();
+        $loop->tick();
+
+        $streamA->close();
+        $streamB->close();
+
+        $this->assertEquals($testString, $buffer);
+    }
+
     private function createWriteableLoopMock()
     {
         $loop = $this->createLoopMock();
