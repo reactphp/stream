@@ -33,7 +33,6 @@ class WritableStream extends EventEmitter implements WritableStreamInterface
         }
 
         $this->closed = true;
-        $this->emit('end', array($this));
         $this->emit('close', array($this));
         $this->removeAllListeners();
     }
