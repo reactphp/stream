@@ -95,6 +95,36 @@ class BufferTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testWriteInDrain()
+    {
+        $writeStreams = array();
+
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createWriteableLoopMock();
+        $loop->preventWrites = true;
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 2;
+        $buffer->on('error', $this->expectCallableNever());
+
+        $buffer->once('drain', function ($buffer) {
+            $buffer->listening = false;
+            $buffer->write("bar\n");
+        });
+
+        $this->assertFalse($buffer->write("foo"));
+        $loop->preventWrites = false;
+        $buffer->listening = false;
+        $buffer->write("\n");
+
+        fseek($stream, 0);
+        $this->assertSame("foo\nbar\n", stream_get_contents($stream));
+    }
+
+    /**
      * @covers React\Stream\Buffer::end
      */
     public function testEnd()

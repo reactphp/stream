@@ -111,11 +111,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         }
 
         $len = strlen($this->data);
+        $this->data = (string) substr($this->data, $sent);
+
         if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
             $this->emit('drain', [$this]);
         }
-
-        $this->data = (string) substr($this->data, $sent);
 
         if (0 === strlen($this->data)) {
             $this->loop->removeWriteStream($this->stream);
