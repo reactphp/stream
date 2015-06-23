@@ -34,6 +34,23 @@ class BufferTest extends TestCase
         rewind($stream);
         $this->assertSame("foobar\n", fread($stream, 1024));
     }
+    
+    /**
+     * @covers React\Stream\Buffer::getBufferSize
+     */
+    public function testGetBufferSize()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createWriteableLoopMock();
+        
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('error', $this->expectCallableNever());
+        
+        $this->assertSame(0, $buffer->getBufferSize());
+        
+        $buffer->write("foobar\n");
+        $this->assertSame(strlen("foobar\n"), $buffer->getBufferSize());
+    }
 
     /**
      * @covers React\Stream\Buffer::write
