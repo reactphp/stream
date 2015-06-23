@@ -107,21 +107,12 @@ class BufferedSinkTest extends TestCase
     }
 
     /** @test */
-    public function writeShouldTriggerProgressOnPromise()
+    public function writeShouldNotTriggerProgressOnPromise()
     {
         $callback = $this->createCallableMock();
         $callback
-            ->expects($this->at(0))
-            ->method('__invoke')
-            ->with('foo');
-        $callback
-            ->expects($this->at(1))
-            ->method('__invoke')
-            ->with('bar');
-        $callback
-            ->expects($this->at(2))
-            ->method('__invoke')
-            ->with('baz');
+            ->expects($this->never())
+            ->method('__invoke');
 
         $sink = new BufferedSink();
         $sink
@@ -129,8 +120,6 @@ class BufferedSinkTest extends TestCase
             ->then(null, null, $callback);
 
         $sink->write('foo');
-        $sink->write('bar');
-        $sink->end('baz');
     }
 
     /** @test */
