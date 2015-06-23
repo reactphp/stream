@@ -50,7 +50,7 @@ class BufferTest extends TestCase
         
         $buffer->write("foobar\n");
         rewind($stream);
-        $this->assertSame(strlen("foobar\n"), $buffer->getBufferSize());
+        $this->assertSame(strlen("foobar\n"), $buffer->getBufferSize() + strlen(fread($stream, 1024)));
     }
 
     /**
