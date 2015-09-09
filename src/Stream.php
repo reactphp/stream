@@ -24,6 +24,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
 
         stream_set_blocking($this->stream, 0);
+        stream_set_read_buffer($this->stream, 0);
 
         $this->loop = $loop;
         $this->buffer = new Buffer($this->stream, $this->loop);
