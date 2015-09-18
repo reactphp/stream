@@ -64,12 +64,23 @@ class UtilTest extends TestCase
     {
         $readable = new Stub\ReadableStreamStub();
 
+        $onFull = null;
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
         $writable
             ->expects($this->once())
             ->method('write')
             ->with('some data')
-            ->will($this->returnValue(false));
+            ->will($this->returnCallback(function () use (&$onFull) {
+                $onFull();
+            }));
+        $writable
+            ->expects($this->exactly(2))
+            ->method('on')
+            ->will($this->returnCallback(function ($name, $callback) use (&$onFull) {
+                if ($name == "full") {
+                    $onFull = $callback;
+                }
+            }));
 
         $readable->pipe($writable);
 
@@ -86,11 +97,12 @@ class UtilTest extends TestCase
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
         $writable
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('on')
-            ->with('drain', $this->isInstanceOf('Closure'))
             ->will($this->returnCallback(function ($name, $callback) use (&$onDrain) {
-                $onDrain = $callback;
+                if ($name == 'drain') {
+                    $onDrain = $callback;
+                }
             }));
 
         $readable->pipe($writable);

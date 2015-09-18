@@ -119,7 +119,17 @@ class CompositeStreamTest extends TestCase
         $writable
             ->expects($this->once())
             ->method('write')
-            ->will($this->returnValue(false));
+            ->will($this->returnCallback(function() use ($writable) {
+                $writable->emit('full');
+            }));
+
+        $writable
+            ->expects($this->any())
+            ->method('on')
+            ->will($this->returnCallback(function($name, $callback) {
+                echo $name, "\n";
+            }));
+            
 
         $composite = new CompositeStream($readable, $writable);
 
