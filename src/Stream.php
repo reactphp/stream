@@ -24,7 +24,16 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
 
         stream_set_blocking($this->stream, 0);
-        stream_set_read_buffer($this->stream, 0);
+
+        // Use unbuffered read operations on the underlying stream resource.
+        // Reading chunks from the stream may otherwise leave unread bytes in
+        // PHP's stream buffers which some event loop implementations do not
+        // trigger events on (edge triggered).
+        // This does not affect the default event loop implementation (level
+        // triggered), so we can ignore platforms not supporting this (HHVM).
+        if (function_exists('stream_set_read_buffer')) {
+            stream_set_read_buffer($this->stream, 0);
+        }
 
         $this->loop = $loop;
         $this->buffer = new Buffer($this->stream, $this->loop);
