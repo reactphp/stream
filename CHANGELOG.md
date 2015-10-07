@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 (2015-10-07)
+
+* Bug fix: Read buffer to 0 fixes error with libevent and large quantity of I/O (@mbonneau)
+* Bug fix: No double-write during drain call (@arnaud-lb)
+* Bug fix: Support HHVM (@clue)
+* Adjust compatibility to 5.3 (@clue)
+
 ## 0.4.2 (2014-09-09)
 
 * Added DuplexStreamInterface
