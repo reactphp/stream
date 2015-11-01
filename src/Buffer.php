@@ -87,7 +87,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         restore_error_handler();
 
-        if (false === $sent || ($sent === 0 && strpos($this->lastError['message'], 'errno=10054') !== false)) {
+        if ($this->lastError['number'] > 0) {
             $this->emit('error', array(
                 new \ErrorException(
                     $this->lastError['message'],
@@ -102,9 +102,8 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        if (0 === $sent && feof($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to closed stream.'), $this));
-
+        if ($sent === false) {
+            $this->emit('error', array(new \RuntimeException('Send failed'), $this));
             return;
         }
 
