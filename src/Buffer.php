@@ -131,11 +131,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     }
 
     private function lastErrorFlush() {
-        $this->lastError = [
+        $this->lastError = array(
             'number'  => 0,
             'message' => '',
             'file'    => '',
             'line'    => 0,
-        ];
+        );
     }
 }
