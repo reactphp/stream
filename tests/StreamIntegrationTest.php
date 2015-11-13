@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\Stream\Event;
 use React\Stream\Stream;
 use React\EventLoop as rel;
 
@@ -40,7 +41,7 @@ class StreamIntegrationTest extends TestCase
         $testString = str_repeat("*", $streamA->bufferSize + 1);
 
         $buffer = "";
-        $streamB->on('data', function ($data, $streamB) use (&$buffer, &$testString) {
+        $streamB->on(Event::DATA, function ($data, $streamB) use (&$buffer, &$testString) {
             $buffer .= $data;
         });
 

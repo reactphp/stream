@@ -18,10 +18,10 @@ class CompositeStream extends EventEmitter implements DuplexStreamInterface
         Util::forwardEvents($this->readable, $this, array('data', 'end', 'error', 'close'));
         Util::forwardEvents($this->writable, $this, array('drain', 'error', 'close', 'pipe'));
 
-        $this->readable->on('close', array($this, 'close'));
-        $this->writable->on('close', array($this, 'close'));
+        $this->readable->on(Event::CLOSE, array($this, 'close'));
+        $this->writable->on(EVENT::CLOSE, array($this, 'close'));
 
-        $this->on('pipe', array($this, 'handlePipeEvent'));
+        $this->on(Event::PIPE, array($this, 'handlePipeEvent'));
     }
 
     public function handlePipeEvent($source)

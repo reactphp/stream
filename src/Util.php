@@ -12,9 +12,9 @@ class Util
         // it is 4x faster than this
         // but can lose data under load with no way to recover it
 
-        $dest->emit('pipe', array($source));
+        $dest->emit(Event::PIPE, array($source));
 
-        $source->on('data', function ($data) use ($source, $dest) {
+        $source->on(Event::DATA, function ($data) use ($source, $dest) {
             $feedMore = $dest->write($data);
 
             if (false === $feedMore) {
@@ -22,13 +22,13 @@ class Util
             }
         });
 
-        $dest->on('drain', function () use ($source) {
+        $dest->on(Event::DRAIN, function () use ($source) {
             $source->resume();
         });
 
         $end = isset($options['end']) ? $options['end'] : true;
         if ($end && $source !== $dest) {
-            $source->on('end', function () use ($dest) {
+            $source->on(Event::END, function () use ($dest) {
                 $dest->end();
             });
         }

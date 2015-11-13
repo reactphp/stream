@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\Buffer;
+use React\Stream\Event;
 use React\Stream\ReadableStream;
 use React\Stream\Util;
 
@@ -125,10 +126,10 @@ class UtilTest extends TestCase
         $target = new ReadableStream();
 
         Util::forwardEvents($source, $target, array('data'));
-        $target->on('data', $this->expectCallableOnce());
+        $target->on(Event::DATA, $this->expectCallableOnce());
         $target->on('foo', $this->expectCallableNever());
 
-        $source->emit('data', array('hello'));
+        $source->emit(Event::DATA, array('hello'));
         $source->emit('foo', array('bar'));
     }
 

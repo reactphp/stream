@@ -35,8 +35,8 @@ class ReadableStream extends EventEmitter implements ReadableStreamInterface
         }
 
         $this->closed = true;
-        $this->emit('end', array($this));
-        $this->emit('close', array($this));
+        $this->emit(Event::END, array($this));
+        $this->emit(Event::CLOSE, array($this));
         $this->removeAllListeners();
     }
 }
