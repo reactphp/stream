@@ -40,13 +40,13 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
         $that = $this;
 
-        $this->buffer->on('error', function ($error) use ($that) {
-            $that->emit('error', array($error, $that));
+        $this->buffer->on(Event::ERROR, function ($error) use ($that) {
+            $that->emit(Event::ERROR, array($error, $that));
             $that->close();
         });
 
-        $this->buffer->on('drain', function () use ($that) {
-            $that->emit('drain', array($that));
+        $this->buffer->on(Event::DRAIN, function () use ($that) {
+            $that->emit(Event::DRAIN, array($that));
         });
 
         $this->resume();
@@ -94,8 +94,8 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->readable = false;
         $this->writable = false;
 
-        $this->emit('end', array($this));
-        $this->emit('close', array($this));
+        $this->emit(Event::END, array($this));
+        $this->emit(Event::CLOSE, array($this));
         $this->loop->removeStream($this->stream);
         $this->buffer->removeAllListeners();
         $this->removeAllListeners();
@@ -114,7 +114,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->readable = false;
         $this->writable = false;
 
-        $this->buffer->on('close', array($this, 'close'));
+        $this->buffer->on(Event::CLOSE, array($this, 'close'));
 
         $this->buffer->end($data);
     }
@@ -130,7 +130,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     {
         $data = fread($stream, $this->bufferSize);
 
-        $this->emit('data', array($data, $this));
+        $this->emit(Event::DATA, array($data, $this));
 
         if (!is_resource($stream) || feof($stream)) {
             $this->end();
