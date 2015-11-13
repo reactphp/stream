@@ -125,7 +125,7 @@ class UtilTest extends TestCase
         $source = new ReadableStream();
         $target = new ReadableStream();
 
-        Util::forwardEvents($source, $target, array('data'));
+        Util::forwardEvents($source, $target, array(Event::DATA));
         $target->on(Event::DATA, $this->expectCallableOnce());
         $target->on('foo', $this->expectCallableNever());
 

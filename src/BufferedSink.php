@@ -20,7 +20,7 @@ class BufferedSink extends WritableStream implements PromisorInterface
 
     public function handlePipeEvent($source)
     {
-        Util::forwardEvents($source, $this, array('error'));
+        Util::forwardEvents($source, $this, array(Event::ERROR));
     }
 
     public function handleErrorEvent($e)
