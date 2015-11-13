@@ -151,6 +151,6 @@ class CompositeStreamTest extends TestCase
             ->with('foo');
 
         $composite->pipe($output);
-        $readable->emit(Event::DRAIN, array('foo'));
+        $readable->emit(Event::DATA, array('foo'));
     }
 }
