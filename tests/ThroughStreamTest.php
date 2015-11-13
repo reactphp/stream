@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\Stream\Event;
 use React\Stream\ReadableStream;
 use React\Stream\ThroughStream;
 
@@ -14,7 +15,7 @@ class ThroughStreamTest extends TestCase
     public function itShouldEmitAnyDataWrittenToIt()
     {
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableOnceWith('foo'));
+        $through->on(Event::DATA, $this->expectCallableOnceWith('foo'));
         $through->write('foo');
     }
 
@@ -24,17 +25,17 @@ class ThroughStreamTest extends TestCase
         $readable = new ReadableStream();
 
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableOnceWith('foo'));
+        $through->on(Event::DATA, $this->expectCallableOnceWith('foo'));
 
         $readable->pipe($through);
-        $readable->emit('data', array('foo'));
+        $readable->emit(Event::DATA, array('foo'));
     }
 
     /** @test */
     public function endShouldCloseTheStream()
     {
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableNever());
+        $through->on(Event::DATA, $this->expectCallableNever());
         $through->end();
 
         $this->assertFalse($through->isReadable());
@@ -45,7 +46,7 @@ class ThroughStreamTest extends TestCase
     public function endShouldWriteDataBeforeClosing()
     {
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableOnceWith('foo'));
+        $through->on(Event::DATA, $this->expectCallableOnceWith('foo'));
         $through->end('foo');
 
         $this->assertFalse($through->isReadable());

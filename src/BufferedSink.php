@@ -14,13 +14,13 @@ class BufferedSink extends WritableStream implements PromisorInterface
     {
         $this->deferred = new Deferred();
 
-        $this->on('pipe', array($this, 'handlePipeEvent'));
-        $this->on('error', array($this, 'handleErrorEvent'));
+        $this->on(Event::PIPE, array($this, 'handlePipeEvent'));
+        $this->on(Event::ERROR, array($this, 'handleErrorEvent'));
     }
 
     public function handlePipeEvent($source)
     {
-        Util::forwardEvents($source, $this, array('error'));
+        Util::forwardEvents($source, $this, array(Event::ERROR));
     }
 
     public function handleErrorEvent($e)

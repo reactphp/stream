@@ -60,7 +60,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->writable = false;
 
         if ($this->listening) {
-            $this->on('full-drain', array($this, 'close'));
+            $this->on(Event::FULL_DRAIN, array($this, 'close'));
         } else {
             $this->close();
         }
@@ -72,13 +72,13 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->listening = false;
         $this->data = '';
 
-        $this->emit('close', array($this));
+        $this->emit(Event::CLOSE, array($this));
     }
 
     public function handleWrite()
     {
         if (!is_resource($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to invalid stream.'), $this));
+            $this->emit(Event::ERROR, array(new \RuntimeException('Tried to write to invalid stream.'), $this));
 
             return;
         }
@@ -90,7 +90,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         restore_error_handler();
 
         if (false === $sent) {
-            $this->emit('error', array(
+            $this->emit(Event::ERROR, array(
                 new \ErrorException(
                     $this->lastError['message'],
                     0,
@@ -105,7 +105,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         }
 
         if (0 === $sent && feof($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to closed stream.'), $this));
+            $this->emit(Event::ERROR, array(new \RuntimeException('Tried to write to closed stream.'), $this));
 
             return;
         }
@@ -114,14 +114,14 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->data = (string) substr($this->data, $sent);
 
         if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
-            $this->emit('drain', array($this));
+            $this->emit(Event::DRAIN, array($this));
         }
 
         if (0 === strlen($this->data)) {
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;
 
-            $this->emit('full-drain', array($this));
+            $this->emit(Event::FULL_DRAIN, array($this));
         }
     }
 

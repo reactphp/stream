@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\BufferedSink;
+use React\Stream\Event;
 use React\Stream\ReadableStream;
 
 /**
@@ -162,8 +163,8 @@ class BufferedSinkTest extends TestCase
 
         $readable = new ReadableStream();
         $readable->pipe($sink);
-        $readable->emit('data', array('foo'));
-        $readable->emit('data', array('bar'));
+        $readable->emit(Event::DATA, array('foo'));
+        $readable->emit(Event::DATA, array('bar'));
         $readable->close();
     }
 
@@ -177,7 +178,7 @@ class BufferedSinkTest extends TestCase
         BufferedSink::createPromise($readable)
             ->then($callback);
 
-        $readable->emit('data', array('foo'));
+        $readable->emit(Event::DATA, array('foo'));
         $readable->close();
     }
 

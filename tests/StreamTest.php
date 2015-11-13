@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\Stream\Event;
 use React\Stream\Stream;
 
 class StreamTest extends TestCase
@@ -39,7 +40,7 @@ class StreamTest extends TestCase
         $capturedData = null;
 
         $conn = new Stream($stream, $loop);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event::DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -86,12 +87,12 @@ class StreamTest extends TestCase
 
         $conn = new Stream($stream, $loop);
 
-        $conn->on('drain', $this->expectCallableOnce());
-        $conn->on('error', $this->expectCallableOnce());
+        $conn->on(Event::DRAIN, $this->expectCallableOnce());
+        $conn->on(Event::ERROR, $this->expectCallableOnce());
 
         $buffer = $conn->getBuffer();
-        $buffer->emit('drain');
-        $buffer->emit('error', array(new \RuntimeException('Whoops')));
+        $buffer->emit(Event::DRAIN);
+        $buffer->emit(Event::ERROR, array(new \RuntimeException('Whoops')));
     }
 
     /**
@@ -103,7 +104,7 @@ class StreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new Stream($stream, $loop);
-        $conn->on('data', function ($data, $stream) {
+        $conn->on(Event::DATA, function ($data, $stream) {
             $stream->close();
         });
 
