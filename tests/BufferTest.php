@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\Buffer;
+use React\Stream\Event;
 
 class BufferTest extends TestCase
 {
@@ -15,7 +16,7 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
     }
 
     /**
@@ -28,7 +29,7 @@ class BufferTest extends TestCase
         $loop = $this->createWriteableLoopMock();
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
 
         $buffer->write("foobar\n");
         rewind($stream);
@@ -66,7 +67,7 @@ class BufferTest extends TestCase
 
         $buffer = new Buffer($a, $loop);
         $buffer->softLimit = 4;
-        $buffer->on('error', $this->expectCallableOnce());
+        $buffer->on(Event::ERROR, $this->expectCallableOnce());
 
         fclose($b);
 
@@ -85,8 +86,8 @@ class BufferTest extends TestCase
 
         $buffer = new Buffer($stream, $loop);
         $buffer->softLimit = 4;
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
+        $buffer->on(Event::DRAIN, $this->expectCallableOnce());
 
         $buffer->write("foo");
         $loop->preventWrites = false;
@@ -108,9 +109,9 @@ class BufferTest extends TestCase
 
         $buffer = new Buffer($stream, $loop);
         $buffer->softLimit = 2;
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
 
-        $buffer->once('drain', function ($buffer) {
+        $buffer->once(Event::DRAIN, function ($buffer) {
             $buffer->listening = false;
             $buffer->write("bar\n");
         });
@@ -133,8 +134,8 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
+        $buffer->on(Event::CLOSE, $this->expectCallableOnce());
 
         $this->assertTrue($buffer->isWritable());
         $buffer->end();
@@ -150,8 +151,8 @@ class BufferTest extends TestCase
         $loop = $this->createWriteableLoopMock();
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
+        $buffer->on(Event::CLOSE, $this->expectCallableOnce());
 
         $buffer->end('final words');
 
@@ -169,8 +170,8 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event::ERROR, $this->expectCallableNever());
+        $buffer->on(Event::CLOSE, $this->expectCallableOnce());
 
         $this->assertTrue($buffer->isWritable());
         $buffer->close();
@@ -207,7 +208,7 @@ class BufferTest extends TestCase
         $error = null;
 
         $buffer = new Buffer($stream, $loop);
-        $buffer->on('error', function ($message) use (&$error) {
+        $buffer->on(Event::ERROR, function ($message) use (&$error) {
             $error = $message;
         });
 
@@ -228,7 +229,7 @@ class BufferTest extends TestCase
         $error = null;
 
         $buffer = new Buffer($a, $loop);
-        $buffer->on('error', function($message) use (&$error) {
+        $buffer->on(Event::ERROR, function($message) use (&$error) {
             $error = $message;
         });
 

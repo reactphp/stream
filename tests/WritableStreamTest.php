@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\Stream\Event;
 use React\Stream\ReadableStream;
 use React\Stream\WritableStream;
 
@@ -17,14 +18,14 @@ class WritableStreamTest extends TestCase
         $through = new WritableStream();
 
         $readable->pipe($through);
-        $readable->emit('data', array('foo'));
+        $readable->emit(Event::DATA, array('foo'));
     }
 
     /** @test */
     public function endShouldCloseTheStream()
     {
         $through = new WritableStream();
-        $through->on('data', $this->expectCallableNever());
+        $through->on(Event::DATA, $this->expectCallableNever());
         $through->end();
 
         $this->assertFalse($through->isWritable());

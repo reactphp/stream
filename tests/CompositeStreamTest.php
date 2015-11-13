@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\CompositeStream;
+use React\Stream\Event;
 use React\Stream\ReadableStream;
 use React\Stream\WritableStream;
 
@@ -87,11 +88,11 @@ class CompositeStreamTest extends TestCase
         $writable = new WritableStream();
 
         $composite = new CompositeStream($readable, $writable);
-        $composite->on('data', $this->expectCallableOnce());
-        $composite->on('drain', $this->expectCallableOnce());
+        $composite->on(Event::DATA, $this->expectCallableOnce());
+        $composite->on(Event::DRAIN, $this->expectCallableOnce());
 
-        $readable->emit('data', array('foo'));
-        $writable->emit('drain');
+        $readable->emit(Event::DATA, array('foo'));
+        $writable->emit(Event::DRAIN);
     }
 
     /** @test */
@@ -108,7 +109,7 @@ class CompositeStreamTest extends TestCase
 
         $input = new ReadableStream();
         $input->pipe($composite);
-        $input->emit('data', array('foo'));
+        $input->emit(Event::DATA, array('foo'));
     }
 
     /** @test */
@@ -132,8 +133,8 @@ class CompositeStreamTest extends TestCase
             ->method('resume');
 
         $input->pipe($composite);
-        $input->emit('data', array('foo'));
-        $writable->emit('drain');
+        $input->emit(Event::DATA, array('foo'));
+        $writable->emit(Event::DRAIN);
     }
 
     /** @test */
@@ -150,6 +151,6 @@ class CompositeStreamTest extends TestCase
             ->with('foo');
 
         $composite->pipe($output);
-        $readable->emit('data', array('foo'));
+        $readable->emit(Event::DRAIN, array('foo'));
     }
 }
