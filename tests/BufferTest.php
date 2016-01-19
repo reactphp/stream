@@ -238,7 +238,7 @@ class BufferTest extends TestCase
         $buffer->write('bar');
 
         $this->assertInstanceOf('Exception', $error);
-        $this->assertSame('Tried to write to closed stream.', $error->getMessage());
+        $this->assertSame('fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()

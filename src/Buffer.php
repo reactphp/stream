@@ -14,17 +14,13 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     private $writable = true;
     private $loop;
     private $data = '';
-    private $lastError = array(
-        'number'  => 0,
-        'message' => '',
-        'file'    => '',
-        'line'    => 0,
-    );
+    private $lastError;
 
     public function __construct($stream, LoopInterface $loop)
     {
         $this->stream = $stream;
         $this->loop = $loop;
+        $this->lastErrorFlush();
     }
 
     public function isWritable()
@@ -83,13 +79,15 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
+        $this->lastErrorFlush();
+
         set_error_handler(array($this, 'errorHandler'));
 
         $sent = fwrite($this->stream, $this->data);
 
         restore_error_handler();
 
-        if (false === $sent) {
+        if ($this->lastError['number'] > 0) {
             $this->emit('error', array(
                 new \ErrorException(
                     $this->lastError['message'],
@@ -104,9 +102,8 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        if (0 === $sent && feof($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to closed stream.'), $this));
-
+        if ($sent === false) {
+            $this->emit('error', array(new \RuntimeException('Send failed'), $this));
             return;
         }
 
@@ -131,5 +128,14 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->lastError['message'] = $errstr;
         $this->lastError['file']    = $errfile;
         $this->lastError['line']    = $errline;
+    }
+
+    private function lastErrorFlush() {
+        $this->lastError = array(
+            'number'  => 0,
+            'message' => '',
+            'file'    => '',
+            'line'    => 0,
+        );
     }
 }
