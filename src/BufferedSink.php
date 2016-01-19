@@ -31,7 +31,6 @@ class BufferedSink extends WritableStream implements PromisorInterface
     public function write($data)
     {
         $this->buffer .= $data;
-        $this->deferred->progress($data);
     }
 
     public function close()
