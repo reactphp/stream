@@ -130,7 +130,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     {
         $data = fread($stream, $this->bufferSize);
 
-        $this->emit('data', array($data, $this));
+        if ($data !== '') {
+            $this->emit('data', array($data, $this));
+        }
 
         if (!is_resource($stream) || feof($stream)) {
             $this->end();
