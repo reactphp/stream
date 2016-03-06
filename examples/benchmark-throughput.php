@@ -7,6 +7,10 @@ $if = isset($args['i']) ? $args['i'] : '/dev/zero';
 $of = isset($args['o']) ? $args['o'] : '/dev/null';
 $t  = isset($args['t']) ? $args['t'] : 1;
 
+// passing file descriptors requires mapping paths (https://bugs.php.net/bug.php?id=53465)
+$if = str_replace('/dev/fd/', 'php://fd/', $if);
+$of = str_replace('/dev/fd/', 'php://fd/', $of);
+
 echo 'piping for ' . $t . ' second(s) from ' . $if . ' to ' . $of . '...'. PHP_EOL;
 
 $loop = new React\EventLoop\StreamSelectLoop();
