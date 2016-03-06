@@ -16,6 +16,9 @@ $loop = new React\EventLoop\StreamSelectLoop();
 // setup information stream
 $info = new React\Stream\Stream(STDERR, $loop);
 $info->pause();
+if (extension_loaded('xdebug')) {
+    $info->write('NOTICE: The "xdebug" extension is loaded, this has a major impact on performance.' . PHP_EOL);
+}
 $info->write('piping from ' . $if . ' to ' . $of . ' (for max ' . $t . ' second(s)) ...'. PHP_EOL);
 
 // setup input and output streams and pipe inbetween
