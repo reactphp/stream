@@ -11,9 +11,12 @@ $t  = isset($args['t']) ? $args['t'] : 1;
 $if = str_replace('/dev/fd/', 'php://fd/', $if);
 $of = str_replace('/dev/fd/', 'php://fd/', $of);
 
-echo 'piping for ' . $t . ' second(s) from ' . $if . ' to ' . $of . '...'. PHP_EOL;
-
 $loop = new React\EventLoop\StreamSelectLoop();
+
+// setup information stream
+$info = new React\Stream\Stream(STDERR, $loop);
+$info->pause();
+$info->write('piping from ' . $if . ' to ' . $of . ' (for max ' . $t . ' second(s)) ...'. PHP_EOL);
 
 // setup input and output streams and pipe inbetween
 $in = new React\Stream\Stream(fopen($if, 'r'), $loop);
@@ -28,13 +31,13 @@ $timeout = $loop->addTimer($t, function () use ($in, &$bytes) {
 });
 
 // print stream position once stream closes
-$in->on('close', function () use ($in, $start, $timeout) {
+$in->on('close', function () use ($in, $start, $timeout, $info) {
     $t = microtime(true) - $start;
     $timeout->cancel();
 
     $bytes = ftell($in->stream);
 
-    echo 'read ' . $bytes . ' byte(s) in ' . round($t, 3) . ' second(s) => ' . round($bytes / 1024 / 1024 / $t, 1) . ' MiB/s' . PHP_EOL;
+    $info->write('read ' . $bytes . ' byte(s) in ' . round($t, 3) . ' second(s) => ' . round($bytes / 1024 / 1024 / $t, 1) . ' MiB/s' . PHP_EOL);
 });
 
 $loop->run();
