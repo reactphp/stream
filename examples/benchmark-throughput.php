@@ -41,6 +41,7 @@ $in->on('close', function () use ($in, $start, $timeout, $info) {
     $bytes = ftell($in->stream);
 
     $info->write('read ' . $bytes . ' byte(s) in ' . round($t, 3) . ' second(s) => ' . round($bytes / 1024 / 1024 / $t, 1) . ' MiB/s' . PHP_EOL);
+    $info->write('peak memory usage of ' . round(memory_get_peak_usage(true) / 1024 / 1024, 1) . ' MiB' . PHP_EOL);
 });
 
 $loop->run();
