@@ -17,17 +17,20 @@ $out = new React\Stream\Stream(fopen($of, 'w'), $loop);
 $out->pause();
 $in->pipe($out);
 
-// count number of bytes from input stream
-$bytes = 0;
-$in->on('data', function ($chunk) use (&$bytes) {
-    $bytes += strlen($chunk);
-});
-
 // stop input stream in $t seconds
-$loop->addTimer($t, function () use ($in) {
+$start = microtime(true);
+$timeout = $loop->addTimer($t, function () use ($in, &$bytes) {
     $in->close();
 });
 
-$loop->run();
+// print stream position once stream closes
+$in->on('close', function () use ($in, $start, $timeout) {
+    $t = microtime(true) - $start;
+    $timeout->cancel();
 
-echo 'read ' . $bytes . ' byte(s) in ' . $t . ' second(s) => ' . round($bytes / 1024 / 1024 / $t, 1) . ' MiB/s' . PHP_EOL;
+    $bytes = ftell($in->stream);
+
+    echo 'read ' . $bytes . ' byte(s) in ' . round($t, 3) . ' second(s) => ' . round($bytes / 1024 / 1024 / $t, 1) . ' MiB/s' . PHP_EOL;
+});
+
+$loop->run();
