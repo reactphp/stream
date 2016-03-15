@@ -55,4 +55,32 @@ class StreamIntegrationTest extends TestCase
 
         $this->assertEquals($testString, $buffer);
     }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testDoesNotEmitDataIfNothingHasBeenWritten($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+
+        $streamA = new Stream($sockA, $loop);
+        $streamB = new Stream($sockB, $loop);
+
+        // end streamA without writing any data
+        $streamA->end();
+
+        // streamB should not emit any data
+        $streamB->on('data', $this->expectCallableNever());
+
+        $loop->run();
+
+        $streamA->close();
+        $streamB->close();
+    }
 }

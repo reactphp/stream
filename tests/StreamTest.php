@@ -51,6 +51,20 @@ class StreamTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\Stream::handleData
+     */
+    public function testEmptyStreamShouldNotEmitData()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $conn = new Stream($stream, $loop);
+        $conn->on('data', $this->expectCallableNever());
+
+        $conn->handleData($stream);
+    }
+
+    /**
      * @covers React\Stream\Stream::write
      */
     public function testWrite()
