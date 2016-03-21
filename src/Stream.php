@@ -128,7 +128,26 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
     public function handleData($stream)
     {
+        $error = null;
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
+            $error = new \ErrorException(
+                $errstr,
+                0,
+                $errno,
+                $errfile,
+                $errline
+            );
+        });
+
         $data = fread($stream, $this->bufferSize);
+
+        restore_error_handler();
+
+        if ($error !== null) {
+            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error), $this));
+            $this->close();
+            return;
+        }
 
         if ($data !== '') {
             $this->emit('data', array($data, $this));
