@@ -9,7 +9,20 @@ use InvalidArgumentException;
 class Stream extends EventEmitter implements DuplexStreamInterface
 {
     /**
-     * @var int|null maximum buffer size in bytes to read at once or null=infinite, until reaching EOF
+     * Controls the maximum buffer size in bytes to ready at once from the stream.
+     *
+     * This can be a positive number which means that up to X bytes will be read
+     * at once from the underlying stream resource. Note that the actual number
+     * of bytes read may be lower if the stream resource has less than X bytes
+     * currently available.
+     *
+     * This can be `null` which means read everything available from the
+     * underlying stream resource.
+     * This should read until the stream resource is not readable anymore
+     * (i.e. underlying buffer drained), note that this does not neccessarily
+     * mean it reached EOF.
+     *
+     * @var int|null
      */
     public $bufferSize = 4096;
 
