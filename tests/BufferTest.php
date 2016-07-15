@@ -81,6 +81,23 @@ class BufferTest extends TestCase
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
+    public function testWriteCanFlushImmediatelyWithoutBufferGettingFull()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 4;
+        $buffer->on('error', $this->expectCallableNever());
+
+        $this->assertTrue($buffer->write("foo"));
+        $this->assertTrue($buffer->write("bar\n"));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
     public function testWriteReturnsFalseWhenBufferIsFull()
     {
         $stream = fopen('php://temp', 'r+');
@@ -89,6 +106,7 @@ class BufferTest extends TestCase
 
         $buffer = new Buffer($stream, $loop);
         $buffer->softLimit = 4;
+        $buffer->listening = true;
         $buffer->on('error', $this->expectCallableNever());
 
         $this->assertTrue($buffer->write("foo"));
@@ -140,10 +158,9 @@ class BufferTest extends TestCase
     {
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
 
         $buffer = new Buffer($a, $loop);
-        $buffer->softLimit = 4;
         $buffer->on('error', $this->expectCallableOnce());
 
         fclose($b);
@@ -191,6 +208,7 @@ class BufferTest extends TestCase
             $buffer->write("bar\n");
         });
 
+        $buffer->listening = true;
         $this->assertFalse($buffer->write("foo"));
         $loop->preventWrites = false;
         $buffer->listening = false;
