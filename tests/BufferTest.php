@@ -295,6 +295,21 @@ class BufferTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\Buffer::close
+     */
+    public function testDoubleCloseWillEmitOnlyOnce()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('close', $this->expectCallableOnce());
+
+        $buffer->close();
+        $buffer->close();
+    }
+
+    /**
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::close
      */

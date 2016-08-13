@@ -12,6 +12,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     public $listening = false;
     public $softLimit = 65536;
     private $writable = true;
+    private $closed = false;
     private $loop;
     private $data = '';
 
@@ -64,6 +65,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
     public function close()
     {
+        if ($this->closed) {
+            return;
+        }
+
+        $this->closed = true;
         $this->writable = false;
         $this->listening = false;
         $this->data = '';
