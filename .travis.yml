@@ -13,3 +13,4 @@ install:
 
 script:
   - phpunit --coverage-text
+  - time php examples/benchmark-throughput.php
