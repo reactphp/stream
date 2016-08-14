@@ -63,8 +63,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
         $this->buffer->on('error', function ($error) use ($that) {
             $that->emit('error', array($error, $that));
-            $that->close();
         });
+
+        $this->buffer->on('close', array($this, 'close'));
 
         $this->buffer->on('drain', function () use ($that) {
             $that->emit('drain', array($that));
@@ -118,7 +119,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->emit('end', array($this));
         $this->emit('close', array($this));
         $this->loop->removeStream($this->stream);
-        $this->buffer->removeAllListeners();
+        $this->buffer->close();
         $this->removeAllListeners();
 
         $this->handleClose();
@@ -134,8 +135,6 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
         $this->readable = false;
         $this->writable = false;
-
-        $this->buffer->on('close', array($this, 'close'));
 
         $this->buffer->end($data);
     }
