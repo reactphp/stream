@@ -14,13 +14,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     private $writable = true;
     private $loop;
     private $data = '';
-    private $lastError;
 
     public function __construct($stream, LoopInterface $loop)
     {
         $this->stream = $stream;
         $this->loop = $loop;
-        $this->lastErrorFlush();
     }
 
     public function isWritable()
@@ -79,9 +77,16 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        $this->lastErrorFlush();
-
-        set_error_handler(array($this, 'errorHandler'));
+        $error = null;
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
+            $error = new \ErrorException(
+                $errstr,
+                0,
+                $errno,
+                $errfile,
+                $errline
+            );
+        });
 
         $sent = fwrite($this->stream, $this->data);
 
@@ -94,23 +99,13 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         // to keep the stream open for further tries to write.
         // Should this turn out to be a permanent error later, it will eventually
         // send *nothing* and we can detect this.
-        if ($sent === 0 && $this->lastError['number'] > 0) {
-            $this->emit('error', array(
-                new \ErrorException(
-                    $this->lastError['message'],
-                    0,
-                    $this->lastError['number'],
-                    $this->lastError['file'],
-                    $this->lastError['line']
-                ),
-                $this
-            ));
-
-            return;
-        }
-
         if ($sent === 0) {
-            $this->emit('error', array(new \RuntimeException('Send failed'), $this));
+            if ($error === null) {
+                $error = new \RuntimeException('Send failed');
+            }
+
+            $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error->getMessage(), 0, $error), $this));
+
             return;
         }
 
@@ -127,22 +122,5 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
             $this->emit('full-drain', array($this));
         }
-    }
-
-    private function errorHandler($errno, $errstr, $errfile, $errline)
-    {
-        $this->lastError['number']  = $errno;
-        $this->lastError['message'] = $errstr;
-        $this->lastError['file']    = $errfile;
-        $this->lastError['line']    = $errline;
-    }
-
-    private function lastErrorFlush() {
-        $this->lastError = array(
-            'number'  => 0,
-            'message' => '',
-            'file'    => '',
-            'line'    => 0,
-        );
     }
 }
