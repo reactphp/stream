@@ -20,10 +20,5 @@
         "psr-4": {
             "React\\Stream\\": "src"
         }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.5-dev"
-        }
     }
 }
