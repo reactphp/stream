@@ -114,6 +114,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             }
 
             $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error->getMessage(), 0, $error), $this));
+            $this->close();
 
             return;
         }
