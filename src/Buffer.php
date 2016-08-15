@@ -17,6 +17,10 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
     public function __construct($stream, LoopInterface $loop)
     {
+        if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
+            throw new \InvalidArgumentException('First parameter must be a valid stream resource');
+        }
+
         $this->stream = $stream;
         $this->loop = $loop;
     }
@@ -71,12 +75,6 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
     public function handleWrite()
     {
-        if (!is_resource($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to invalid stream.'), $this));
-
-            return;
-        }
-
         $error = null;
         set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
             $error = new \ErrorException(
@@ -99,7 +97,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         // to keep the stream open for further tries to write.
         // Should this turn out to be a permanent error later, it will eventually
         // send *nothing* and we can detect this.
-        if ($sent === 0) {
+        if ($sent === 0 || $sent === false) {
             if ($error === null) {
                 $error = new \RuntimeException('Send failed');
             }
