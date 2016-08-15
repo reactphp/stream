@@ -33,7 +33,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     protected $loop;
     protected $buffer;
 
-    public function __construct($stream, LoopInterface $loop)
+    public function __construct($stream, LoopInterface $loop, WritableStreamInterface $buffer = null)
     {
         $this->stream = $stream;
         if (!is_resource($this->stream) || get_resource_type($this->stream) !== "stream") {
@@ -52,8 +52,12 @@ class Stream extends EventEmitter implements DuplexStreamInterface
             stream_set_read_buffer($this->stream, 0);
         }
 
+        if ($buffer === null) {
+            $buffer = new Buffer($stream, $loop);
+        }
+
         $this->loop = $loop;
-        $this->buffer = new Buffer($this->stream, $this->loop);
+        $this->buffer = $buffer;
 
         $that = $this;
 
@@ -182,6 +186,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
+    /**
+     * @return WritableStreamInterface|Buffer
+     */
     public function getBuffer()
     {
         return $this->buffer;

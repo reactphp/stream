@@ -30,6 +30,21 @@ class StreamTest extends TestCase
 
     /**
      * @covers React\Stream\Stream::__construct
+     */
+    public function testConstructorAcceptsBuffer()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = $this->getMock('React\Stream\WritableStreamInterface');
+
+        $conn = new Stream($stream, $loop, $buffer);
+
+        $this->assertSame($buffer, $conn->getBuffer());
+    }
+
+    /**
+     * @covers React\Stream\Stream::__construct
      * @covers React\Stream\Stream::handleData
      */
     public function testDataEvent()
