@@ -79,6 +79,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->data = '';
 
         $this->emit('close', array($this));
+        $this->removeAllListeners();
     }
 
     public function handleWrite()

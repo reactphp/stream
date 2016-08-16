@@ -306,6 +306,8 @@ class BufferTest extends TestCase
         $this->assertTrue($buffer->isWritable());
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
+
+        $this->assertEquals(array(), $buffer->listeners('close'));
     }
 
     /**
