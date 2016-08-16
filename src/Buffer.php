@@ -102,7 +102,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        if ($sent === false) {
+        if ($sent === 0) {
             $this->emit('error', array(new \RuntimeException('Send failed'), $this));
             return;
         }

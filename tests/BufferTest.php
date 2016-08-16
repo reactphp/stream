@@ -58,6 +58,23 @@ class BufferTest extends TestCase
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
+    public function testWriteEmitsErrorWhenResourceIsNotWritable()
+    {
+        $stream = fopen('php://temp', 'r');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('error', $this->expectCallableOnce());
+        //$buffer->on('close', $this->expectCallableOnce());
+
+        $buffer->write('hello');
+        $buffer->handleWrite();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
     public function testWriteDetectsWhenOtherSideIsClosed()
     {
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
