@@ -36,7 +36,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         $this->data .= $data;
 
-        if (!$this->listening) {
+        if (!$this->listening && $this->data !== '') {
             $this->listening = true;
 
             $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));

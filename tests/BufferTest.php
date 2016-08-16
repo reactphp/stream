@@ -37,6 +37,36 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::write
+     */
+    public function testWriteWithDataDoesAddResourceToLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addWriteStream')->with($this->equalTo($stream));
+
+        $buffer = new Buffer($stream, $loop);
+
+        $buffer->write("foobar\n");
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testEmptyWriteDoesNotAddToLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->never())->method('addWriteStream');
+
+        $buffer = new Buffer($stream, $loop);
+
+        $buffer->write("");
+        $buffer->write(null);
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
     public function testWriteReturnsFalseWhenBufferIsFull()
