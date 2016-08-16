@@ -83,7 +83,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         set_error_handler(array($this, 'errorHandler'));
 
-        $sent = fwrite($this->stream, $this->data);
+        $sent = fwrite($this->stream, $this->data, $this->softLimit);
 
         restore_error_handler();
 
