@@ -110,11 +110,13 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $len = strlen($this->data);
         $this->data = (string) substr($this->data, $sent);
 
+        // buffer has been above limit and is now below limit
         if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
             $this->emit('drain', array($this));
         }
 
-        if (0 === strlen($this->data)) {
+        // buffer is now completely empty (and not closed already)
+        if (0 === strlen($this->data) && $this->listening) {
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;
 
