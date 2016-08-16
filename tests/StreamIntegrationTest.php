@@ -83,4 +83,100 @@ class StreamIntegrationTest extends TestCase
         $streamA->close();
         $streamB->close();
     }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testDoesNotWriteDataIfRemoteSideFromPairHasBeenClosed($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+
+        $streamA = new Stream($sockA, $loop);
+        $streamB = new Stream($sockB, $loop);
+
+        // end streamA without writing any data
+        $streamA->pause();
+        $streamA->write('hello');
+        $streamA->on('close', $this->expectCallableOnce());
+
+        $streamB->on('data', $this->expectCallableNever());
+        $streamB->close();
+
+        $loop->run();
+
+        $streamA->close();
+        $streamB->close();
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testDoesNotWriteDataIfServerSideHasBeenClosed($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $server = stream_socket_server('tcp://localhost:0');
+
+        $client = stream_socket_client(stream_socket_get_name($server, false));
+        $peer = stream_socket_accept($server);
+
+        $streamA = new Stream($client, $loop);
+        $streamB = new Stream($peer, $loop);
+
+        // end streamA without writing any data
+        $streamA->pause();
+        $streamA->write('hello');
+        $streamA->on('close', $this->expectCallableOnce());
+
+        $streamB->on('data', $this->expectCallableNever());
+        $streamB->close();
+
+        $loop->run();
+
+        $streamA->close();
+        $streamB->close();
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testDoesNotWriteDataIfClientSideHasBeenClosed($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $server = stream_socket_server('tcp://localhost:0');
+
+        $client = stream_socket_client(stream_socket_get_name($server, false));
+        $peer = stream_socket_accept($server);
+
+        $streamA = new Stream($peer, $loop);
+        $streamB = new Stream($client, $loop);
+
+        // end streamA without writing any data
+        $streamA->pause();
+        $streamA->write('hello');
+        $streamA->on('close', $this->expectCallableOnce());
+
+        $streamB->on('data', $this->expectCallableNever());
+        $streamB->close();
+
+        $loop->run();
+
+        $streamA->close();
+        $streamB->close();
+    }
 }
