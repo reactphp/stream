@@ -59,6 +59,46 @@ class StreamIntegrationTest extends TestCase
     /**
      * @dataProvider loopProvider
      */
+    public function testWriteLargeChunk($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+
+        $streamA = new Stream($sockA, $loop);
+        $streamB = new Stream($sockB, $loop);
+
+        // limit seems to be 192 KiB
+        $size = 256 * 1024;
+
+        // sending side sends and expects clean close with no errors
+        $streamA->end(str_repeat('*', $size));
+        $streamA->on('close', $this->expectCallableOnce());
+        $streamA->on('error', $this->expectCallableNever());
+
+        // receiving side counts bytes and expects clean close with no errors
+        $received = 0;
+        $streamB->on('data', function ($chunk) use (&$received) {
+            $received += strlen($chunk);
+        });
+        $streamB->on('close', $this->expectCallableOnce());
+        $streamB->on('error', $this->expectCallableNever());
+
+        $loop->run();
+
+        $streamA->close();
+        $streamB->close();
+
+        $this->assertEquals($size, $received);
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
     public function testDoesNotEmitDataIfNothingHasBeenWritten($condition, $loopFactory)
     {
         if (true !== $condition()) {
