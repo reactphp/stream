@@ -60,6 +60,11 @@ class BufferTest extends TestCase
      */
     public function testWriteEmitsErrorWhenResourceIsNotWritable()
     {
+        if (defined('HHVM_VERSION')) {
+            // via https://github.com/reactphp/stream/pull/52/files#r75493076
+            $this->markTestSkipped('HHVM allows writing to read-only memory streams');
+        }
+
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
