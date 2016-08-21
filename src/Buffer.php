@@ -42,9 +42,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));
         }
 
-        $belowSoftLimit = strlen($this->data) < $this->softLimit;
-
-        return $belowSoftLimit;
+        return !isset($this->data[$this->softLimit - 1]);
     }
 
     public function end($data = null)
@@ -107,16 +105,16 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        $len = strlen($this->data);
+        $exceeded = isset($this->data[$this->softLimit - 1]);
         $this->data = (string) substr($this->data, $sent);
 
         // buffer has been above limit and is now below limit
-        if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
+        if ($exceeded && !isset($this->data[$this->softLimit - 1])) {
             $this->emit('drain', array($this));
         }
 
         // buffer is now completely empty (and not closed already)
-        if (0 === strlen($this->data) && $this->listening) {
+        if ($this->data === '' && $this->listening) {
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;
 

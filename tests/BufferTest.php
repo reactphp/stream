@@ -86,6 +86,20 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::write
+     */
+    public function testWriteReturnsFalseWhenBufferIsExactlyFull()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 3;
+
+        $this->assertFalse($buffer->write("foo"));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
     public function testWriteDetectsWhenOtherSideIsClosed()
