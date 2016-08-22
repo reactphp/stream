@@ -77,12 +77,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     {
         $error = null;
         set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
-            $error = new \ErrorException(
-                $errstr,
-                0,
-                $errno,
-                $errfile,
-                $errline
+            $error = array(
+                'message' => $errstr,
+                'number' => $errno,
+                'file' => $errfile,
+                'line' => $errline
             );
         });
 
@@ -100,6 +99,14 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         if ($sent === 0 || $sent === false) {
             if ($error === null) {
                 $error = new \RuntimeException('Send failed');
+            } else {
+                $error = new \ErrorException(
+                    $error['message'],
+                    0,
+                    $error['number'],
+                    $error['file'],
+                    $error['line']
+                );
             }
 
             $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error->getMessage(), 0, $error), $this));
