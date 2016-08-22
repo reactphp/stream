@@ -87,7 +87,14 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         restore_error_handler();
 
-        if ($this->lastError['number'] > 0) {
+        // Only report errors if *nothing* could be sent.
+        // Any hard (permanent) error will fail to send any data at all.
+        // Sending excessive amounts of data will only flush *some* data and then
+        // report a temporary error (EAGAIN) which we do not raise here in order
+        // to keep the stream open for further tries to write.
+        // Should this turn out to be a permanent error later, it will eventually
+        // send *nothing* and we can detect this.
+        if ($sent === 0 && $this->lastError['number'] > 0) {
             $this->emit('error', array(
                 new \ErrorException(
                     $this->lastError['message'],
@@ -102,7 +109,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             return;
         }
 
-        if ($sent === false) {
+        if ($sent === 0) {
             $this->emit('error', array(new \RuntimeException('Send failed'), $this));
             return;
         }
