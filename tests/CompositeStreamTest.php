@@ -81,6 +81,19 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
+    public function itShouldForwardCloseOnlyOnce()
+    {
+        $readable = new ReadableStream();
+        $writable = new WritableStream();
+
+        $composite = new CompositeStream($readable, $writable);
+        $composite->on('close', $this->expectCallableOnce());
+
+        $readable->close();
+        $writable->close();
+    }
+
+    /** @test */
     public function itShouldReceiveForwardedEvents()
     {
         $readable = new ReadableStream();
