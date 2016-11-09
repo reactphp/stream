@@ -98,6 +98,20 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::write
+     */
+    public function testWriteReturnsFalseWhenBufferIsExactlyFull()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 3;
+
+        $this->assertFalse($buffer->write("foo"));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
     public function testWriteEmitsErrorWhenResourceIsNotWritable()
@@ -164,8 +178,6 @@ class BufferTest extends TestCase
      */
     public function testWriteInDrain()
     {
-        $writeStreams = array();
-
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
         $loop->preventWrites = true;
@@ -186,6 +198,47 @@ class BufferTest extends TestCase
 
         fseek($stream, 0);
         $this->assertSame("foo\nbar\n", stream_get_contents($stream));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testDrainAndFullDrainAfterWrite()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 2;
+
+        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on('full-drain', $this->expectCallableOnce());
+
+        $buffer->write("foo");
+        $buffer->handleWrite();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testCloseDuringDrainWillNotEmitFullDrain()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 2;
+
+        // close buffer on drain event => expect close event, but no full-drain after
+        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on('drain', array($buffer, 'close'));
+        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on('full-drain', $this->expectCallableNever());
+
+        $buffer->write("foo");
+        $buffer->handleWrite();
     }
 
     /**
