@@ -19,6 +19,18 @@ class BufferTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\Buffer::__construct
+     * @expectedException InvalidArgumentException
+     */
+    public function testConstructorThrowsIfNotAValidStreamResource()
+    {
+        $stream = null;
+        $loop = $this->createLoopMock();
+
+        new Buffer($stream, $loop);
+    }
+
+    /**
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
@@ -249,11 +261,10 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::handleWrite
-     * @covers React\Stream\Buffer::errorHandler
      */
-    public function testError()
+    public function testErrorWhenStreamResourceIsInvalid()
     {
-        $stream = null;
+        $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
 
         $error = null;
@@ -263,9 +274,16 @@ class BufferTest extends TestCase
             $error = $message;
         });
 
+        // invalidate stream resource
+        fclose($stream);
+
         $buffer->write('Attempting to write to bad stream');
+
         $this->assertInstanceOf('Exception', $error);
-        $this->assertSame('Tried to write to invalid stream.', $error->getMessage());
+
+        // the error messages differ between PHP versions, let's just check substrings
+        $this->assertContains('Unable to write to stream: ', $error->getMessage());
+        $this->assertContains(' not a valid stream resource', $error->getMessage(), '', true);
     }
 
     public function testWritingToClosedStream()
@@ -290,7 +308,7 @@ class BufferTest extends TestCase
         $buffer->write('bar');
 
         $this->assertInstanceOf('Exception', $error);
-        $this->assertSame('fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
+        $this->assertSame('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()
