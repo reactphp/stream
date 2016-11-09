@@ -52,6 +52,58 @@ class StreamTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\Stream::__construct
+     * @covers React\Stream\Stream::handleData
+     */
+    public function testDataEventDoesEmitOneChunkMatchingBufferSize()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $capturedData = null;
+
+        $conn = new Stream($stream, $loop);
+        $conn->on('data', function ($data) use (&$capturedData) {
+            $capturedData = $data;
+        });
+
+        fwrite($stream, str_repeat("a", 100000));
+        rewind($stream);
+
+        $conn->handleData($stream);
+
+        $this->assertTrue($conn->isReadable());
+        $this->assertEquals($conn->bufferSize, strlen($capturedData));
+    }
+
+    /**
+     * @covers React\Stream\Stream::__construct
+     * @covers React\Stream\Stream::handleData
+     */
+    public function testDataEventDoesEmitOneChunkUntilStreamEndsWhenBufferSizeIsInfinite()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $capturedData = null;
+
+        $conn = new Stream($stream, $loop);
+        $conn->bufferSize = null;
+
+        $conn->on('data', function ($data) use (&$capturedData) {
+            $capturedData = $data;
+        });
+
+        fwrite($stream, str_repeat("a", 100000));
+        rewind($stream);
+
+        $conn->handleData($stream);
+
+        $this->assertFalse($conn->isReadable());
+        $this->assertEquals(100000, strlen($capturedData));
+    }
+
+    /**
      * @covers React\Stream\Stream::handleData
      */
     public function testEmptyStreamShouldNotEmitData()
