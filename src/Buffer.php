@@ -10,7 +10,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
     public $listening = false;
-    public $softLimit = 2048;
+    public $softLimit = 65536;
     private $writable = true;
     private $loop;
     private $data = '';

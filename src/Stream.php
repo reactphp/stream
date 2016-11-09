@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 class Stream extends EventEmitter implements DuplexStreamInterface
 {
-    public $bufferSize = 4096;
+    public $bufferSize = 65536;
     public $stream;
     protected $readable = true;
     protected $writable = true;
