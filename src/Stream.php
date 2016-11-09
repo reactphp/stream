@@ -8,7 +8,24 @@ use InvalidArgumentException;
 
 class Stream extends EventEmitter implements DuplexStreamInterface
 {
-    public $bufferSize = 4096;
+    /**
+     * Controls the maximum buffer size in bytes to ready at once from the stream.
+     *
+     * This can be a positive number which means that up to X bytes will be read
+     * at once from the underlying stream resource. Note that the actual number
+     * of bytes read may be lower if the stream resource has less than X bytes
+     * currently available.
+     *
+     * This can be `null` which means read everything available from the
+     * underlying stream resource.
+     * This should read until the stream resource is not readable anymore
+     * (i.e. underlying buffer drained), note that this does not neccessarily
+     * mean it reached EOF.
+     *
+     * @var int|null
+     */
+    public $bufferSize = 65536;
+
     public $stream;
     protected $readable = true;
     protected $writable = true;
@@ -139,7 +156,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
             );
         });
 
-        $data = fread($stream, $this->bufferSize);
+        $data = stream_get_contents($stream, $this->bufferSize === null ? -1 : $this->bufferSize);
 
         restore_error_handler();
 

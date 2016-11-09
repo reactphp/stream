@@ -10,17 +10,19 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
     public $listening = false;
-    public $softLimit = 2048;
+    public $softLimit = 65536;
     private $writable = true;
     private $loop;
     private $data = '';
-    private $lastError;
 
     public function __construct($stream, LoopInterface $loop)
     {
+        if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
+            throw new \InvalidArgumentException('First parameter must be a valid stream resource');
+        }
+
         $this->stream = $stream;
         $this->loop = $loop;
-        $this->lastErrorFlush();
     }
 
     public function isWritable()
@@ -42,9 +44,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));
         }
 
-        $belowSoftLimit = strlen($this->data) < $this->softLimit;
-
-        return $belowSoftLimit;
+        return !isset($this->data[$this->softLimit - 1]);
     }
 
     public function end($data = null)
@@ -73,15 +73,15 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
     public function handleWrite()
     {
-        if (!is_resource($this->stream)) {
-            $this->emit('error', array(new \RuntimeException('Tried to write to invalid stream.'), $this));
-
-            return;
-        }
-
-        $this->lastErrorFlush();
-
-        set_error_handler(array($this, 'errorHandler'));
+        $error = null;
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
+            $error = array(
+                'message' => $errstr,
+                'number' => $errno,
+                'file' => $errfile,
+                'line' => $errline
+            );
+        });
 
         $sent = fwrite($this->stream, $this->data);
 
@@ -94,55 +94,38 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         // to keep the stream open for further tries to write.
         // Should this turn out to be a permanent error later, it will eventually
         // send *nothing* and we can detect this.
-        if ($sent === 0 && $this->lastError['number'] > 0) {
-            $this->emit('error', array(
-                new \ErrorException(
-                    $this->lastError['message'],
+        if ($sent === 0 || $sent === false) {
+            if ($error === null) {
+                $error = new \RuntimeException('Send failed');
+            } else {
+                $error = new \ErrorException(
+                    $error['message'],
                     0,
-                    $this->lastError['number'],
-                    $this->lastError['file'],
-                    $this->lastError['line']
-                ),
-                $this
-            ));
+                    $error['number'],
+                    $error['file'],
+                    $error['line']
+                );
+            }
+
+            $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error->getMessage(), 0, $error), $this));
 
             return;
         }
 
-        if ($sent === 0) {
-            $this->emit('error', array(new \RuntimeException('Send failed'), $this));
-            return;
-        }
-
-        $len = strlen($this->data);
+        $exceeded = isset($this->data[$this->softLimit - 1]);
         $this->data = (string) substr($this->data, $sent);
 
-        if ($len >= $this->softLimit && $len - $sent < $this->softLimit) {
+        // buffer has been above limit and is now below limit
+        if ($exceeded && !isset($this->data[$this->softLimit - 1])) {
             $this->emit('drain', array($this));
         }
 
-        if (0 === strlen($this->data)) {
+        // buffer is now completely empty (and not closed already)
+        if ($this->data === '' && $this->listening) {
             $this->loop->removeWriteStream($this->stream);
             $this->listening = false;
 
             $this->emit('full-drain', array($this));
         }
-    }
-
-    private function errorHandler($errno, $errstr, $errfile, $errline)
-    {
-        $this->lastError['number']  = $errno;
-        $this->lastError['message'] = $errstr;
-        $this->lastError['file']    = $errfile;
-        $this->lastError['line']    = $errline;
-    }
-
-    private function lastErrorFlush() {
-        $this->lastError = array(
-            'number'  => 0,
-            'message' => '',
-            'file'    => '',
-            'line'    => 0,
-        );
     }
 }
