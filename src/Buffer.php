@@ -5,7 +5,6 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 
-/** @event full-drain */
 class Buffer extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
@@ -55,9 +54,9 @@ class Buffer extends EventEmitter implements WritableStreamInterface
 
         $this->writable = false;
 
-        if ($this->listening) {
-            $this->on('full-drain', array($this, 'close'));
-        } else {
+        // close immediately if buffer is already empty
+        // otherwise wait for buffer to flush first
+        if ($this->data === '') {
             $this->close();
         }
     }
@@ -120,12 +119,9 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->emit('drain', array($this));
         }
 
-        // buffer is now completely empty (and not closed already)
-        if ($this->data === '' && $this->listening) {
-            $this->loop->removeWriteStream($this->stream);
-            $this->listening = false;
-
-            $this->emit('full-drain', array($this));
+        // buffer is end()ing and now completely empty (and not closed already)
+        if (!$this->writable && $this->data === '') {
+            $this->close();
         }
     }
 }

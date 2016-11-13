@@ -106,7 +106,7 @@ class UtilTest extends TestCase
         $readable = new Stub\ReadableStreamStub();
 
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
         $buffer = new Buffer($stream, $loop);
 
         $readable->pipe($buffer);
@@ -114,6 +114,7 @@ class UtilTest extends TestCase
         $readable->write('hello, I am some ');
         $readable->write('random data');
 
+        $buffer->handleWrite();
         rewind($stream);
         $this->assertSame('hello, I am some random data', stream_get_contents($stream));
     }
@@ -130,19 +131,6 @@ class UtilTest extends TestCase
 
         $source->emit('data', array('hello'));
         $source->emit('foo', array('bar'));
-    }
-
-    private function createWriteableLoopMock()
-    {
-        $loop = $this->createLoopMock();
-        $loop
-            ->expects($this->any())
-            ->method('addWriteStream')
-            ->will($this->returnCallback(function ($stream, $listener) {
-                call_user_func($listener, $stream);
-            }));
-
-        return $loop;
     }
 
     private function createLoopMock()
