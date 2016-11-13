@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.5 (2016-11-13)
+
+* Feature: Support setting read buffer size to `null` (infinite)
+  (#42 by @clue)
+
+* Fix: Do not emit `full-drain` event if `Buffer` is closed during `drain` event
+  (#55 by @clue)
+
+* Vastly improved performance by factor of 10x to 20x.
+  Raise default buffer sizes to 64 KiB and simplify and improve error handling
+  and unneeded function calls.
+  (#53, #55, #56 by @clue)
+
 ## 0.4.4 (2016-08-22)
 
 * Bug fix: Emit `error` event and close `Stream` when accessing the underlying
