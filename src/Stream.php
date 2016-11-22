@@ -111,7 +111,6 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->readable = false;
         $this->writable = false;
 
-        $this->emit('end', array($this));
         $this->emit('close', array($this));
         $this->loop->removeStream($this->stream);
         $this->buffer->removeAllListeners();

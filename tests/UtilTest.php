@@ -21,7 +21,7 @@ class UtilTest extends TestCase
         $readable
             ->expects($this->at(1))
             ->method('on')
-            ->with('end', $this->isInstanceOf('Closure'));
+            ->with('close', $this->isInstanceOf('Closure'));
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
         $writable
@@ -55,7 +55,7 @@ class UtilTest extends TestCase
             ->expects($this->never())
             ->method('end');
 
-        Util::pipe($readable, $writable, array('end' => false));
+        Util::pipe($readable, $writable, array('close' => false));
 
         $readable->end();
     }

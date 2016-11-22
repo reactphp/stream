@@ -6,7 +6,6 @@ use Evenement\EventEmitterInterface;
 
 /**
  * @event data
- * @event end
  * @event error
  * @event close
  */

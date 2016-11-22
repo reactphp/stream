@@ -19,9 +19,8 @@ This component depends on `événement`, which is an implementation of the
 ### EventEmitter Events
 
 * `data`: Emitted whenever data was read from the source.
-* `end`: Emitted when the source has reached the `eof`.
 * `error`: Emitted when an error occurs.
-* `close`: Emitted when the connection is closed.
+* `close`: Emitted when the source has reached the `eof` or is closed.
 
 ### Methods
 

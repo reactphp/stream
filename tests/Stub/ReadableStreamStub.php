@@ -32,7 +32,7 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
     // trigger end event
     public function end()
     {
-        $this->emit('end', array());
+        $this->close();
     }
 
     public function pause()
