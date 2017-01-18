@@ -79,6 +79,20 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::write
+     */
+    public function testWriteWillAddStreamToLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $buffer = new Buffer($stream, $loop);
+
+        $loop->expects($this->once())->method('addWriteStream')->with($stream);
+
+        $buffer->write('foo');
+    }
+
+    /**
+     * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
     public function testWriteReturnsFalseWhenBufferIsFull()
@@ -292,6 +306,52 @@ class BufferTest extends TestCase
         $this->assertTrue($buffer->isWritable());
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
+
+        $this->assertEquals(array(), $buffer->listeners('close'));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::close
+     */
+    public function testClosingAfterWriteRemovesStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $buffer = new Buffer($stream, $loop);
+
+        $loop->expects($this->once())->method('removeWriteStream')->with($stream);
+
+        $buffer->write('foo');
+        $buffer->close();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::close
+     */
+    public function testClosingWithoutWritingDoesNotRemoveStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $buffer = new Buffer($stream, $loop);
+
+        $loop->expects($this->never())->method('removeWriteStream');
+
+        $buffer->close();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::close
+     */
+    public function testDoubleCloseWillEmitOnlyOnce()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('close', $this->expectCallableOnce());
+
+        $buffer->close();
+        $buffer->close();
     }
 
     /**
