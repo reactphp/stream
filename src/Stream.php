@@ -33,7 +33,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     protected $loop;
     protected $buffer;
 
-    public function __construct($stream, LoopInterface $loop)
+    public function __construct($stream, LoopInterface $loop, WritableStreamInterface $buffer = null)
     {
         $this->stream = $stream;
         if (!is_resource($this->stream) || get_resource_type($this->stream) !== "stream") {
@@ -52,15 +52,20 @@ class Stream extends EventEmitter implements DuplexStreamInterface
             stream_set_read_buffer($this->stream, 0);
         }
 
+        if ($buffer === null) {
+            $buffer = new Buffer($stream, $loop);
+        }
+
         $this->loop = $loop;
-        $this->buffer = new Buffer($this->stream, $this->loop);
+        $this->buffer = $buffer;
 
         $that = $this;
 
         $this->buffer->on('error', function ($error) use ($that) {
             $that->emit('error', array($error, $that));
-            $that->close();
         });
+
+        $this->buffer->on('close', array($this, 'close'));
 
         $this->buffer->on('drain', function () use ($that) {
             $that->emit('drain', array($that));
@@ -114,7 +119,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->emit('end', array($this));
         $this->emit('close', array($this));
         $this->loop->removeStream($this->stream);
-        $this->buffer->removeAllListeners();
+        $this->buffer->close();
         $this->removeAllListeners();
 
         $this->handleClose();
@@ -130,8 +135,6 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
         $this->readable = false;
         $this->writable = false;
-
-        $this->buffer->on('close', array($this, 'close'));
 
         $this->buffer->end($data);
     }
@@ -182,6 +185,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
+    /**
+     * @return WritableStreamInterface|Buffer
+     */
     public function getBuffer()
     {
         return $this->buffer;
