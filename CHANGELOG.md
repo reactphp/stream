@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.6 (2017-01-25)
+
+* Feature: The `Buffer` can now be injected into the `Stream` (or be used standalone)
+  (#62 by @clue)
+
+* Fix: Forward `close` event only once for `CompositeStream` and `ThroughStream`
+  (#60 by @clue)
+
+* Fix: Consistent `close` event behavior for `Buffer`
+  (#61 by @clue)
+
 ## 0.4.5 (2016-11-13)
 
 * Feature: Support setting read buffer size to `null` (infinite)

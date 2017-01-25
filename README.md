@@ -68,3 +68,16 @@ This component depends on `événement`, which is an implementation of the
 
     $loop->run();
 ```
+
+## Install
+
+The recommended way to install this library is [through Composer](http://getcomposer.org).
+[New to Composer?](http://getcomposer.org/doc/00-intro.md)
+
+This will install the latest supported version:
+
+```bash
+$ composer require react/stream:^0.4.6
+```
+
+More details about version upgrades can be found in the [CHANGELOG](CHANGELOG.md).
