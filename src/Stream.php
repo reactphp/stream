@@ -24,7 +24,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
      *
      * @var int|null
      */
-    public $bufferSize = 65536;
+    public $bufferSize = null;
 
     public $stream;
     protected $readable = true;
