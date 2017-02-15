@@ -149,6 +149,8 @@ class StreamTest extends TestCase
 
     /**
      * @covers React\Stream\Stream::end
+     * @covers React\Stream\Stream::isReadable
+     * @covers React\Stream\Stream::isWritable
      */
     public function testEnd()
     {
@@ -159,6 +161,8 @@ class StreamTest extends TestCase
         $conn->end();
 
         $this->assertFalse(is_resource($stream));
+        $this->assertFalse($conn->isReadable());
+        $this->assertFalse($conn->isWritable());
     }
 
     public function testBufferEventsShouldBubbleUp()
