@@ -149,6 +149,8 @@ class StreamTest extends TestCase
 
     /**
      * @covers React\Stream\Stream::end
+     * @covers React\Stream\Stream::isReadable
+     * @covers React\Stream\Stream::isWritable
      */
     public function testEnd()
     {
@@ -159,6 +161,27 @@ class StreamTest extends TestCase
         $conn->end();
 
         $this->assertFalse(is_resource($stream));
+        $this->assertFalse($conn->isReadable());
+        $this->assertFalse($conn->isWritable());
+    }
+
+    public function testEndedStreamsShouldNotWrite()
+    {   
+        $file = tempnam(sys_get_temp_dir(), 'reactphptest_');
+        $stream = fopen($file, 'r+');
+        $loop = $this->createWriteableLoopMock();
+
+        $conn = new Stream($stream, $loop);
+        $conn->write("foo\n");
+        $conn->end();
+
+        $res = $conn->write("bar\n");
+        $stream = fopen($file, 'r');
+
+        $this->assertSame("foo\n", fgets($stream));
+        $this->assertNull($res);
+
+        unlink($file);
     }
 
     public function testBufferEventsShouldBubbleUp()
