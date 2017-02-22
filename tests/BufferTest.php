@@ -186,7 +186,7 @@ class BufferTest extends TestCase
         $buffer->softLimit = 2;
         $buffer->on('error', $this->expectCallableNever());
 
-        $buffer->once('drain', function ($buffer) {
+        $buffer->once('drain', function () use ($buffer) {
             $buffer->listening = false;
             $buffer->write("bar\n");
         });

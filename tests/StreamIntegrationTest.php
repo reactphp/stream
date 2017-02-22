@@ -40,7 +40,7 @@ class StreamIntegrationTest extends TestCase
         $testString = str_repeat("*", $streamA->bufferSize + 1);
 
         $buffer = "";
-        $streamB->on('data', function ($data, $streamB) use (&$buffer, &$testString) {
+        $streamB->on('data', function ($data) use (&$buffer) {
             $buffer .= $data;
         });
 
