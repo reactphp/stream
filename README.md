@@ -20,15 +20,19 @@ This component depends on `événement`, which is an implementation of the
 
 * `data`: Emitted whenever data was read from the source
   with a single mixed argument for incoming data.
-* `end`: Emitted when the source has reached the `eof`.
+* `end`: Emitted when the source has successfully reached the end
+  of the stream (EOF).
+  This event will only be emitted if the *end* was reached successfully, not
+  if the stream was interrupted due to an error or explicitly closed.
+  Also note that not all streams know the concept of a "successful end".
 * `error`: Emitted when an error occurs
   with a single `Exception` argument for error instance.
-* `close`: Emitted when the connection is closed.
+* `close`: Emitted when the stream is closed.
 
 ### Methods
 
 * `isReadable()`: Check if the stream is still in a state allowing it to be
-  read from. It becomes unreadable when the connection ends, closes or an
+  read from. It becomes unreadable when the stream ends, closes or an
   error occurs.
 * `pause()`: Remove the data source file descriptor from the event loop. This
   allows you to throttle incoming data.
@@ -46,7 +50,7 @@ This component depends on `événement`, which is an implementation of the
   to accept more data.
 * `error`: Emitted whenever an error occurs
   with a single `Exception` argument for error instance.
-* `close`: Emitted whenever the connection is closed.
+* `close`: Emitted whenever the stream is closed.
 * `pipe`: Emitted whenever a readable stream is `pipe()`d into this stream
   with a single `ReadableStreamInterface` argument for source stream.
 

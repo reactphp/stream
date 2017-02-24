@@ -60,6 +60,16 @@ class WritableStreamTest extends TestCase
     }
 
     /** @test */
+    public function closeShouldEmitCloseEvent()
+    {
+        $through = new WritableStream();
+        $through->on('close', $this->expectCallableOnce());
+        $through->on('end', $this->expectCallableNever());
+
+        $through->close();
+    }
+
+    /** @test */
     public function doubleCloseShouldWork()
     {
         $through = new WritableStream();

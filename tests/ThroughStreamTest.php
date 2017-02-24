@@ -31,6 +31,16 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
+    public function endShouldEmitEndAndClose()
+    {
+        $through = new ThroughStream();
+        $through->on('data', $this->expectCallableNever());
+        $through->on('end', $this->expectCallableOnce());
+        $through->on('close', $this->expectCallableOnce());
+        $through->end();
+    }
+
+    /** @test */
     public function endShouldCloseTheStream()
     {
         $through = new ThroughStream();
