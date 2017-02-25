@@ -11,6 +11,17 @@ use React\Stream\Util;
  */
 class UtilTest extends TestCase
 {
+    public function testPipeReturnsDestinationStream()
+    {
+        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+
+        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+
+        $ret = Util::pipe($readable, $writable);
+
+        $this->assertSame($writable, $ret);
+    }
+
     public function testPipeShouldEmitEvents()
     {
         $readable = $this->getMock('React\Stream\ReadableStreamInterface');

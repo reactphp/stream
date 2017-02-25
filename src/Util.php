@@ -2,16 +2,19 @@
 
 namespace React\Stream;
 
-// TODO: move to a trait
-
 class Util
 {
+    /**
+     * Pipes all the data from the given $source into the $dest
+     *
+     * @param ReadableStreamInterface $source
+     * @param WritableStreamInterface $dest
+     * @param array $options
+     * @return WritableStreamInterface $dest stream as-is
+     * @see ReadableStreamInterface::pipe() for more details
+     */
     public static function pipe(ReadableStreamInterface $source, WritableStreamInterface $dest, array $options = array())
     {
-        // TODO: use stream_copy_to_stream
-        // it is 4x faster than this
-        // but can lose data under load with no way to recover it
-
         $dest->emit('pipe', array($source));
 
         $source->on('data', function ($data) use ($source, $dest) {
@@ -32,6 +35,8 @@ class Util
                 $dest->end();
             });
         }
+
+        return $dest;
     }
 
     public static function forwardEvents($source, $target, array $events)
