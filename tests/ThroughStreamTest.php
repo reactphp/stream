@@ -135,6 +135,7 @@ class ThroughStreamTest extends TestCase
     public function pipeShouldPipeCorrectly()
     {
         $output = $this->getMock('React\Stream\WritableStreamInterface');
+        $output->expects($this->any())->method('isWritable')->willReturn(True);
         $output
             ->expects($this->once())
             ->method('write')

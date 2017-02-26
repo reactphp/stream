@@ -72,6 +72,21 @@ $source->on('close', function () use ($dest) {
 });
 ```
 
+If the source stream is not readable (closed state), then this is a NO-OP.
+
+```php
+$source->close();
+$source->pipe($dest); // NO-OP
+```
+
+If the destinantion stream is not writable (closed state), then this will simply
+throttle (pause) the source stream:
+
+```php
+$dest->close();
+$source->pipe($dest); // calls $source->pause()
+```
+
 ## Writable Streams
 
 ### EventEmitter Events

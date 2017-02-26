@@ -15,6 +15,18 @@ class Util
      */
     public static function pipe(ReadableStreamInterface $source, WritableStreamInterface $dest, array $options = array())
     {
+        // source not readable => NO-OP
+        if (!$source->isReadable()) {
+            return $dest;
+        }
+
+        // destination not writable => just pause() source
+        if (!$dest->isWritable()) {
+            $source->pause();
+
+            return $dest;
+        }
+
         $dest->emit('pipe', array($source));
 
         $source->on('data', function ($data) use ($source, $dest) {

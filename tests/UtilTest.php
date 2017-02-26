@@ -22,23 +22,44 @@ class UtilTest extends TestCase
         $this->assertSame($writable, $ret);
     }
 
-    public function testPipeShouldEmitEvents()
+    public function testPipeNonReadableSourceShouldDoNothing()
     {
         $readable = $this->getMock('React\Stream\ReadableStreamInterface');
         $readable
-            ->expects($this->at(0))
-            ->method('on')
-            ->with('data', $this->isInstanceOf('Closure'));
-        $readable
-            ->expects($this->at(1))
-            ->method('on')
-            ->with('end', $this->isInstanceOf('Closure'));
+            ->expects($this->any())
+            ->method('isReadable')
+            ->willReturn(false);
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
         $writable
-            ->expects($this->at(0))
-            ->method('emit')
-            ->with('pipe', array($readable));
+            ->expects($this->never())
+            ->method('isWritable');
+        $writable
+            ->expects($this->never())
+            ->method('end');
+
+        Util::pipe($readable, $writable);
+    }
+
+    public function testPipeIntoNonWritableDestinationShouldPauseSource()
+    {
+        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable
+            ->expects($this->any())
+            ->method('isReadable')
+            ->willReturn(true);
+        $readable
+            ->expects($this->once())
+            ->method('pause');
+
+        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(false);
+        $writable
+            ->expects($this->never())
+            ->method('end');
 
         Util::pipe($readable, $writable);
     }
@@ -48,6 +69,10 @@ class UtilTest extends TestCase
         $readable = new Stub\ReadableStreamStub();
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(true);
         $writable
             ->expects($this->once())
             ->method('end');
@@ -63,6 +88,10 @@ class UtilTest extends TestCase
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
         $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(true);
+        $writable
             ->expects($this->never())
             ->method('end');
 
@@ -76,6 +105,10 @@ class UtilTest extends TestCase
         $readable = new Stub\ReadableStreamStub();
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(true);
         $writable
             ->expects($this->once())
             ->method('write')
@@ -96,6 +129,10 @@ class UtilTest extends TestCase
         $onDrain = null;
 
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(true);
         $writable
             ->expects($this->once())
             ->method('on')

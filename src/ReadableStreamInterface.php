@@ -51,6 +51,21 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * });
      * ```
      *
+     * If the source stream is not readable (closed state), then this is a NO-OP.
+     *
+     * ```php
+     * $source->close();
+     * $source->pipe($dest); // NO-OP
+     * ```
+     *
+     * If the destinantion stream is not writable (closed state), then this will simply
+     * throttle (pause) the source stream:
+     *
+     * ```php
+     * $dest->close();
+     * $source->pipe($dest); // calls $source->pause()
+     * ```
+     *
      * @param WritableStreamInterface $dest
      * @param array $options
      * @return WritableStreamInterface $dest stream as-is
