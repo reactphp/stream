@@ -7,25 +7,27 @@ Basic readable and writable stream interfaces that support piping.
 In order to make the event loop easier to use, this component introduces the
 concept of streams. They are very similar to the streams found in PHP itself,
 but have an interface more suited for async I/O.
-
 Mainly it provides interfaces for readable and writable streams, plus a file
 descriptor based implementation with an in-memory write buffer.
-
-This component depends on `événement`, which is an implementation of the
-`EventEmitter`.
 
 **Table of contents**
 
 * [API](#api)
   * [ReadableStreamInterface](#readablestreaminterface)
-    * [EventEmitter Events](#eventemitter-events)
+    * [data event](#data-event)
+    * [end event](#end-event)
+    * [error event](#error-event)
+    * [close event](#close-event)
     * [isReadable()](#isreadable)
     * [pause()](#pause)
     * [resume()](#resume)
     * [pipe()](#pipe)
     * [close()](#close)
   * [WritableStreamInterface](#writablestreaminterface)
-    * [EventEmitter Events](#eventemitter-events-1)
+    * [drain event](#drain-event)
+    * [pipe event](#pipe-event)
+    * [error event](#error-event-1)
+    * [close event](#close-event-1)
     * [isWritable()](#iswritable)
     * [write()](#write)
     * [end()](#end)
@@ -37,18 +39,30 @@ This component depends on `événement`, which is an implementation of the
 
 ### ReadableStreamInterface
 
-#### EventEmitter Events
+Besides defining a few methods, this interface also implements the
+`EventEmitterInterface` which allows you to react to certain events.
 
-* `data`: Emitted whenever data was read from the source
-  with a single mixed argument for incoming data.
-* `end`: Emitted when the source has successfully reached the end
-  of the stream (EOF).
-  This event will only be emitted if the *end* was reached successfully, not
-  if the stream was interrupted due to an error or explicitly closed.
-  Also note that not all streams know the concept of a "successful end".
-* `error`: Emitted when an error occurs
-  with a single `Exception` argument for error instance.
-* `close`: Emitted when the stream is closed.
+#### data event
+
+Emitted whenever data was read from the source
+with a single mixed argument for incoming data.
+  
+#### end event
+
+Emitted when the source has successfully reached the end
+of the stream (EOF).
+This event will only be emitted if the *end* was reached successfully, not
+if the stream was interrupted due to an error or explicitly closed.
+Also note that not all streams know the concept of a "successful end".
+
+#### error event
+
+Emitted when an error occurs
+with a single `Exception` argument for error instance.
+
+#### close event
+
+Emitted when the stream is closed.
 
 #### isReadable()
 
@@ -230,15 +244,27 @@ Note that this method should not be confused with the `end()` method.
 
 ### WritableStreamInterface
 
-#### EventEmitter Events
+Besides defining a few methods, this interface also implements the
+`EventEmitterInterface` which allows you to react to certain events.
 
-* `drain`: Emitted if the write buffer became full previously and is now ready
-  to accept more data.
-* `error`: Emitted whenever an error occurs
-  with a single `Exception` argument for error instance.
-* `close`: Emitted whenever the stream is closed.
-* `pipe`: Emitted whenever a readable stream is `pipe()`d into this stream
-  with a single `ReadableStreamInterface` argument for source stream.
+#### drain event
+
+Emitted if the write buffer became full previously and is now ready
+to accept more data.
+
+#### pipe event
+
+Emitted whenever a readable stream is `pipe()`d into this stream
+with a single `ReadableStreamInterface` argument for source stream.
+
+#### error event
+
+Emitted whenever an error occurs
+with a single `Exception` argument for error instance.
+
+#### close event
+
+Emitted whenever the stream is closed.
 
 #### isWritable()
 

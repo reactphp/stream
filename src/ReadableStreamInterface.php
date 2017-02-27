@@ -5,10 +5,31 @@ namespace React\Stream;
 use Evenement\EventEmitterInterface;
 
 /**
- * @event data with a single mixed argument for incoming data
- * @event end
- * @event error with a single Exception argument for error instance
- * @event close
+ *
+ * Besides defining a few methods, this interface also implements the
+ * `EventEmitterInterface` which allows you to react to certain events:
+ *
+ * data event:
+ *     The `data` event will be emitted whenever some data was read/received
+ *     from this source stream.
+ *     The event receives a single mixed argument for incoming data.
+ *
+ * end event:
+ *     The `end` event will be emitted once the source stream has successfully
+ *     reached the end of the stream (EOF).
+ *     This event will only be emitted if the *end* was reached successfully, not
+ *     if the stream was interrupted due to an error or explicitly closed.
+ *     Also note that not all streams know the concept of a "successful end".
+ *
+ * error event:
+ *     The `error` event will be emitted whenever an error occurs, usually while
+ *     trying to read from this stream.
+ *     The event receives a single `Exception` argument for the error instance.
+ *
+ * close event:
+ *     The `close` event will be emitted once the stream closes (terminates).
+ *
+ * @see EventEmitterInterface
  */
 interface ReadableStreamInterface extends EventEmitterInterface
 {

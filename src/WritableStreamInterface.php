@@ -5,10 +5,27 @@ namespace React\Stream;
 use Evenement\EventEmitterInterface;
 
 /**
- * @event drain
- * @event error with a single Exeption argument for error instance
- * @event close
- * @event pipe with a single ReadableStreamInterface argument for source stream
+ *
+ * Besides defining a few methods, this interface also implements the
+ * `EventEmitterInterface` which allows you to react to certain events:
+ *
+ * drain event:
+ *     Emitted if the write buffer became full previously and is now ready
+ *     to accept more data.
+ *
+ * pipe event:
+ *     Emitted whenever a readable stream is `pipe()`d into this stream
+ *     with a single `ReadableStreamInterface` argument for source stream.
+ *
+ * error event:
+ *     Emitted whenever an error occurs
+ *     with a single `Exception` argument for error instance.
+ *
+ * close event:
+ *     Emitted whenever the stream is closed.
+ *
+ * @see EventEmitterInterface
+ * @see DuplexStreamInterface
  */
 interface WritableStreamInterface extends EventEmitterInterface
 {
