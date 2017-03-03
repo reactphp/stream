@@ -218,7 +218,7 @@ class BufferTest extends TestCase
      * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
-    public function testDrainAndFullDrainAfterWrite()
+    public function testDrainAfterWrite()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
@@ -227,29 +227,6 @@ class BufferTest extends TestCase
         $buffer->softLimit = 2;
 
         $buffer->on('drain', $this->expectCallableOnce());
-        $buffer->on('full-drain', $this->expectCallableOnce());
-
-        $buffer->write("foo");
-        $buffer->handleWrite();
-    }
-
-    /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
-     */
-    public function testCloseDuringDrainWillNotEmitFullDrain()
-    {
-        $stream = fopen('php://temp', 'r+');
-        $loop = $this->createLoopMock();
-
-        $buffer = new Buffer($stream, $loop);
-        $buffer->softLimit = 2;
-
-        // close buffer on drain event => expect close event, but no full-drain after
-        $buffer->on('drain', $this->expectCallableOnce());
-        $buffer->on('drain', array($buffer, 'close'));
-        $buffer->on('close', $this->expectCallableOnce());
-        $buffer->on('full-drain', $this->expectCallableNever());
 
         $buffer->write("foo");
         $buffer->handleWrite();
@@ -258,7 +235,7 @@ class BufferTest extends TestCase
     /**
      * @covers React\Stream\Buffer::end
      */
-    public function testEnd()
+    public function testEndWithoutDataClosesImmediatelyIfBufferIsEmpty()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
@@ -275,19 +252,63 @@ class BufferTest extends TestCase
     /**
      * @covers React\Stream\Buffer::end
      */
-    public function testEndWithData()
+    public function testEndWithoutDataDoesNotCloseIfBufferIsFull()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on('close', $this->expectCallableNever());
+
+        $buffer->write('foo');
+
+        $this->assertTrue($buffer->isWritable());
+        $buffer->end();
+        $this->assertFalse($buffer->isWritable());
+    }
+
+    /**
+     * @covers React\Stream\Buffer::end
+     */
+    public function testEndWithDataClosesImmediatelyIfBufferFlushes()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
 
         $buffer = new Buffer($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
+        $this->assertTrue($buffer->isWritable());
         $buffer->end('final words');
+        $this->assertFalse($buffer->isWritable());
 
+        $buffer->handleWrite();
         rewind($stream);
         $this->assertSame('final words', stream_get_contents($stream));
+    }
+
+    /**
+     * @covers React\Stream\Buffer::end
+     */
+    public function testEndWithDataDoesNotCloseImmediatelyIfBufferIsFull()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on('close', $this->expectCallableNever());
+
+        $buffer->write('foo');
+
+        $this->assertTrue($buffer->isWritable());
+        $buffer->end('final words');
+        $this->assertFalse($buffer->isWritable());
+
+        rewind($stream);
+        $this->assertSame('', stream_get_contents($stream));
     }
 
     /**
@@ -361,13 +382,14 @@ class BufferTest extends TestCase
     public function testWritingToClosedBufferShouldNotWriteToStream()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
 
         $buffer = new Buffer($stream, $loop);
         $buffer->close();
 
         $buffer->write('foo');
 
+        $buffer->handleWrite();
         rewind($stream);
         $this->assertSame('', stream_get_contents($stream));
     }
@@ -406,7 +428,7 @@ class BufferTest extends TestCase
         }
 
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
 
         $error = null;
 
@@ -416,9 +438,11 @@ class BufferTest extends TestCase
         });
 
         $buffer->write('foo');
+        $buffer->handleWrite();
         stream_socket_shutdown($b, STREAM_SHUT_RD);
         stream_socket_shutdown($a, STREAM_SHUT_RD);
         $buffer->write('bar');
+        $buffer->handleWrite();
 
         $this->assertInstanceOf('Exception', $error);
         $this->assertSame('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
