@@ -79,20 +79,6 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::write
-     */
-    public function testWriteWillAddStreamToLoop()
-    {
-        $stream = fopen('php://temp', 'r+');
-        $loop = $this->createLoopMock();
-        $buffer = new Buffer($stream, $loop);
-
-        $loop->expects($this->once())->method('addWriteStream')->with($stream);
-
-        $buffer->write('foo');
-    }
-
-    /**
-     * @covers React\Stream\Buffer::write
      * @covers React\Stream\Buffer::handleWrite
      */
     public function testWriteReturnsFalseWhenBufferIsFull()
@@ -227,6 +213,48 @@ class BufferTest extends TestCase
         $buffer->softLimit = 2;
 
         $buffer->on('drain', $this->expectCallableOnce());
+
+        $buffer->write("foo");
+        $buffer->handleWrite();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testDrainAfterWriteWillRemoveResourceFromLoopWithoutClosing()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('removeWriteStream')->with($stream);
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 2;
+
+        $buffer->on('drain', $this->expectCallableOnce());
+
+        $buffer->on('close', $this->expectCallableNever());
+
+        $buffer->write("foo");
+        $buffer->handleWrite();
+    }
+
+    /**
+     * @covers React\Stream\Buffer::handleWrite
+     */
+    public function testClosingDuringDrainAfterWriteWillRemoveResourceFromLoopOnceAndClose()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('removeWriteStream')->with($stream);
+
+        $buffer = new Buffer($stream, $loop);
+        $buffer->softLimit = 2;
+
+        $buffer->on('drain', function () use ($buffer) {
+            $buffer->close();
+        });
+
+        $buffer->on('close', $this->expectCallableOnce());
 
         $buffer->write("foo");
         $buffer->handleWrite();
