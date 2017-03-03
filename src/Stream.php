@@ -62,13 +62,13 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $that = $this;
 
         $this->buffer->on('error', function ($error) use ($that) {
-            $that->emit('error', array($error, $that));
+            $that->emit('error', array($error));
         });
 
         $this->buffer->on('close', array($this, 'close'));
 
         $this->buffer->on('drain', function () use ($that) {
-            $that->emit('drain', array($that));
+            $that->emit('drain');
         });
 
         $this->resume();
@@ -116,8 +116,8 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->readable = false;
         $this->writable = false;
 
-        $this->emit('end', array($this));
-        $this->emit('close', array($this));
+        $this->emit('end');
+        $this->emit('close');
         $this->loop->removeStream($this->stream);
         $this->buffer->close();
         $this->removeAllListeners();
@@ -164,13 +164,13 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         restore_error_handler();
 
         if ($error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error), $this));
+            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
             $this->close();
             return;
         }
 
         if ($data !== '') {
-            $this->emit('data', array($data, $this));
+            $this->emit('data', array($data));
         }
 
         if (!is_resource($stream) || feof($stream)) {

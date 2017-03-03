@@ -18,9 +18,11 @@ This component depends on `événement`, which is an implementation of the
 
 ### EventEmitter Events
 
-* `data`: Emitted whenever data was read from the source.
+* `data`: Emitted whenever data was read from the source
+  with a single mixed argument for incoming data.
 * `end`: Emitted when the source has reached the `eof`.
-* `error`: Emitted when an error occurs.
+* `error`: Emitted when an error occurs
+  with a single `Exception` argument for error instance.
 * `close`: Emitted when the connection is closed.
 
 ### Methods
@@ -42,9 +44,11 @@ This component depends on `événement`, which is an implementation of the
 
 * `drain`: Emitted if the write buffer became full previously and is now ready
   to accept more data.
-* `error`: Emitted whenever an error occurs.
+* `error`: Emitted whenever an error occurs
+  with a single `Exception` argument for error instance.
 * `close`: Emitted whenever the connection is closed.
-* `pipe`: Emitted whenever a readable stream is `pipe()`d into this stream.
+* `pipe`: Emitted whenever a readable stream is `pipe()`d into this stream
+  with a single `ReadableStreamInterface` argument for source stream.
 
 ### Methods
 

@@ -166,7 +166,7 @@ class StreamTest extends TestCase
     }
 
     public function testEndedStreamsShouldNotWrite()
-    {   
+    {
         $file = tempnam(sys_get_temp_dir(), 'reactphptest_');
         $stream = fopen($file, 'r+');
         $loop = $this->createWriteableLoopMock();
@@ -208,8 +208,8 @@ class StreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new Stream($stream, $loop);
-        $conn->on('data', function ($data, $stream) {
-            $stream->close();
+        $conn->on('data', function ($data) use ($conn) {
+            $conn->close();
         });
 
         fwrite($stream, "foobar\n");
