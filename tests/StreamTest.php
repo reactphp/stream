@@ -138,7 +138,7 @@ class StreamTest extends TestCase
     public function testWrite()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
+        $loop = $this->createLoopMock();
 
         $conn = new Stream($stream, $loop);
         $conn->write("foo\n");
@@ -272,19 +272,6 @@ class StreamTest extends TestCase
         rewind($stream);
 
         $conn->handleData($stream);
-    }
-
-    private function createWriteableLoopMock()
-    {
-        $loop = $this->createLoopMock();
-        $loop
-            ->expects($this->once())
-            ->method('addWriteStream')
-            ->will($this->returnCallback(function ($stream, $listener) {
-                call_user_func($listener, $stream);
-            }));
-
-        return $loop;
     }
 
     private function createLoopMock()
