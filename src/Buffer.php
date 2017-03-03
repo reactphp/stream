@@ -131,9 +131,18 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             $this->emit('drain', array($this));
         }
 
-        // buffer is end()ing and now completely empty (and not closed already)
-        if (!$this->writable && $this->data === '') {
-            $this->close();
+        // buffer is now completely empty => stop trying to write
+        if ($this->data === '') {
+            // stop waiting for resource to be writable
+            if ($this->listening) {
+                $this->loop->removeWriteStream($this->stream);
+                $this->listening = false;
+            }
+
+            // buffer is end()ing and now completely empty => close buffer
+            if (!$this->writable) {
+                $this->close();
+            }
         }
     }
 }
