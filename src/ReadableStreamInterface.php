@@ -5,9 +5,9 @@ namespace React\Stream;
 use Evenement\EventEmitterInterface;
 
 /**
- * @event data with single mixed argument for incoming data
+ * @event data with a single mixed argument for incoming data
  * @event end
- * @event error with single Exception argument for error instance
+ * @event error with a single Exception argument for error instance
  * @event close
  */
 interface ReadableStreamInterface extends EventEmitterInterface

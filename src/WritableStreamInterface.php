@@ -6,9 +6,9 @@ use Evenement\EventEmitterInterface;
 
 /**
  * @event drain
- * @event error with single Exeption argument for error instance
+ * @event error with a single Exeption argument for error instance
  * @event close
- * @event pipe with single ReadableStreamInterface argument for source stream
+ * @event pipe with a single ReadableStreamInterface argument for source stream
  */
 interface WritableStreamInterface extends EventEmitterInterface
 {

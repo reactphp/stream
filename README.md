@@ -21,7 +21,7 @@ This component depends on `événement`, which is an implementation of the
 * `data`: Emitted whenever data was read from the source
   with a single mixed argument for incoming data.
 * `end`: Emitted when the source has reached the `eof`.
-* `error`: Emitted when an error occurs.
+* `error`: Emitted when an error occurs
   with a single `Exception` argument for error instance.
 * `close`: Emitted when the connection is closed.
 
