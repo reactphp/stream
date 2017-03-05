@@ -52,7 +52,7 @@ class Util
 
         // forward end event from source as $dest->end()
         $end = isset($options['end']) ? $options['end'] : true;
-        if ($end && $source !== $dest) {
+        if ($end) {
             $source->on('end', $ender = function () use ($dest) {
                 $dest->end();
             });

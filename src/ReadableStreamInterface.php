@@ -26,6 +26,14 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * $source->pipe($dest);
      * ```
      *
+     * Similarly, you can also pipe an instance implementing `DuplexStreamInterface`
+     * into itself in order to write back all the data that is received.
+     * This may be a useful feature for a TCP/IP echo service:
+     *
+     * ```php
+     * $connection->pipe($connection);
+     * ```
+     *
      * This method returns the destination stream as-is, which can be used to
      * set up chains of piped streams:
      *

@@ -6,6 +6,7 @@ use React\Stream\Buffer;
 use React\Stream\ReadableStream;
 use React\Stream\Util;
 use React\Stream\WritableStream;
+use React\Stream\CompositeStream;
 
 /**
  * @covers React\Stream\Util
@@ -230,6 +231,21 @@ class UtilTest extends TestCase
         $this->assertCount(0, $source->listeners('data'));
         $this->assertCount(0, $source->listeners('end'));
         $this->assertCount(0, $dest->listeners('drain'));
+    }
+
+    public function testPipeDuplexIntoSelfEndsOnEnd()
+    {
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable->expects($this->any())->method('isReadable')->willReturn(true);
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable->expects($this->any())->method('isWritable')->willReturn(true);
+        $duplex = new CompositeStream($readable, $writable);
+
+        Util::pipe($duplex, $duplex);
+
+        $writable->expects($this->once())->method('end');
+
+        $duplex->emit('end');
     }
 
     /** @test */
