@@ -28,6 +28,8 @@ class ThroughStream extends CompositeStream
             $this->readable->emit('data', array($this->filter($data)));
         }
 
-        $this->writable->end($data);
+        $this->readable->emit('end');
+
+        $this->writable->end();
     }
 }

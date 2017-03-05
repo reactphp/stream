@@ -37,6 +37,16 @@ class ReadableStreamTest extends TestCase
     }
 
     /** @test */
+    public function closeShouldEmitCloseEvent()
+    {
+        $readable = new ReadableStream();
+        $readable->on('close', $this->expectCallableOnce());
+        $readable->on('end', $this->expectCallableNever());
+
+        $readable->close();
+    }
+
+    /** @test */
     public function doubleCloseShouldWork()
     {
         $readable = new ReadableStream();

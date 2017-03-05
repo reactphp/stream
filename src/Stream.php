@@ -116,7 +116,6 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         $this->readable = false;
         $this->writable = false;
 
-        $this->emit('end');
         $this->emit('close');
         $this->loop->removeStream($this->stream);
         $this->buffer->close();
@@ -171,10 +170,10 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
         if ($data !== '') {
             $this->emit('data', array($data));
-        }
-
-        if (!is_resource($stream) || feof($stream)) {
-            $this->end();
+        } else{
+            // no data read => we reached the end and close the stream
+            $this->emit('end');
+            $this->close();
         }
     }
 

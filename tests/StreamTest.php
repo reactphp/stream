@@ -43,6 +43,20 @@ class StreamTest extends TestCase
         $this->assertSame($buffer, $conn->getBuffer());
     }
 
+    public function testCloseShouldEmitCloseEvent()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $conn = new Stream($stream, $loop);
+        $conn->on('close', $this->expectCallableOnce());
+        $conn->on('end', $this->expectCallableNever());
+
+        $conn->close();
+
+        $this->assertFalse($conn->isReadable());
+    }
+
     /**
      * @covers React\Stream\Stream::__construct
      * @covers React\Stream\Stream::handleData
@@ -114,7 +128,7 @@ class StreamTest extends TestCase
 
         $conn->handleData($stream);
 
-        $this->assertFalse($conn->isReadable());
+        $this->assertTrue($conn->isReadable());
         $this->assertEquals(100000, strlen($capturedData));
     }
 
