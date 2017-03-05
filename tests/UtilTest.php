@@ -5,6 +5,7 @@ namespace React\Tests\Stream;
 use React\Stream\Buffer;
 use React\Stream\ReadableStream;
 use React\Stream\Util;
+use React\Stream\WritableStream;
 
 /**
  * @covers React\Stream\Util
@@ -62,6 +63,24 @@ class UtilTest extends TestCase
             ->method('end');
 
         Util::pipe($readable, $writable);
+    }
+
+    public function testPipeClosingDestPausesSource()
+    {
+        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable
+            ->expects($this->any())
+            ->method('isReadable')
+            ->willReturn(true);
+        $readable
+            ->expects($this->once())
+            ->method('pause');
+
+        $writable = new WritableStream();
+
+        Util::pipe($readable, $writable);
+
+        $writable->close();
     }
 
     public function testPipeWithEnd()
@@ -134,17 +153,19 @@ class UtilTest extends TestCase
             ->method('isWritable')
             ->willReturn(true);
         $writable
-            ->expects($this->once())
+            ->expects($this->any())
             ->method('on')
-            ->with('drain', $this->isInstanceOf('Closure'))
             ->will($this->returnCallback(function ($name, $callback) use (&$onDrain) {
-                $onDrain = $callback;
+                if ($name === 'drain') {
+                    $onDrain = $callback;
+                }
             }));
 
         $readable->pipe($writable);
         $readable->pause();
 
         $this->assertTrue($readable->paused);
+        $this->assertNotNull($onDrain);
         $onDrain();
         $this->assertFalse($readable->paused);
     }
@@ -165,6 +186,50 @@ class UtilTest extends TestCase
         $buffer->handleWrite();
         rewind($stream);
         $this->assertSame('hello, I am some random data', stream_get_contents($stream));
+    }
+
+    public function testPipeSetsUpListeners()
+    {
+        $source = new ReadableStream();
+        $dest = new WritableStream();
+
+        $this->assertCount(0, $source->listeners('data'));
+        $this->assertCount(0, $source->listeners('end'));
+        $this->assertCount(0, $dest->listeners('drain'));
+
+        Util::pipe($source, $dest);
+
+        $this->assertCount(1, $source->listeners('data'));
+        $this->assertCount(1, $source->listeners('end'));
+        $this->assertCount(1, $dest->listeners('drain'));
+    }
+
+    public function testPipeClosingSourceRemovesListeners()
+    {
+        $source = new ReadableStream();
+        $dest = new WritableStream();
+
+        Util::pipe($source, $dest);
+
+        $source->close();
+
+        $this->assertCount(0, $source->listeners('data'));
+        $this->assertCount(0, $source->listeners('end'));
+        $this->assertCount(0, $dest->listeners('drain'));
+    }
+
+    public function testPipeClosingDestRemovesListeners()
+    {
+        $source = new ReadableStream();
+        $dest = new WritableStream();
+
+        Util::pipe($source, $dest);
+
+        $dest->close();
+
+        $this->assertCount(0, $source->listeners('data'));
+        $this->assertCount(0, $source->listeners('end'));
+        $this->assertCount(0, $dest->listeners('drain'));
     }
 
     /** @test */

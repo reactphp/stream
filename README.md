@@ -87,6 +87,14 @@ $dest->close();
 $source->pipe($dest); // calls $source->pause()
 ```
 
+Similarly, if the destination stream is closed while the pipe is still
+active, it will also throttle (pause) the source stream:
+
+```php
+$source->pipe($dest);
+$dest->close(); // calls $source->pause()
+```
+
 ## Writable Streams
 
 ### EventEmitter Events

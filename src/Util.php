@@ -29,22 +29,35 @@ class Util
 
         $dest->emit('pipe', array($source));
 
-        $source->on('data', function ($data) use ($source, $dest) {
+        // forward all source data events as $dest->write()
+        $source->on('data', $dataer = function ($data) use ($source, $dest) {
             $feedMore = $dest->write($data);
 
             if (false === $feedMore) {
                 $source->pause();
             }
         });
-
-        $dest->on('drain', function () use ($source) {
-            $source->resume();
+        $dest->on('close', function () use ($source, $dataer) {
+            $source->removeListener('data', $dataer);
+            $source->pause();
         });
 
+        // forward destination drain as $source->resume()
+        $dest->on('drain', $drainer = function () use ($source) {
+            $source->resume();
+        });
+        $source->on('close', function () use ($dest, $drainer) {
+            $dest->removeListener('drain', $drainer);
+        });
+
+        // forward end event from source as $dest->end()
         $end = isset($options['end']) ? $options['end'] : true;
         if ($end && $source !== $dest) {
-            $source->on('end', function () use ($dest) {
+            $source->on('end', $ender = function () use ($dest) {
                 $dest->end();
+            });
+            $dest->on('close', function () use ($source, $ender) {
+                $source->removeListener('end', $ender);
             });
         }
 

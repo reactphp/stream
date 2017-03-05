@@ -66,6 +66,14 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * $source->pipe($dest); // calls $source->pause()
      * ```
      *
+     * Similarly, if the destination stream is closed while the pipe is still
+     * active, it will also throttle (pause) the source stream:
+     *
+     * ```php
+     * $source->pipe($dest);
+     * $dest->close(); // calls $source->pause()
+     * ```
+     *
      * @param WritableStreamInterface $dest
      * @param array $options
      * @return WritableStreamInterface $dest stream as-is
