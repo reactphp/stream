@@ -61,6 +61,66 @@ interface WritableStreamInterface extends EventEmitterInterface
      */
     public function write($data);
 
+    /**
+     * Successfully ends the stream (after optionally sending some final data).
+     *
+     * This method can be used to successfully end the stream, i.e. close
+     * the stream after sending out all data that is currently buffered.
+     *
+     * ```php
+     * $stream->write('hello');
+     * $stream->write('world');
+     * $stream->end();
+     * ```
+     *
+     * If there's no data currently buffered and nothing to be flushed, then
+     * this method MAY `close()` the stream immediately.
+     *
+     * If there's still data in the buffer that needs to be flushed first, then
+     * this method SHOULD try to write out this data and only then `close()`
+     * the stream.
+     *
+     * Note that this interface gives you no control over explicitly flushing
+     * the buffered data, as finding the appropriate time for this is beyond the
+     * scope of this interface and left up to the implementation of this
+     * interface.
+     *
+     * Many common streams (such as a TCP/IP connection or file-based stream)
+     * may choose to buffer all given data and schedule a future flush by using
+     * an underlying EventLoop to check when the resource is actually writable.
+     *
+     * You can optionally pass some final data that is written to the stream
+     * before ending the stream. If a non-`null` value is given as `$data`, then
+     * this method will behave just like calling `write($data)` before ending
+     * with no data.
+     *
+     * ```php
+     * // shorter version
+     * $stream->end('bye');
+     *
+     * // same as longer version
+     * $stream->write('bye');
+     * $stream->end();
+     * ```
+     *
+     * After calling this method, the stream MUST switch into a non-writable
+     * mode, see also `isWritable()`.
+     * This means that no further writes are possible, so any additional
+     * `write()` or `end()` calls have no effect.
+     *
+     * ```php
+     * $stream->end();
+     * assert($stream->isWritable() === false);
+     *
+     * $stream->write('nope'); // NO-OP
+     * $stream->end(); // NO-OP
+     * ```
+     *
+     * Note that this method should not be confused with the `close()` method.
+     *
+     * @param mixed|string|null $data
+     * @return void
+     */
     public function end($data = null);
     public function close();
 }
