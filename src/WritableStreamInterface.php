@@ -12,6 +12,30 @@ use Evenement\EventEmitterInterface;
  */
 interface WritableStreamInterface extends EventEmitterInterface
 {
+    /**
+     * Checks whether this stream is in a writable state (not closed already).
+     *
+     * This method can be used to check if the stream still accepts writing
+     * any data or if it is ended or closed already.
+     * Writing any data to a non-writable stream is a NO-OP:
+     *
+     * ```php
+     * assert($stream->isWritable() === false);
+     *
+     * $stream->write('end'); // NO-OP
+     * $stream->end('end'); // NO-OP
+     * ```
+     *
+     * A successfully opened stream always MUST start in writable mode.
+     *
+     * Once the stream ends or closes, it MUST switch to non-writable mode.
+     * This can happen any time, explicitly through `end()` or `close()` or
+     * implicitly due to a remote close or an unrecoverable transmission error.
+     * Once a stream has switched to non-writable mode, it MUST NOT transition
+     * back to writable mode.
+     *
+     * @return bool
+     */
     public function isWritable();
 
     /**
