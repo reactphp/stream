@@ -14,9 +14,30 @@ descriptor based implementation with an in-memory write buffer.
 This component depends on `événement`, which is an implementation of the
 `EventEmitter`.
 
-## Readable Streams
+**Table of contents**
 
-### EventEmitter Events
+* [API](#api)
+  * [ReadableStreamInterface](#readablestreaminterface)
+    * [EventEmitter Events](#eventemitter-events)
+    * [isReadable()](#isreadable)
+    * [pause()](#pause)
+    * [resume()](#resume)
+    * [pipe()](#pipe)
+    * [close()](#close)
+  * [WritableStreamInterface](#writablestreaminterface)
+    * [EventEmitter Events](#eventemitter-events-1)
+    * [isWritable()](#iswritable)
+    * [write()](#write)
+    * [end()](#end)
+    * [close()](#close-1)
+* [Usage](#usage)
+* [Install](#install)
+
+## API
+
+### ReadableStreamInterface
+
+#### EventEmitter Events
 
 * `data`: Emitted whenever data was read from the source
   with a single mixed argument for incoming data.
@@ -29,9 +50,8 @@ This component depends on `événement`, which is an implementation of the
   with a single `Exception` argument for error instance.
 * `close`: Emitted when the stream is closed.
 
-### Methods
+#### isReadable()
 
-* `isReadable()`:
 The `isReadable(): bool` method can be used to
 check whether this stream is in a readable state (not closed already).
 
@@ -60,7 +80,8 @@ how the writable side of the stream also implements an `isWritable()`
 method. Unless this is a half-open duplex stream, they SHOULD usually
 have the same return value.
 
-* `pause()`:
+#### pause()
+
 The `pause(): void` method can be used to
 pause reading incoming data events.
 
@@ -90,7 +111,8 @@ calling `pause()` more than once SHOULD NOT have any effect.
 
 See also `resume()`.
 
-* `resume()`:
+#### resume()
+
 The `resume(): void` method can be used to
 resume reading incoming data events.
 
@@ -109,8 +131,10 @@ calling `resume()` without a prior `pause()` SHOULD NOT have any effect.
  
 See also `pause()`.
 
-* `pipe(WritableStreamInterface $dest, array $options = [])`:
-Pipe all the data from this readable source into the given writable destination.
+#### pipe()
+
+The `pipe(WritableStreamInterface $dest, array $options = [])` method can be used to
+pipe all the data from this readable source into the given writable destination.
 
 Automatically sends all incoming data to the destination.
 Automatically throttles the source based on what the destination can handle.
@@ -175,7 +199,8 @@ $source->pipe($dest);
 $dest->close(); // calls $source->pause()
 ```
 
-* `close()`:
+#### close()
+
 The `close(): void` method can be used to
 close the stream (forcefully).
 
@@ -203,9 +228,9 @@ In other words, after calling this method, the stream MUST switch into
 non-writable AND non-readable mode, see also `isWritable()`.
 Note that this method should not be confused with the `end()` method.
 
-## Writable Streams
+### WritableStreamInterface
 
-### EventEmitter Events
+#### EventEmitter Events
 
 * `drain`: Emitted if the write buffer became full previously and is now ready
   to accept more data.
@@ -215,9 +240,8 @@ Note that this method should not be confused with the `end()` method.
 * `pipe`: Emitted whenever a readable stream is `pipe()`d into this stream
   with a single `ReadableStreamInterface` argument for source stream.
 
-### Methods
+#### isWritable()
 
-* `isWritable()`:
 The `isWritable(): bool` method can be used to
 check whether this stream is in a writable state (not closed already).
 
@@ -245,7 +269,8 @@ how the readable side of the stream also implements an `isReadable()`
 method. Unless this is a half-open duplex stream, they SHOULD usually
 have the same return value.
 
-* `write($data)`:
+#### write()
+
 The `write(mixed $data): bool` method can be used to
 write some data into the stream.
 
@@ -288,7 +313,8 @@ data in chunks that may be anywhere between single-byte values to several
 dozens of kilobytes. You may want to apply a higher-level protocol to
 these low-level data chunks in order to achieve proper message framing.
 
-* `end($data = null)`:
+#### end()
+
 The `end(mixed $data = null): void` method can be used to
 successfully end the stream (after optionally sending some final data).
 
@@ -346,7 +372,8 @@ $stream->end(); // NO-OP
 
 Note that this method should not be confused with the `close()` method.
 
-* `close()`:
+#### close()
+
 The `close(): void` method can be used to
 close the stream (forcefully).
 
