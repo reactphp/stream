@@ -198,6 +198,17 @@ class StreamTest extends TestCase
         unlink($file);
     }
 
+    public function testPipeShouldReturnDestination()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $conn = new Stream($stream, $loop);
+        $dest = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+
+        $this->assertSame($dest, $conn->pipe($dest));
+    }
+
     public function testBufferEventsShouldBubbleUp()
     {
         $stream = fopen('php://temp', 'r+');

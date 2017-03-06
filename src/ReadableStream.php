@@ -23,9 +23,7 @@ class ReadableStream extends EventEmitter implements ReadableStreamInterface
 
     public function pipe(WritableStreamInterface $dest, array $options = array())
     {
-        Util::pipe($this, $dest, $options);
-
-        return $dest;
+        return Util::pipe($this, $dest, $options);
     }
 
     public function close()

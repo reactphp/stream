@@ -28,6 +28,15 @@ class ReadableStreamTest extends TestCase
     }
 
     /** @test */
+    public function pipeShouldReturnDestination()
+    {
+        $dest = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $readable = new ReadableStream();
+
+        $this->assertSame($dest, $readable->pipe($dest));
+    }
+
+    /** @test */
     public function closeShouldClose()
     {
         $readable = new ReadableStream();

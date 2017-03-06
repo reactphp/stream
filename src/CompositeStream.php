@@ -55,9 +55,7 @@ class CompositeStream extends EventEmitter implements DuplexStreamInterface
 
     public function pipe(WritableStreamInterface $dest, array $options = array())
     {
-        Util::pipe($this, $dest, $options);
-
-        return $dest;
+        return Util::pipe($this, $dest, $options);
     }
 
     public function isWritable()

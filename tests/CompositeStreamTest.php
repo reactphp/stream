@@ -112,6 +112,7 @@ class CompositeStreamTest extends TestCase
     {
         $readable = $this->getMock('React\Stream\ReadableStreamInterface');
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable->expects($this->any())->method('isWritable')->willReturn(True);
         $writable
             ->expects($this->once())
             ->method('write')
@@ -154,9 +155,11 @@ class CompositeStreamTest extends TestCase
     {
         $readable = new ReadableStream();
         $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable->expects($this->any())->method('isWritable')->willReturn(True);
         $composite = new CompositeStream($readable, $writable);
 
         $output = $this->getMock('React\Stream\WritableStreamInterface');
+        $output->expects($this->any())->method('isWritable')->willReturn(True);
         $output
             ->expects($this->once())
             ->method('write')
