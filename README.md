@@ -60,9 +60,55 @@ how the writable side of the stream also implements an `isWritable()`
 method. Unless this is a half-open duplex stream, they SHOULD usually
 have the same return value.
 
-* `pause()`: Remove the data source file descriptor from the event loop. This
-  allows you to throttle incoming data.
-* `resume()`: Re-attach the data source after a `pause()`.
+* `pause()`:
+The `pause(): void` method can be used to
+pause reading incoming data events.
+
+Removes the data source file descriptor from the event loop. This
+allows you to throttle incoming data.
+
+Unless otherwise noted, a successfully opened stream SHOULD NOT start
+in paused state.
+
+Once the stream is paused, no futher `data` or `end` events SHOULD
+be emitted.
+
+```php
+$stream->pause();
+
+$stream->on('data', assertShouldNeverCalled());
+$stream->on('end', assertShouldNeverCalled());
+```
+
+This method is advisory-only, though generally not recommended, the
+stream MAY continue emitting `data` events.
+
+You can continue processing events by calling `resume()` again.
+
+Note that both methods can be called any number of times, in particular
+calling `pause()` more than once SHOULD NOT have any effect.
+
+See also `resume()`.
+
+* `resume()`:
+The `resume(): void` method can be used to
+resume reading incoming data events.
+
+Re-attach the data source after a previous `pause()`.
+
+```php
+$stream->pause();
+
+$loop->addTimer(1.0, function () use ($stream) {
+    $stream->resume();
+});
+```
+
+Note that both methods can be called any number of times, in particular
+calling `resume()` without a prior `pause()` SHOULD NOT have any effect.
+ 
+See also `pause()`.
+
 * `pipe(WritableStreamInterface $dest, array $options = [])`:
 Pipe all the data from this readable source into the given writable destination.
 

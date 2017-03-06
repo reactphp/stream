@@ -44,7 +44,57 @@ interface ReadableStreamInterface extends EventEmitterInterface
      */
     public function isReadable();
 
+    /**
+     * Pauses reading incoming data events.
+     *
+     * Removes the data source file descriptor from the event loop. This
+     * allows you to throttle incoming data.
+     *
+     * Unless otherwise noted, a successfully opened stream SHOULD NOT start
+     * in paused state.
+     *
+     * Once the stream is paused, no futher `data` or `end` events SHOULD
+     * be emitted.
+     *
+     * ```php
+     * $stream->pause();
+     *
+     * $stream->on('data', assertShouldNeverCalled());
+     * $stream->on('end', assertShouldNeverCalled());
+     * ```
+     *
+     * This method is advisory-only, though generally not recommended, the
+     * stream MAY continue emitting `data` events.
+     *
+     * You can continue processing events by calling `resume()` again.
+     *
+     * Note that both methods can be called any number of times, in particular
+     * calling `pause()` more than once SHOULD NOT have any effect.
+     *
+     * @see self::resume()
+     * @return void
+     */
     public function pause();
+
+    /**
+     * Resumes reading incoming data events.
+     *
+     * Re-attach the data source after a previous `pause()`.
+     *
+     * ```php
+     * $stream->pause();
+     *
+     * $loop->addTimer(1.0, function () use ($stream) {
+     *     $stream->resume();
+     * });
+     * ```
+     *
+     * Note that both methods can be called any number of times, in particular
+     * calling `resume()` without a prior `pause()` SHOULD NOT have any effect.
+     *
+     * @see self::pause()
+     * @return void
+     */
     public function resume();
 
     /**
