@@ -31,9 +31,35 @@ This component depends on `événement`, which is an implementation of the
 
 ### Methods
 
-* `isReadable()`: Check if the stream is still in a state allowing it to be
-  read from. It becomes unreadable when the stream ends, closes or an
-  error occurs.
+* `isReadable()`:
+The `isReadable(): bool` method can be used to
+check whether this stream is in a readable state (not closed already).
+
+This method can be used to check if the stream still accepts incoming
+data events or if it is ended or closed already.
+Once the stream is non-readable, no further `data` or `end` events SHOULD
+be emitted.
+
+```php
+assert($stream->isReadable() === false);
+
+$stream->on('data', assertNeverCalled());
+$stream->on('end', assertNeverCalled());
+```
+
+A successfully opened stream always MUST start in readable mode.
+
+Once the stream ends or closes, it MUST switch to non-readable mode.
+This can happen any time, explicitly through `close()` or
+implicitly due to a remote close or an unrecoverable transmission error.
+Once a stream has switched to non-readable mode, it MUST NOT transition
+back to readable mode.
+
+If this stream is a `DuplexStreamInterface`, you should also notice
+how the writable side of the stream also implements an `isWritable()`
+method. Unless this is a half-open duplex stream, they SHOULD usually
+have the same return value.
+
 * `pause()`: Remove the data source file descriptor from the event loop. This
   allows you to throttle incoming data.
 * `resume()`: Re-attach the data source after a `pause()`.
@@ -139,6 +165,11 @@ This can happen any time, explicitly through `end()` or `close()` or
 implicitly due to a remote close or an unrecoverable transmission error.
 Once a stream has switched to non-writable mode, it MUST NOT transition
 back to writable mode.
+
+If this stream is a `DuplexStreamInterface`, you should also notice
+how the readable side of the stream also implements an `isReadable()`
+method. Unless this is a half-open duplex stream, they SHOULD usually
+have the same return value.
 
 * `write($data)`:
 The `write(mixed $data): bool` method can be used to

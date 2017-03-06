@@ -34,6 +34,11 @@ interface WritableStreamInterface extends EventEmitterInterface
      * Once a stream has switched to non-writable mode, it MUST NOT transition
      * back to writable mode.
      *
+     * If this stream is a `DuplexStreamInterface`, you should also notice
+     * how the readable side of the stream also implements an `isReadable()`
+     * method. Unless this is a half-open duplex stream, they SHOULD usually
+     * have the same return value.
+     *
      * @return bool
      */
     public function isWritable();
