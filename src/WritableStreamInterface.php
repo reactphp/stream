@@ -151,5 +151,51 @@ interface WritableStreamInterface extends EventEmitterInterface
      * @return void
      */
     public function end($data = null);
+
+    /**
+     * Closes the stream (forcefully).
+     *
+     * This method can be used to forcefully close the stream, i.e. close
+     * the stream without waiting for any buffered data to be flushed.
+     * If there's still data in the buffer, this data SHOULD be discarded.
+     *
+     * ```php
+     * $stream->close();
+     * ```
+     *
+     * After calling this method, the stream MUST switch into a non-writable
+     * mode, see also `isWritable()`.
+     * This means that no further writes are possible, so any additional
+     * `write()` or `end()` calls have no effect.
+     *
+     * ```php
+     * $stream->close();
+     * assert($stream->isWritable() === false);
+     *
+     * $stream->write('nope'); // NO-OP
+     * $stream->end(); // NO-OP
+     * ```
+     *
+     * Note that this method should not be confused with the `end()` method.
+     * Unlike the `end()` method, this method does not take care of any existing
+     * buffers and simply discards any buffer contents.
+     * Likewise, this method may also be called after calling `end()` on a
+     * stream in order to stop waiting for the stream to flush its final data.
+     *
+     * ```php
+     * $stream->end();
+     * $loop->addTimer(1.0, function () use ($stream) {
+     *     $stream->close();
+     * });
+     * ```
+     *
+     * If this stream is a `DuplexStreamInterface`, you should also notice
+     * how the readable side of the stream also implements a `close()` method.
+     * In other words, after calling this method, the stream MUST switch into
+     * non-writable AND non-readable mode, see also `isReadable()`.
+     *
+     * @return void
+     * @see ReadableStreamInterface::close()
+     */
     public function close();
 }

@@ -119,5 +119,35 @@ interface ReadableStreamInterface extends EventEmitterInterface
      */
     public function pipe(WritableStreamInterface $dest, array $options = array());
 
+    /**
+     * Closes the stream (forcefully).
+     *
+     * This method can be used to (forcefully) close the stream.
+     *
+     * ```php
+     * $stream->close();
+     * ```
+     *
+     * After calling this method, the stream MUST switch into a non-readable
+     * mode, see also `isReadable()`.
+     * This means that no further `data` or `end` events SHOULD be emitted.
+     *
+     * ```php
+     * $stream->close();
+     * assert($stream->isReadable() === false);
+     *
+     * $stream->on('data', assertNeverCalled());
+     * $stream->on('end', assertNeverCalled());
+     * ```
+     *
+     * If this stream is a `DuplexStreamInterface`, you should also notice
+     * how the writable side of the stream also implements a `close()` method.
+     * In other words, after calling this method, the stream MUST switch into
+     * non-writable AND non-readable mode, see also `isWritable()`.
+     * Note that this method should not be confused with the `end()` method.
+     *
+     * @return void
+     * @see WritableStreamInterface::close()
+     */
     public function close();
 }
