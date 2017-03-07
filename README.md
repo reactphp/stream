@@ -39,30 +39,148 @@ descriptor based implementation with an in-memory write buffer.
 
 ### ReadableStreamInterface
 
+The `ReadableStreamInterface` is responsible for providing an interface for
+read-only streams and the readable side of duplex streams.
+
 Besides defining a few methods, this interface also implements the
 `EventEmitterInterface` which allows you to react to certain events.
 
 #### data event
 
-Emitted whenever data was read from the source
-with a single mixed argument for incoming data.
+The `data` event will be emitted whenever some data was read/received
+from this source stream.
+The event receives a single mixed argument for incoming data.
+
+```php
+$stream->on('data', function ($data) {
+    echo $data;
+});
+```
+
+This event MAY be emitted any number of times, which may be zero times if
+this stream does not send any data at all.
+It SHOULD not be emitted after an `end` or `close` event.
+
+The given `$data` argument may be of mixed type, but it's usually
+recommended it SHOULD be a `string` value or MAY use a type that allows
+representation as a `string` for maximum compatibility.
+
+Many common streams (such as a TCP/IP connection or a file-based stream)
+will emit the raw (binary) payload data that is received over the wire as
+chunks of `string` values.
+
+Due to the stream-based nature of this, the sender may send any number
+of chunks with varying sizes. There are no guarantees that these chunks
+will be received with the exact same framing the sender intended to send.
+In other words, many lower-level protocols (such as TCP/IP) transfer the
+data in chunks that may be anywhere between single-byte values to several
+dozens of kilobytes. You may want to apply a higher-level protocol to
+these low-level data chunks in order to achieve proper message framing.
   
 #### end event
 
-Emitted when the source has successfully reached the end
-of the stream (EOF).
-This event will only be emitted if the *end* was reached successfully, not
-if the stream was interrupted due to an error or explicitly closed.
-Also note that not all streams know the concept of a "successful end".
+The `end` event will be emitted once the source stream has successfully
+reached the end of the stream (EOF).
+
+```php
+$stream->on('end', function () {
+    echo 'END';
+});
+```
+
+This event SHOULD be emitted once or never at all, depending on whether
+a successful end was detected.
+It SHOULD NOT be emitted after a previous `end` or `close` event.
+It MUST NOT be emitted if the stream closes due to a non-successful
+end, such as after a previous `error` event.
+
+After the stream is ended, it MUST switch to non-readable mode,
+see also `isReadable()`.
+
+This event will only be emitted if the *end* was reached successfully,
+not if the stream was interrupted by an unrecoverable error or explicitly
+closed. Not all streams know this concept of a "successful end".
+Many use-cases involve detecting when the stream closes (terminates)
+instead, in this case you should use the `close` event.
+After the stream emits an `end` event, it SHOULD usually be followed by a
+`close` event.
+
+Many common streams (such as a TCP/IP connection or a file-based stream)
+will emit this event if either the remote side closes the connection or
+a file handle was successfully read until reaching its end (EOF).
+
+Note that this event should not be confused with the `end()` method.
+This event defines a successful end *reading* from a source stream, while
+the `end()` method defines *writing* a successful end to a destination
+stream.
 
 #### error event
 
-Emitted when an error occurs
-with a single `Exception` argument for error instance.
+The `error` event will be emitted whenever an error occurs, usually while
+trying to read from this stream.
+The event receives a single `Exception` argument for the error instance.
+
+```php
+$server->on('error', function (Exception $e) {
+    echo 'Error: ' . $e->getMessage() . PHP_EOL;
+});
+```
+
+This event MAY be emitted any number of times, which should be zero 
+times if this is a stream that is successfully terminated.
+It SHOULD be emitted whenever the stream detects an error, such as a
+transmission error or after an unexpected `data` or premature `end` event.
+It SHOULD NOT be emitted after a `close` event.
+
+Many common streams (such as a TCP/IP connection or a file-based stream)
+only deal with data transmission and do not make assumption about data
+boundaries (such as unexpected `data` or premature `end` events).
+In other words, many lower-level protocols (such as TCP/IP) may choose
+to only emit this for a fatal transmission error once and will thus
+likely close (terminate) the stream in response.
+If this is a fatal error that results in the stream being closed, it
+SHOULD be followed by a `close` event.
+
+Other higher-level protocols may choose to keep the stream alive after
+this event, if they can recover from an error condition.
+
+If this stream is a `DuplexStreamInterface`, you should also notice
+how the writable side of the stream also implements an `error` event.
+In other words, an error may occur while either reading or writing the
+stream which should result in the same error processing.
 
 #### close event
 
-Emitted when the stream is closed.
+The `close` event will be emitted once the stream closes (terminates).
+
+```php
+$stream->on('close', function () {
+    echo 'CLOSED';
+});
+```
+
+This event SHOULD be emitted once or never at all, depending on whether
+the stream ever terminates.
+It SHOULD NOT be emitted after a previous `close` event.
+
+After the stream is closed, it MUST switch to non-readable mode,
+see also `isReadable()`.
+
+Unlike the `end` event, this event SHOULD be emitted whenever the stream
+closes, irrespective of whether this happens implicitly due to an
+unrecoverable error or explicitly when either side closes the stream.
+If you only want to detect a *succesful* end, you should use the `end`
+event instead.
+
+Many common streams (such as a TCP/IP connection or a file-based stream)
+will likely choose to emit this event after reading a *successful* `end`
+event or after a fatal transmission `error` event.
+
+If this stream is a `DuplexStreamInterface`, you should also notice
+how the writable side of the stream also implements a `close` event.
+In other words, after receiving this event, the stream MUST switch into
+non-writable AND non-readable mode, see also `isWritable()`.
+Note that this event should not be confused with the `end` event.
 
 #### isReadable()
 
@@ -223,6 +341,10 @@ This method can be used to (forcefully) close the stream.
 ```php
 $stream->close();
 ```
+
+Once the stream is closed, it SHOULD emit a `close` event.
+Note that this event SHOULD NOT be emitted more than once, in particular
+if this method is called multiple times.
 
 After calling this method, the stream MUST switch into a non-readable
 mode, see also `isReadable()`.
