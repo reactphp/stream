@@ -33,7 +33,7 @@ class WritableStreamTest extends TestCase
     /** @test */
     public function endShouldWriteDataBeforeClosing()
     {
-        $through = $this->getMock('React\Stream\WritableStream', array('write'));
+        $through = $this->getMockBuilder('React\Stream\WritableStream')->setMethods(array('write'))->getMock();
         $through
             ->expects($this->once())
             ->method('write')

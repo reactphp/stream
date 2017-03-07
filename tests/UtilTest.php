@@ -15,9 +15,9 @@ class UtilTest extends TestCase
 {
     public function testPipeReturnsDestinationStream()
     {
-        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
         $ret = Util::pipe($readable, $writable);
 
@@ -26,13 +26,13 @@ class UtilTest extends TestCase
 
     public function testPipeNonReadableSourceShouldDoNothing()
     {
-        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
         $readable
             ->expects($this->any())
             ->method('isReadable')
             ->willReturn(false);
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->never())
             ->method('isWritable');
@@ -45,7 +45,7 @@ class UtilTest extends TestCase
 
     public function testPipeIntoNonWritableDestinationShouldPauseSource()
     {
-        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
         $readable
             ->expects($this->any())
             ->method('isReadable')
@@ -54,7 +54,7 @@ class UtilTest extends TestCase
             ->expects($this->once())
             ->method('pause');
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -68,7 +68,7 @@ class UtilTest extends TestCase
 
     public function testPipeClosingDestPausesSource()
     {
-        $readable = $this->getMock('React\Stream\ReadableStreamInterface');
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
         $readable
             ->expects($this->any())
             ->method('isReadable')
@@ -88,7 +88,7 @@ class UtilTest extends TestCase
     {
         $readable = new Stub\ReadableStreamStub();
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -106,7 +106,7 @@ class UtilTest extends TestCase
     {
         $readable = new Stub\ReadableStreamStub();
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -124,7 +124,7 @@ class UtilTest extends TestCase
     {
         $readable = new Stub\ReadableStreamStub();
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -148,7 +148,7 @@ class UtilTest extends TestCase
 
         $onDrain = null;
 
-        $writable = $this->getMock('React\Stream\WritableStreamInterface');
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -264,7 +264,7 @@ class UtilTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMock('React\EventLoop\LoopInterface');
+        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
     }
 
     private function notEqualTo($value)

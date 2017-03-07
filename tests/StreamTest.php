@@ -36,7 +36,7 @@ class StreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = $this->getMock('React\Stream\WritableStreamInterface');
+        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
         $conn = new Stream($stream, $loop, $buffer);
 
@@ -314,6 +314,6 @@ class StreamTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMock('React\EventLoop\LoopInterface');
+        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
     }
 }

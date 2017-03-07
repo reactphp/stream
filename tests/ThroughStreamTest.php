@@ -79,7 +79,7 @@ class ThroughStreamTest extends TestCase
     /** @test */
     public function pauseShouldDelegateToPipeSource()
     {
-        $input = $this->getMock('React\Stream\ReadableStream', array('pause'));
+        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('pause'))->getMock();
         $input
             ->expects($this->once())
             ->method('pause');
@@ -93,7 +93,7 @@ class ThroughStreamTest extends TestCase
     /** @test */
     public function resumeShouldDelegateToPipeSource()
     {
-        $input = $this->getMock('React\Stream\ReadableStream', array('resume'));
+        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('resume'))->getMock();
         $input
             ->expects($this->once())
             ->method('resume');
@@ -134,7 +134,7 @@ class ThroughStreamTest extends TestCase
     /** @test */
     public function pipeShouldPipeCorrectly()
     {
-        $output = $this->getMock('React\Stream\WritableStreamInterface');
+        $output = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $output->expects($this->any())->method('isWritable')->willReturn(True);
         $output
             ->expects($this->once())
@@ -144,16 +144,5 @@ class ThroughStreamTest extends TestCase
         $through = new ThroughStream();
         $through->pipe($output);
         $through->write('foo');
-    }
-
-    protected function expectCallableOnceWith($arg)
-    {
-        $mock = $this->createCallableMock();
-        $mock
-            ->expects($this->once())
-            ->method('__invoke')
-            ->with($arg);
-
-        return $mock;
     }
 }
