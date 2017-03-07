@@ -4,6 +4,8 @@ namespace React\Stream;
 
 class ThroughStream extends CompositeStream
 {
+    private $paused = false;
+
     public function __construct()
     {
         $readable = new ReadableStream();
@@ -17,19 +19,35 @@ class ThroughStream extends CompositeStream
         return $data;
     }
 
+    public function pause()
+    {
+        parent::pause();
+        $this->paused = true;
+    }
+
+    public function resume()
+    {
+        parent::resume();
+        $this->paused = false;
+    }
+
     public function write($data)
     {
-        if (!$this->writable) {
+        if (!$this->writable->isWritable()) {
             return false;
         }
 
         $this->readable->emit('data', array($this->filter($data)));
 
-        return true;
+        return $this->writable->isWritable() && !$this->paused;
     }
 
     public function end($data = null)
     {
+        if (!$this->writable->isWritable()) {
+            return;
+        }
+
         if (null !== $data) {
             $this->readable->emit('data', array($this->filter($data)));
         }
