@@ -494,6 +494,6 @@ class BufferTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMock('React\EventLoop\LoopInterface');
+        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
     }
 }

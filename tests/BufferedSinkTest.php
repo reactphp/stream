@@ -180,15 +180,4 @@ class BufferedSinkTest extends TestCase
         $readable->emit('data', array('foo'));
         $readable->close();
     }
-
-    private function expectCallableOnceWith($value)
-    {
-        $callback = $this->createCallableMock();
-        $callback
-            ->expects($this->once())
-            ->method('__invoke')
-            ->with($value);
-
-        return $callback;
-    }
 }

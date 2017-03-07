@@ -24,6 +24,17 @@ class TestCase extends \PHPUnit_Framework_TestCase
         return $mock;
     }
 
+    protected function expectCallableOnceWith($value)
+    {
+        $callback = $this->createCallableMock();
+        $callback
+            ->expects($this->once())
+            ->method('__invoke')
+            ->with($value);
+
+        return $callback;
+    }
+
     protected function expectCallableNever()
     {
         $mock = $this->createCallableMock();
@@ -36,6 +47,6 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function createCallableMock()
     {
-        return $this->getMock('React\Tests\Stream\CallableStub');
+        return $this->getMockBuilder('React\Tests\Stream\CallableStub')->getMock();
     }
 }
