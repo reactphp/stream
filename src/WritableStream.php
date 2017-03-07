@@ -10,6 +10,7 @@ class WritableStream extends EventEmitter implements WritableStreamInterface
 
     public function write($data)
     {
+        return false;
     }
 
     public function end($data = null)

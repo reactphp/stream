@@ -19,7 +19,13 @@ class ThroughStream extends CompositeStream
 
     public function write($data)
     {
+        if (!$this->writable) {
+            return false;
+        }
+
         $this->readable->emit('data', array($this->filter($data)));
+
+        return true;
     }
 
     public function end($data = null)

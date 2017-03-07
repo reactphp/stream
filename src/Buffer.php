@@ -33,7 +33,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     public function write($data)
     {
         if (!$this->writable) {
-            return;
+            return false;
         }
 
         $this->data .= $data;
