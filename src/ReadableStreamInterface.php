@@ -299,6 +299,9 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * $dest->close(); // calls $source->pause()
      * ```
      *
+     * Once the pipe is set up successfully, the destination stream MUST emit
+     * a `pipe` event with this source stream an event argument.
+     *
      * @param WritableStreamInterface $dest
      * @param array $options
      * @return WritableStreamInterface $dest stream as-is
