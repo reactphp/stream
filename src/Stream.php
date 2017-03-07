@@ -99,7 +99,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     public function write($data)
     {
         if (!$this->writable) {
-            return;
+            return false;
         }
 
         return $this->buffer->write($data);

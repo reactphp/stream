@@ -134,6 +134,15 @@ class BufferedSinkTest extends TestCase
     }
 
     /** @test */
+    public function writeAfterEndShouldReturnFalse()
+    {
+        $sink = new BufferedSink();
+        $sink->end();
+
+        $this->assertFalse($sink->write('foo'));
+    }
+
+    /** @test */
     public function forwardedErrorsFromPipeShouldRejectPromise()
     {
         $errback = $this->expectCallableOnceWith($this->callback(function ($e) {

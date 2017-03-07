@@ -63,6 +63,34 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
+    public function endTwiceShouldOnlyEmitOnce()
+    {
+        $through = new ThroughStream();
+        $through->on('data', $this->expectCallableOnce('first'));
+        $through->end('first');
+        $through->end('ignored');
+    }
+
+    /** @test */
+    public function writeAfterEndShouldReturnFalse()
+    {
+        $through = new ThroughStream();
+        $through->on('data', $this->expectCallableNever());
+        $through->end();
+
+        $this->assertFalse($through->write('foo'));
+    }
+
+    /** @test */
+    public function writeDataWillCloseStreamShouldReturnFalse()
+    {
+        $through = new ThroughStream();
+        $through->on('data', array($through, 'close'));
+
+        $this->assertFalse($through->write('foo'));
+    }
+
+    /** @test */
     public function itShouldBeReadableByDefault()
     {
         $through = new ThroughStream();

@@ -57,6 +57,32 @@ class StreamTest extends TestCase
         $this->assertFalse($conn->isReadable());
     }
 
+    public function testEndShouldEndBuffer()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $buffer->expects($this->once())->method('end')->with('foo');
+
+        $conn = new Stream($stream, $loop, $buffer);
+        $conn->end('foo');
+    }
+
+
+    public function testEndAfterCloseIsNoOp()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $buffer->expects($this->never())->method('end');
+
+        $conn = new Stream($stream, $loop);
+        $conn->close();
+        $conn->end();
+    }
+
     /**
      * @covers React\Stream\Stream::__construct
      * @covers React\Stream\Stream::handleData
@@ -193,7 +219,7 @@ class StreamTest extends TestCase
         $stream = fopen($file, 'r');
 
         $this->assertSame("foo\n", fgets($stream));
-        $this->assertNull($res);
+        $this->assertFalse($res);
 
         unlink($file);
     }
