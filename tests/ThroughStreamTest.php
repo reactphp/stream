@@ -91,6 +91,25 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
+    public function writeDataToPausedShouldReturnFalse()
+    {
+        $through = new ThroughStream();
+        $through->pause();
+
+        $this->assertFalse($through->write('foo'));
+    }
+
+    /** @test */
+    public function writeDataToResumedShouldReturnTrue()
+    {
+        $through = new ThroughStream();
+        $through->pause();
+        $through->resume();
+
+        $this->assertTrue($through->write('foo'));
+    }
+
+    /** @test */
     public function itShouldBeReadableByDefault()
     {
         $through = new ThroughStream();
