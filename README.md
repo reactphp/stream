@@ -32,6 +32,7 @@ descriptor based implementation with an in-memory write buffer.
     * [write()](#write)
     * [end()](#end)
     * [close()](#close-1)
+  * [DuplexStreamInterface](#duplexstreaminterface)
 * [Usage](#usage)
 * [Install](#install)
 
@@ -671,6 +672,23 @@ If this stream is a `DuplexStreamInterface`, you should also notice
 how the readable side of the stream also implements a `close()` method.
 In other words, after calling this method, the stream MUST switch into
 non-writable AND non-readable mode, see also `isReadable()`.
+
+### DuplexStreamInterface
+
+The `DuplexStreamInterface` is responsible for providing an interface for
+duplex streams (both readable and writable).
+
+It builds on top of the existing interfaces for readable and writable streams
+and follows the exact same method and event semantics.
+If you're new to this concept, you should look into the
+`ReadableStreamInterface` and `WritableStreamInterface` first.
+
+Besides defining a few methods, this interface also implements the
+`EventEmitterInterface` which allows you to react to the same events defined
+on the `ReadbleStreamInterface` and `WritableStreamInterface`.
+
+See also [`ReadableStreamInterface`](#readablestreaminterface) and
+[`WritableStreamInterface`](#writablestreaminterface) for more details.
 
 ## Usage
 ```php
