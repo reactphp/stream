@@ -29,6 +29,10 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     {
         return $this->writable;
     }
+    
+    public function getBufferSize(){
+        return strlen($this->data);
+    }
 
     public function write($data)
     {
