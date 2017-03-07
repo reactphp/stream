@@ -8,6 +8,7 @@
         "evenement/evenement": "^2.0|^1.0"
     },
     "require-dev": {
+        "phpunit/phpunit": "^4.8.10",
         "react/event-loop": "^0.4|^0.3",
         "react/promise": "^2.0|^1.0",
         "clue/stream-filter": "~1.2"

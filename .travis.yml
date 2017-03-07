@@ -12,5 +12,5 @@ install:
   - composer install --prefer-source
 
 script:
-  - phpunit --coverage-text
+  - vendor/bin/phpunit --coverage-text
   - time php examples/benchmark-throughput.php
