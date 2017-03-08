@@ -2,11 +2,12 @@
 
 [![Build Status](https://travis-ci.org/reactphp/stream.svg?branch=master)](https://travis-ci.org/reactphp/stream)
 
-Basic readable and writable stream interfaces that support piping.
+Event-driven readable and writable streams for non-blocking I/O in [ReactPHP](https://reactphp.org/).
 
-In order to make the event loop easier to use, this component introduces the
-concept of streams. They are very similar to the streams found in PHP itself,
-but have an interface more suited for async I/O.
+In order to make the [EventLoop](https://github.com/reactphp/event-loop)
+easier to use, this component introduces the concept of "streams".
+They are very similar to the streams found in PHP itself,
+but have an interface more suited for async, non-blocking I/O.
 Mainly it provides interfaces for readable and writable streams, plus a file
 descriptor based implementation with an in-memory write buffer.
 
