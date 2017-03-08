@@ -23,9 +23,26 @@ class StreamTest extends TestCase
      */
     public function testConstructorThrowsExceptionOnInvalidStream()
     {
-        $this->setExpectedException('InvalidArgumentException');
         $loop = $this->createLoopMock();
-        $conn = new Stream('breakme', $loop);
+
+        $this->setExpectedException('InvalidArgumentException');
+        new Stream('breakme', $loop);
+    }
+
+    /**
+     * @covers React\Stream\Stream::__construct
+     */
+    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
+    {
+        if (!in_array('blocking', stream_get_wrappers())) {
+            stream_wrapper_register('blocking', 'React\Tests\Stream\EnforceBlockingWrapper');
+        }
+
+        $stream = fopen('blocking://test', 'r+');
+        $loop = $this->createLoopMock();
+
+        $this->setExpectedException('RuntimeException');
+        new Stream($stream, $loop);
     }
 
     /**
