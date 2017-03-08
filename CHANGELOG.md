@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.5.0 (2017-03-08)
+
+* Feature / BC break: Consistent `end` event semantics (EOF)
+  (#70 by @clue)
+  
+  The `end` event will now only be emitted for a `successful` end, not it the
+  stream closes due to an unrecoverable `error` event or if it is `close()`d
+  explicitly.
+  If you want to detect when the stream closes (terminates), use the `close`
+  event instead.
+
+* BC break: Remove custom (undocumented) `full-drain` event from `Buffer`
+  (#63 and #68 by @clue)
+
+  > The `full-drain` event was undocumented and mostly used internally.
+    Relying on this event has attracted some low-quality code in the past, so
+    we've removed this from the public API in order to work out a better
+    solution instead.
+    If you want to detect when the buffer finishes flushing data to the stream,
+    you may want to look into its `end()` method or the `close` event instead.
+
+* Feature / BC break: Consistent event semantics and documentation,
+  explicitly state *when* events will be emitted and *which* arguments they
+  receive.
+  (#73 and #69 by @clue)
+
+  The documentation now explicitly defines each event and its arguments.
+  Custom events and event arguments are still supported.
+  Most notably, all defined events only receive inherently required event
+  arguments and no longer transmit the instance they are emitted on for
+  consistency and performance reasons.
+
+  ```php
+  // old (inconsistent and not supported by all implementations)
+  $stream->on('data', function ($data, $stream) {
+      // process $data
+  });
+
+  // new (consistent throughout the whole ecosystem)
+  $stream->on('data', function ($data) use ($stream) {
+      // process $data
+  });
+  ```
+
+  > This mostly adds documentation (and thus some stricter, consistent 
+    definitions) for the existing behavior, it does NOT define any major
+    changes otherwise.
+    Most existing code should be compatible with these changes, unless
+    it relied on some undocumented/unintended semantics.
+
+* Feature / BC break: Consistent method semantics and documentation
+  (#72 by @clue)
+
+  > This mostly adds documentation (and thus some stricter, consistent
+    definitions) for the existing behavior, it does NOT define any major
+    changes otherwise.
+    Most existing code should be compatible with these changes, unless
+    it relied on some undocumented/unintended semantics.
+
+* Feature: Consistent `pipe()` semantics for closed and closing streams
+  (#71 from @clue)
+
+  The source stream will now always be `pause()`d when the destination stream
+  closes. Also, properly stop piping if the source stream closes and remove
+  all event forwarding.
+
+* Improve test suite by adding PHPUnit to `require-dev` and improving coverage.
+  (#74 and #75 by @clue, #66 by @nawarian)
+
 ## 0.4.6 (2017-01-25)
 
 * Feature: The `Buffer` can now be injected into the `Stream` (or be used standalone)

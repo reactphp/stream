@@ -36,6 +36,7 @@ descriptor based implementation with an in-memory write buffer.
 * [Usage](#usage)
 * [Install](#install)
 * [Tests](#tests)
+* [License](#license)
 
 ## API
 
@@ -711,7 +712,7 @@ The recommended way to install this library is [through Composer](http://getcomp
 This will install the latest supported version:
 
 ```bash
-$ composer require react/stream:^0.4.6
+$ composer require react/stream:^0.5
 ```
 
 More details about version upgrades can be found in the [CHANGELOG](CHANGELOG.md).
@@ -730,3 +731,7 @@ To run the test suite, go to the project root and run:
 ```bash
 $ php vendor/bin/phpunit
 ```
+
+## License
+
+MIT, see [LICENSE file](LICENSE).
