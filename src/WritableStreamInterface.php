@@ -5,10 +5,124 @@ namespace React\Stream;
 use Evenement\EventEmitterInterface;
 
 /**
- * @event drain
- * @event error with a single Exeption argument for error instance
- * @event close
- * @event pipe with a single ReadableStreamInterface argument for source stream
+ * The `WritableStreamInterface` is responsible for providing an interface for
+ * write-only streams and the writable side of duplex streams.
+ *
+ * Besides defining a few methods, this interface also implements the
+ * `EventEmitterInterface` which allows you to react to certain events:
+ *
+ * drain event:
+ *     The `drain` event will be emitted whenever the write buffer became full
+ *     previously and is now ready to accept more data.
+ *
+ *     ```php
+ *     $stream->on('drain', function () use ($stream) {
+ *         echo 'Stream is now ready to accept more data';
+ *     });
+ *     ```
+ *
+ *     This event SHOULD be emitted once every time the buffer became full
+ *     previously and is now ready to accept more data.
+ *     In other words, this event MAY be emitted any number of times, which may
+ *     be zero times if the buffer never became full in the first place.
+ *     This event SHOULD NOT be emitted if the buffer has not become full
+ *     previously.
+ *
+ *     This event is mostly used internally, see also `write()` for more details.
+ *
+ * pipe event:
+ *     The `pipe` event will be emitted whenever a readable stream is `pipe()`d
+ *     into this stream.
+ *     The event receives a single `ReadableStreamInterface` argument for the
+ *     source stream.
+ *
+ *     ```php
+ *     $stream->on('pipe', function (ReadableStreamInterface $source) use ($stream) {
+ *         echo 'Now receiving piped data';
+ *
+ *         // explicitly close target if source emits an error
+ *         $source->on('error', function () use ($stream) {
+ *             $stream->close();
+ *         });
+ *     });
+ *
+ *     $source->pipe($stream);
+ *     ```
+ *
+ *     This event MUST be emitted once for each readable stream that is
+ *     successfully piped into this destination stream.
+ *     In other words, this event MAY be emitted any number of times, which may
+ *     be zero times if no stream is ever piped into this stream.
+ *     This event MUST NOT be emitted if either the source is not readable
+ *     (closed already) or this destination is not writable (closed already).
+ *
+ *     This event is mostly used internally, see also `pipe()` for more details.
+ *
+ * error event:
+ *     The `error` event will be emitted whenever an error occurs, usually while
+ *     trying to write to this stream.
+ *     The event receives a single `Exception` argument for the error instance.
+ *
+ *     ```php
+ *     $stream->on('error', function (Exception $e) {
+ *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
+ *     });
+ *     ```
+ *
+ *     This event MAY be emitted any number of times, which should be zero
+ *     times if this is a stream that is successfully terminated.
+ *     It SHOULD be emitted whenever the stream detects an error, such as a
+ *     transmission error.
+ *     It SHOULD NOT be emitted after a `close` event.
+ *
+ *     Many common streams (such as a TCP/IP connection or a file-based stream)
+ *     only deal with data transmission and may choose
+ *     to only emit this for a fatal transmission error once and will thus
+ *     likely close (terminate) the stream in response.
+ *     If this is a fatal error that results in the stream being closed, it
+ *     SHOULD be followed by a `close` event.
+ *
+ *     Other higher-level protocols may choose to keep the stream alive after
+ *     this event, if they can recover from an error condition.
+ *
+ *     If this stream is a `DuplexStreamInterface`, you should also notice
+ *     how the readable side of the stream also implements an `error` event.
+ *     In other words, an error may occur while either reading or writing the
+ *     stream which should result in the same error processing.
+ *
+ * close event:
+ *     The `close` event will be emitted once the stream closes (terminates).
+ *
+ *     ```php
+ *     $stream->on('close', function () {
+ *         echo 'CLOSED';
+ *     });
+ *     ```
+ *
+ *     This event SHOULD be emitted once or never at all, depending on whether
+ *     the stream ever terminates.
+ *     It SHOULD NOT be emitted after a previous `close` event.
+ *
+ *     After the stream is closed, it MUST switch to non-writable mode,
+ *     see also `isWritable()`.
+ *
+ *     This event SHOULD be emitted whenever the stream closes, irrespective of
+ *     whether this happens implicitly due to an unrecoverable error or
+ *     explicitly when either side closes the stream.
+ *
+ *     Many common streams (such as a TCP/IP connection or a file-based stream)
+ *     will likely choose to emit this event after flushing the buffer from
+ *     the `end()` method, after receiving a *successful* `end` event or after
+ *     a fatal transmission `error` event.
+ *
+ *     If this stream is a `DuplexStreamInterface`, you should also notice
+ *     how the readable side of the stream also implements a `close` event.
+ *     In other words, after receiving this event, the stream MUST switch into
+ *     non-writable AND non-readable mode, see also `isReadable()`.
+ *     Note that this event should not be confused with the `end` event.
+ *
+ * @see EventEmitterInterface
+ * @see DuplexStreamInterface
  */
 interface WritableStreamInterface extends EventEmitterInterface
 {
@@ -63,7 +177,9 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * If the internal buffer is full after adding `$data`, then `write()`
      * SHOULD return `false`, indicating that the caller should stop sending
-     * data until the buffer `drain`s.
+     * data until the buffer drains.
+     * The stream SHOULD send a `drain` event once the buffer is ready to accept
+     * more data.
      *
      * Similarly, if the the stream is not writable (already in a closed state)
      * it MUST NOT process the given `$data` and SHOULD return `false`,
@@ -108,6 +224,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      * If there's still data in the buffer that needs to be flushed first, then
      * this method SHOULD try to write out this data and only then `close()`
      * the stream.
+     * Once the stream is closed, it SHOULD emit a `close` event.
      *
      * Note that this interface gives you no control over explicitly flushing
      * the buffered data, as finding the appropriate time for this is beyond the
@@ -162,6 +279,10 @@ interface WritableStreamInterface extends EventEmitterInterface
      * ```php
      * $stream->close();
      * ```
+     *
+     * Once the stream is closed, it SHOULD emit a `close` event.
+     * Note that this event SHOULD NOT be emitted more than once, in particular
+     * if this method is called multiple times.
      *
      * After calling this method, the stream MUST switch into a non-writable
      * mode, see also `isWritable()`.
