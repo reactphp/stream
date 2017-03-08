@@ -1,6 +1,6 @@
 # Stream Component
 
-[![Build Status](https://secure.travis-ci.org/reactphp/stream.png?branch=master)](http://travis-ci.org/reactphp/stream)
+[![Build Status](https://travis-ci.org/reactphp/stream.svg?branch=master)](https://travis-ci.org/reactphp/stream)
 
 Basic readable and writable stream interfaces that support piping.
 
