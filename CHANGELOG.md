@@ -5,8 +5,8 @@
 * Feature / BC break: Consistent `end` event semantics (EOF)
   (#70 by @clue)
   
-  The `end` event will now only be emitted for a `successful` end, not it the
-  stream closes due to an unrecoverable `error` event or if it is `close()`d
+  The `end` event will now only be emitted for a *successful* end, not if the
+  stream closes due to an unrecoverable `error` event or if you call `close()`
   explicitly.
   If you want to detect when the stream closes (terminates), use the `close`
   event instead.
@@ -62,9 +62,9 @@
 * Feature: Consistent `pipe()` semantics for closed and closing streams
   (#71 from @clue)
 
-  The source stream will now always be `pause()`d when the destination stream
-  closes. Also, properly stop piping if the source stream closes and remove
-  all event forwarding.
+  The source stream will now always be paused via `pause()` when the
+  destination stream closes. Also, properly stop piping if the source
+  stream closes and remove all event forwarding.
 
 * Improve test suite by adding PHPUnit to `require-dev` and improving coverage.
   (#74 and #75 by @clue, #66 by @nawarian)
