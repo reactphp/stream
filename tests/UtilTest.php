@@ -2,7 +2,7 @@
 
 namespace React\Tests\Stream;
 
-use React\Stream\Buffer;
+use React\Stream\WritableResourceStream;
 use React\Stream\ReadableStream;
 use React\Stream\Util;
 use React\Stream\WritableStream;
@@ -171,13 +171,13 @@ class UtilTest extends TestCase
         $this->assertFalse($readable->paused);
     }
 
-    public function testPipeWithBuffer()
+    public function testPipeWithWritableResourceStream()
     {
         $readable = new Stub\ReadableStreamStub();
 
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
 
         $readable->pipe($buffer);
 

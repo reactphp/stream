@@ -35,6 +35,7 @@ descriptor based implementation with an in-memory write buffer.
     * [close()](#close-1)
   * [DuplexStreamInterface](#duplexstreaminterface)
   * [ReadableResourceStream](#readableresourcestream)
+  * [WritableResourceStream](#writableresourcestream)
 * [Usage](#usage)
 * [Install](#install)
 * [Tests](#tests)
@@ -761,12 +762,73 @@ mean it reached EOF.
 $stream->bufferSize = 8192;
 ```
 
+### WritableResourceStream
+
+The `WritableResourceStream` is a concrete implementation of the
+[`WritableStreamInterface`](#writablestreaminterface) for PHP's stream resources.
+
+This can be used to represent a write-only resource like a file stream opened in
+writable mode or a stream such as `STDOUT` or `STDERR`:
+
+```php
+$stream = new WritableResourceStream(STDOUT, $loop);
+$stream->write('hello!');
+$stream->end();
+```
+
+See also [`WritableStreamInterface`](#writablestreaminterface) for more details.
+
+The first parameter given to the constructor MUST be a valid stream resource
+that is opened for writing.
+Otherwise, it will throw an `InvalidArgumentException`:
+
+```php
+// throws InvalidArgumentException
+$stream = new WritableResourceStream(false, $loop);
+```
+
+Internally, this class tries to enable non-blocking mode on the stream resource
+which may not be supported for all stream resources.
+Most notably, this is not supported by pipes on Windows (STDOUT, STDERR etc.).
+If this fails, it will throw a `RuntimeException`:
+
+```php
+// throws RuntimeException on Windows
+$stream = new WritableResourceStream(STDOUT, $loop);
+```
+
+Once the constructor is called with a valid stream resource, this class will
+take care of the underlying stream resource.
+You SHOULD only use its public API and SHOULD NOT interfere with the underlying
+stream resource manually.
+Should you need to access the underlying stream resource, you can use the public
+`$stream` property like this:
+
+```php
+var_dump(stream_get_meta_data($stream->stream));
+```
+
+Any `write()` calls to this class will not be performaned instantly, but will
+be performaned asynchronously, once the EventLoop reports the stream resource is
+ready to accept data.
+For this, it uses an in-memory buffer string to collect all outstanding writes.
+This buffer has a soft-limit applied which defines how much data it is willing
+to accept before the caller SHOULD stop sending further data.
+It currently defaults to 64 KiB and can be controlled through the public
+`$softLimit` property like this:
+
+```php
+$stream->softLimit = 8192;
+```
+
+See also [`write()`](#write) for more details.
+
 ## Usage
 ```php
     $loop = React\EventLoop\Factory::create();
 
     $source = new React\Stream\ReadableResourceStream(fopen('omg.txt', 'r'), $loop);
-    $dest = new React\Stream\Stream(fopen('wtf.txt', 'w'), $loop);
+    $dest = new React\Stream\WritableResourceStream(fopen('wtf.txt', 'w'), $loop);
 
     $source->pipe($dest);
 

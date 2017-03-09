@@ -2,36 +2,36 @@
 
 namespace React\Tests\Stream;
 
-use React\Stream\Buffer;
+use React\Stream\WritableResourceStream;
 
-class BufferTest extends TestCase
+class WritableResourceStreamTest extends TestCase
 {
     /**
-     * @covers React\Stream\Buffer::__construct
+     * @covers React\Stream\WritableResourceStream::__construct
      */
     public function testConstructor()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
     }
 
     /**
-     * @covers React\Stream\Buffer::__construct
+     * @covers React\Stream\WritableResourceStream::__construct
+     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsIfNotAValidStreamResource()
     {
         $stream = null;
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
-        new Buffer($stream, $loop);
+        new WritableResourceStream($stream, $loop);
     }
 
     /**
-     * @covers React\Stream\Buffer::__construct
+     * @covers React\Stream\WritableResourceStream::__construct
      */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
@@ -43,19 +43,19 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
 
         $this->setExpectedException('RuntimeException');
-        new Buffer($stream, $loop);
+        new WritableResourceStream($stream, $loop);
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testWrite()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
 
         $buffer->write("foobar\n");
@@ -64,7 +64,7 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\WritableResourceStream::write
      */
     public function testWriteWithDataDoesAddResourceToLoop()
     {
@@ -72,14 +72,14 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addWriteStream')->with($this->equalTo($stream));
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
 
         $buffer->write("foobar\n");
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testEmptyWriteDoesNotAddToLoop()
     {
@@ -87,23 +87,23 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->never())->method('addWriteStream');
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
 
         $buffer->write("");
         $buffer->write(null);
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWriteReturnsFalseWhenBufferIsFull()
+    public function testWriteReturnsFalseWhenWritableResourceStreamIsFull()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
         $loop->preventWrites = true;
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 4;
         $buffer->on('error', $this->expectCallableNever());
 
@@ -113,22 +113,22 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::write
+     * @covers React\Stream\WritableResourceStream::write
      */
-    public function testWriteReturnsFalseWhenBufferIsExactlyFull()
+    public function testWriteReturnsFalseWhenWritableResourceStreamIsExactlyFull()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 3;
 
         $this->assertFalse($buffer->write("foo"));
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testWriteEmitsErrorWhenResourceIsNotWritable()
     {
@@ -140,7 +140,7 @@ class BufferTest extends TestCase
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableOnce());
         //$buffer->on('close', $this->expectCallableOnce());
 
@@ -149,8 +149,8 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testWriteDetectsWhenOtherSideIsClosed()
     {
@@ -158,7 +158,7 @@ class BufferTest extends TestCase
 
         $loop = $this->createWriteableLoopMock();
 
-        $buffer = new Buffer($a, $loop);
+        $buffer = new WritableResourceStream($a, $loop);
         $buffer->softLimit = 4;
         $buffer->on('error', $this->expectCallableOnce());
 
@@ -168,64 +168,58 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testDrain()
+    public function testEmitsDrainAfterWriteWhichExceedsBuffer()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
-        $loop->preventWrites = true;
+        $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
-        $buffer->softLimit = 4;
+        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer->softLimit = 2;
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('drain', $this->expectCallableOnce());
 
         $buffer->write("foo");
-        $loop->preventWrites = false;
-        $buffer->listening = false;
-        $buffer->write("bar\n");
+        $buffer->handleWrite();
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testWriteInDrain()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
-        $loop->preventWrites = true;
+        $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 2;
         $buffer->on('error', $this->expectCallableNever());
 
         $buffer->once('drain', function () use ($buffer) {
-            $buffer->listening = false;
             $buffer->write("bar\n");
+            $buffer->handleWrite();
         });
 
-        $this->assertFalse($buffer->write("foo"));
-        $loop->preventWrites = false;
-        $buffer->listening = false;
-        $buffer->write("\n");
+        $this->assertFalse($buffer->write("foo\n"));
+        $buffer->handleWrite();
 
         fseek($stream, 0);
         $this->assertSame("foo\nbar\n", stream_get_contents($stream));
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testDrainAfterWrite()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 2;
 
         $buffer->on('drain', $this->expectCallableOnce());
@@ -235,7 +229,7 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testDrainAfterWriteWillRemoveResourceFromLoopWithoutClosing()
     {
@@ -243,7 +237,7 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 2;
 
         $buffer->on('drain', $this->expectCallableOnce());
@@ -255,7 +249,7 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testClosingDuringDrainAfterWriteWillRemoveResourceFromLoopOnceAndClose()
     {
@@ -263,7 +257,7 @@ class BufferTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->softLimit = 2;
 
         $buffer->on('drain', function () use ($buffer) {
@@ -277,14 +271,14 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::end
+     * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithoutDataClosesImmediatelyIfBufferIsEmpty()
+    public function testEndWithoutDataClosesImmediatelyIfWritableResourceStreamIsEmpty()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -294,14 +288,14 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::end
+     * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithoutDataDoesNotCloseIfBufferIsFull()
+    public function testEndWithoutDataDoesNotCloseIfWritableResourceStreamIsFull()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableNever());
 
@@ -313,14 +307,14 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::end
+     * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithDataClosesImmediatelyIfBufferFlushes()
+    public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -334,14 +328,14 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::end
+     * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithDataDoesNotCloseImmediatelyIfBufferIsFull()
+    public function testEndWithDataDoesNotCloseImmediatelyIfWritableResourceStreamIsFull()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableNever());
 
@@ -356,15 +350,15 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::isWritable
-     * @covers React\Stream\Buffer::close
+     * @covers React\Stream\WritableResourceStream::isWritable
+     * @covers React\Stream\WritableResourceStream::close
      */
     public function testClose()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -376,13 +370,13 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::close
+     * @covers React\Stream\WritableResourceStream::close
      */
     public function testClosingAfterWriteRemovesStreamFromLoop()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
 
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
@@ -391,13 +385,13 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::close
+     * @covers React\Stream\WritableResourceStream::close
      */
     public function testClosingWithoutWritingDoesNotRemoveStreamFromLoop()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
 
         $loop->expects($this->never())->method('removeWriteStream');
 
@@ -405,14 +399,14 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::close
+     * @covers React\Stream\WritableResourceStream::close
      */
     public function testDoubleCloseWillEmitOnlyOnce()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('close', $this->expectCallableOnce());
 
         $buffer->close();
@@ -420,15 +414,15 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::write
-     * @covers React\Stream\Buffer::close
+     * @covers React\Stream\WritableResourceStream::write
+     * @covers React\Stream\WritableResourceStream::close
      */
-    public function testWritingToClosedBufferShouldNotWriteToStream()
+    public function testWritingToClosedWritableResourceStreamShouldNotWriteToStream()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->close();
 
         $buffer->write('foo');
@@ -439,7 +433,7 @@ class BufferTest extends TestCase
     }
 
     /**
-     * @covers React\Stream\Buffer::handleWrite
+     * @covers React\Stream\WritableResourceStream::handleWrite
      */
     public function testErrorWhenStreamResourceIsInvalid()
     {
@@ -448,7 +442,7 @@ class BufferTest extends TestCase
 
         $error = null;
 
-        $buffer = new Buffer($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', function ($message) use (&$error) {
             $error = $message;
         });
@@ -476,7 +470,7 @@ class BufferTest extends TestCase
 
         $error = null;
 
-        $buffer = new Buffer($a, $loop);
+        $buffer = new WritableResourceStream($a, $loop);
         $buffer->on('error', function($message) use (&$error) {
             $error = $message;
         });

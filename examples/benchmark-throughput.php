@@ -23,8 +23,7 @@ $info->write('piping from ' . $if . ' to ' . $of . ' (for max ' . $t . ' second(
 
 // setup input and output streams and pipe inbetween
 $in = new React\Stream\ReadableResourceStream(fopen($if, 'r'), $loop);
-$out = new React\Stream\Stream(fopen($of, 'w'), $loop);
-$out->pause();
+$out = new React\Stream\WritableResourceStream(fopen($of, 'w'), $loop);
 $in->pipe($out);
 
 // stop input stream in $t seconds

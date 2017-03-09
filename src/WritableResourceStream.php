@@ -5,11 +5,12 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 
-class Buffer extends EventEmitter implements WritableStreamInterface
+class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
-    public $listening = false;
     public $softLimit = 65536;
+
+    private $listening = false;
     private $writable = true;
     private $closed = false;
     private $loop;
@@ -87,6 +88,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->removeAllListeners();
     }
 
+    /** @internal */
     public function handleWrite()
     {
         $error = null;

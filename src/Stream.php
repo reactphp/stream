@@ -58,7 +58,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
 
         if ($buffer === null) {
-            $buffer = new Buffer($stream, $loop);
+            $buffer = new WritableResourceStream($stream, $loop);
         }
 
         $this->stream = $stream;
@@ -189,7 +189,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     }
 
     /**
-     * @return WritableStreamInterface|Buffer
+     * @return WritableStreamInterface
      */
     public function getBuffer()
     {
