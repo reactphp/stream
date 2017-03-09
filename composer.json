@@ -1,7 +1,7 @@
 {
     "name": "react/stream",
     "description": "Event-driven readable and writable streams for non-blocking I/O in ReactPHP",
-    "keywords": ["event-driven", "readable", "writable", "stream", "non-blocking", "I/O", "pipe", "ReactPHP"],
+    "keywords": ["event-driven", "readable", "writable", "stream", "non-blocking", "io", "pipe", "ReactPHP"],
     "license": "MIT",
     "require": {
         "php": ">=5.3.8",
