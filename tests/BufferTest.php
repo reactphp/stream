@@ -20,13 +20,29 @@ class BufferTest extends TestCase
 
     /**
      * @covers React\Stream\Buffer::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsIfNotAValidStreamResource()
     {
         $stream = null;
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('InvalidArgumentException');
+        new Buffer($stream, $loop);
+    }
+
+    /**
+     * @covers React\Stream\Buffer::__construct
+     */
+    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
+    {
+        if (!in_array('blocking', stream_get_wrappers())) {
+            stream_wrapper_register('blocking', 'React\Tests\Stream\EnforceBlockingWrapper');
+        }
+
+        $stream = fopen('blocking://test', 'r+');
+        $loop = $this->createLoopMock();
+
+        $this->setExpectedException('RuntimeException');
         new Buffer($stream, $loop);
     }
 

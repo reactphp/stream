@@ -35,12 +35,15 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
     public function __construct($stream, LoopInterface $loop, WritableStreamInterface $buffer = null)
     {
-        $this->stream = $stream;
-        if (!is_resource($this->stream) || get_resource_type($this->stream) !== "stream") {
+        if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
-        stream_set_blocking($this->stream, 0);
+        // this class relies on non-blocking I/O in order to not interrupt the event loop
+        // e.g. pipes on Windows do not support this: https://bugs.php.net/bug.php?id=47918
+        if (stream_set_blocking($stream, 0) !== true) {
+            throw new \RuntimeException('Unable to set stream resource to non-blocking mode');
+        }
 
         // Use unbuffered read operations on the underlying stream resource.
         // Reading chunks from the stream may otherwise leave unread bytes in
@@ -49,13 +52,14 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         // This does not affect the default event loop implementation (level
         // triggered), so we can ignore platforms not supporting this (HHVM).
         if (function_exists('stream_set_read_buffer')) {
-            stream_set_read_buffer($this->stream, 0);
+            stream_set_read_buffer($stream, 0);
         }
 
         if ($buffer === null) {
             $buffer = new Buffer($stream, $loop);
         }
 
+        $this->stream = $stream;
         $this->loop = $loop;
         $this->buffer = $buffer;
 
