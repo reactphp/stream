@@ -34,6 +34,7 @@ descriptor based implementation with an in-memory write buffer.
     * [end()](#end)
     * [close()](#close-1)
   * [DuplexStreamInterface](#duplexstreaminterface)
+  * [ReadableResourceStream](#readableresourcestream)
 * [Usage](#usage)
 * [Install](#install)
 * [Tests](#tests)
@@ -693,11 +694,77 @@ on the `ReadbleStreamInterface` and `WritableStreamInterface`.
 See also [`ReadableStreamInterface`](#readablestreaminterface) and
 [`WritableStreamInterface`](#writablestreaminterface) for more details.
 
+### ReadableResourceStream
+
+The `ReadableResourceStream` is a concrete implementation of the
+[`ReadableStreamInterface`](#readablestreaminterface) for PHP's stream resources.
+
+This can be used to represent a read-only resource like a file stream opened in
+readable mode or a stream such as `STDIN`:
+
+```php
+$stream = new ReadableResourceStream(STDIN, $loop);
+$stream->on('data', function ($chunk) {
+    echo $chunk;
+});
+$stream->on('end', function () {
+    echo 'END';
+});
+```
+
+See also [`ReadableStreamInterface`](#readablestreaminterface) for more details.
+
+The first parameter given to the constructor MUST be a valid stream resource.
+Otherwise, it will throw an `InvalidArgumentException`:
+
+```php
+// throws InvalidArgumentException
+$stream = new ReadableResourceStream(false, $loop);
+```
+
+Internally, this class tries to enable non-blocking mode on the stream resource
+which may not be supported for all stream resources.
+Most notably, this is not supported by pipes on Windows (STDIN etc.).
+If this fails, it will throw a `RuntimeException`:
+
+```php
+// throws RuntimeException on Windows
+$stream = new ReadableResourceStream(STDIN, $loop);
+```
+
+Once the constructor is called with a valid stream resource, this class will
+take care of the underlying stream resource.
+You SHOULD only use its public API and SHOULD NOT interfere with the underlying
+stream resource manually.
+Should you need to access the underlying stream resource, you can use the public
+`$stream` property like this:
+
+```php
+var_dump(stream_get_meta_data($stream->stream));
+```
+
+The `$bufferSize` property controls the maximum buffer size in bytes to read
+at once from the stream.
+This value SHOULD NOT be changed unless you know what you're doing.
+This can be a positive number which means that up to X bytes will be read
+at once from the underlying stream resource. Note that the actual number
+of bytes read may be lower if the stream resource has less than X bytes
+currently available.
+This can be `null` which means "read everything available" from the
+underlying stream resource.
+This should read until the stream resource is not readable anymore
+(i.e. underlying buffer drained), note that this does not neccessarily
+mean it reached EOF.
+
+```php
+$stream->bufferSize = 8192;
+```
+
 ## Usage
 ```php
     $loop = React\EventLoop\Factory::create();
 
-    $source = new React\Stream\Stream(fopen('omg.txt', 'r'), $loop);
+    $source = new React\Stream\ReadableResourceStream(fopen('omg.txt', 'r'), $loop);
     $dest = new React\Stream\Stream(fopen('wtf.txt', 'w'), $loop);
 
     $source->pipe($dest);

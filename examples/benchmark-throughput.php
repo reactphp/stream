@@ -22,7 +22,7 @@ if (extension_loaded('xdebug')) {
 $info->write('piping from ' . $if . ' to ' . $of . ' (for max ' . $t . ' second(s)) ...'. PHP_EOL);
 
 // setup input and output streams and pipe inbetween
-$in = new React\Stream\Stream(fopen($if, 'r'), $loop);
+$in = new React\Stream\ReadableResourceStream(fopen($if, 'r'), $loop);
 $out = new React\Stream\Stream(fopen($of, 'w'), $loop);
 $out->pause();
 $in->pipe($out);
