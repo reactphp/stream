@@ -165,7 +165,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $server = stream_socket_server('tcp://localhost:0');
+        $server = stream_socket_server('tcp://127.0.0.1:0');
 
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
@@ -198,7 +198,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $server = stream_socket_server('tcp://localhost:0');
+        $server = stream_socket_server('tcp://127.0.0.1:0');
 
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
@@ -218,5 +218,95 @@ class StreamIntegrationTest extends TestCase
 
         $streamA->close();
         $streamB->close();
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testReadsSingleChunkFromProcessPipe($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $stream = new Stream(popen('echo test', 'r'), $loop);
+        $stream->on('data', $this->expectCallableOnceWith("test\n"));
+        $stream->on('end', $this->expectCallableOnce());
+        $stream->on('error', $this->expectCallableNever());
+
+        $loop->run();
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testReadsMultipleChunksFromProcessPipe($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $stream = new Stream(popen('echo -n a;sleep 0.1;echo -n b;sleep 0.1;echo -n c', 'r'), $loop);
+
+        $buffer = '';
+        $stream->on('data', function ($chunk) use (&$buffer) {
+            $buffer .= $chunk;
+        });
+
+        $stream->on('end', $this->expectCallableOnce());
+        $stream->on('error', $this->expectCallableNever());
+
+        $loop->run();
+
+        $this->assertEquals('abc', $buffer);
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testReadsLongChunksFromProcessPipe($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $stream = new Stream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
+
+        $bytes = 0;
+        $stream->on('data', function ($chunk) use (&$bytes) {
+            $bytes += strlen($chunk);
+        });
+
+        $stream->on('end', $this->expectCallableOnce());
+        $stream->on('error', $this->expectCallableNever());
+
+        $loop->run();
+
+        $this->assertEquals(12345 * 1234, $bytes);
+    }
+
+    /**
+     * @dataProvider loopProvider
+     */
+    public function testReadsNothingFromProcessPipeWithNoOutput($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $loop = $loopFactory();
+
+        $stream = new Stream(popen('true', 'r'), $loop);
+        $stream->on('data', $this->expectCallableNever());
+        $stream->on('end', $this->expectCallableOnce());
+        $stream->on('error', $this->expectCallableNever());
+
+        $loop->run();
     }
 }

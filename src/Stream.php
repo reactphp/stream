@@ -51,7 +51,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         // trigger events on (edge triggered).
         // This does not affect the default event loop implementation (level
         // triggered), so we can ignore platforms not supporting this (HHVM).
-        if (function_exists('stream_set_read_buffer')) {
+        // Pipe streams (such as STDIN) do not seem to require this and legacy
+        // PHP < 5.4 causes SEGFAULTs on unbuffered pipe streams, so skip this.
+        if (function_exists('stream_set_read_buffer') && !$this->isLegacyPipe($stream)) {
             stream_set_read_buffer($stream, 0);
         }
 
@@ -192,5 +194,23 @@ class Stream extends EventEmitter implements DuplexStreamInterface
     public function getBuffer()
     {
         return $this->buffer;
+    }
+
+    /**
+     * Returns whether this is a pipe resource in a legacy environment
+     *
+     * @param resource $resource
+     * @return bool
+     */
+    private function isLegacyPipe($resource)
+    {
+        if (PHP_VERSION_ID < 50400) {
+            $meta = stream_get_meta_data($resource);
+
+            if (isset($meta['stream_type']) && $meta['stream_type'] === 'STDIO') {
+                return true;
+            }
+        }
+        return false;
     }
 }
