@@ -32,6 +32,18 @@ class WritableResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
+     * @expectedException InvalidArgumentException
+     */
+    public function testConstructorThrowsExceptionOnReadOnlyStream()
+    {
+        $stream = fopen('php://temp', 'r');
+        $loop = $this->createLoopMock();
+
+        new WritableResourceStream($stream, $loop);
+    }
+
+    /**
+     * @covers React\Stream\WritableResourceStream::__construct
      */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
@@ -137,10 +149,14 @@ class WritableResourceStreamTest extends TestCase
             $this->markTestSkipped('HHVM allows writing to read-only memory streams');
         }
 
-        $stream = fopen('php://temp', 'r');
+        $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
+
+        // nasty hack to replace with reaad-only stream resource
+        $buffer->stream = fopen('php://temp', 'r');
+
         $buffer->on('error', $this->expectCallableOnce());
         //$buffer->on('close', $this->expectCallableOnce());
 

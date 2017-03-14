@@ -22,6 +22,11 @@ class WritableResourceStream extends EventEmitter implements WritableStreamInter
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
+        $meta = stream_get_meta_data($stream);
+        if (isset($meta['mode']) && str_replace(array('b', 't'), '', $meta['mode']) === 'r') {
+            throw new \InvalidArgumentException('Given stream resource is not opened in write mode');
+        }
+
         // this class relies on non-blocking I/O in order to not interrupt the event loop
         // e.g. pipes on Windows do not support this: https://bugs.php.net/bug.php?id=47918
         if (stream_set_blocking($stream, 0) !== true) {

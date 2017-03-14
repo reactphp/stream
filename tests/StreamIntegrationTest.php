@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use React\Stream\Stream;
 use React\EventLoop as rel;
+use React\Stream\ReadableResourceStream;
 
 class StreamIntegrationTest extends TestCase
 {
@@ -231,7 +232,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new Stream(popen('echo test', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('echo test', 'r'), $loop);
         $stream->on('data', $this->expectCallableOnceWith("test\n"));
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
@@ -250,7 +251,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new Stream(popen('echo -n a;sleep 0.1;echo -n b;sleep 0.1;echo -n c', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('echo -n a;sleep 0.1;echo -n b;sleep 0.1;echo -n c', 'r'), $loop);
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -276,7 +277,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new Stream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
 
         $bytes = 0;
         $stream->on('data', function ($chunk) use (&$bytes) {
@@ -302,7 +303,7 @@ class StreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new Stream(popen('true', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('true', 'r'), $loop);
         $stream->on('data', $this->expectCallableNever());
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
