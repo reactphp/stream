@@ -714,7 +714,8 @@ $stream->on('end', function () {
 
 See also [`ReadableStreamInterface`](#readablestreaminterface) for more details.
 
-The first parameter given to the constructor MUST be a valid stream resource.
+The first parameter given to the constructor MUST be a valid stream resource
+that is opened in reading mode (e.g. `fopen()` mode `r`).
 Otherwise, it will throw an `InvalidArgumentException`:
 
 ```php

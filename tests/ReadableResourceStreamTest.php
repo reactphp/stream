@@ -15,7 +15,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        new ReadableResourceStream($stream, $loop);
     }
 
     /**
@@ -26,7 +26,18 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $this->setExpectedException('InvalidArgumentException');
-        new ReadableResourceStream('breakme', $loop);
+        new ReadableResourceStream(false, $loop);
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::__construct
+     */
+    public function testConstructorThrowsExceptionOnWriteOnlyStream()
+    {
+        $loop = $this->createLoopMock();
+
+        $this->setExpectedException('InvalidArgumentException');
+        new ReadableResourceStream(STDOUT, $loop);
     }
 
     /**

@@ -42,6 +42,12 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
+        // ensure resource is opened for reading (fopen mode must contain "r" or "+")
+        $meta = stream_get_meta_data($stream);
+        if (isset($meta['mode']) && strpos($meta['mode'], 'r') === strpos($meta['mode'], '+')) {
+            throw new InvalidArgumentException('Given stream resource is not opened in read mode');
+        }
+
         // this class relies on non-blocking I/O in order to not interrupt the event loop
         // e.g. pipes on Windows do not support this: https://bugs.php.net/bug.php?id=47918
         if (stream_set_blocking($stream, 0) !== true) {
