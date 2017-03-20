@@ -6,10 +6,12 @@ use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
-class Stream extends EventEmitter implements DuplexStreamInterface
+class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
 {
     /**
-     * Controls the maximum buffer size in bytes to ready at once from the stream.
+     * Controls the maximum buffer size in bytes to read at once from the stream.
+     *
+     * This value SHOULD NOT be changed unless you know what you're doing.
      *
      * This can be a positive number which means that up to X bytes will be read
      * at once from the underlying stream resource. Note that the actual number
@@ -26,17 +28,24 @@ class Stream extends EventEmitter implements DuplexStreamInterface
      */
     public $bufferSize = 65536;
 
+    /**
+     * @var resource
+     */
     public $stream;
-    protected $readable = true;
-    protected $writable = true;
-    protected $closing = false;
-    protected $loop;
-    protected $buffer;
 
-    public function __construct($stream, LoopInterface $loop, WritableStreamInterface $buffer = null)
+    private $closed = false;
+    private $loop;
+
+    public function __construct($stream, LoopInterface $loop)
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
+        }
+
+        // ensure resource is opened for reading (fopen mode must contain "r" or "+")
+        $meta = stream_get_meta_data($stream);
+        if (isset($meta['mode']) && strpos($meta['mode'], 'r') === strpos($meta['mode'], '+')) {
+            throw new InvalidArgumentException('Given stream resource is not opened in read mode');
         }
 
         // this class relies on non-blocking I/O in order to not interrupt the event loop
@@ -57,37 +66,15 @@ class Stream extends EventEmitter implements DuplexStreamInterface
             stream_set_read_buffer($stream, 0);
         }
 
-        if ($buffer === null) {
-            $buffer = new Buffer($stream, $loop);
-        }
-
         $this->stream = $stream;
         $this->loop = $loop;
-        $this->buffer = $buffer;
-
-        $that = $this;
-
-        $this->buffer->on('error', function ($error) use ($that) {
-            $that->emit('error', array($error));
-        });
-
-        $this->buffer->on('close', array($this, 'close'));
-
-        $this->buffer->on('drain', function () use ($that) {
-            $that->emit('drain');
-        });
 
         $this->resume();
     }
 
     public function isReadable()
     {
-        return $this->readable;
-    }
-
-    public function isWritable()
-    {
-        return $this->writable;
+        return !$this->closed;
     }
 
     public function pause()
@@ -97,51 +84,9 @@ class Stream extends EventEmitter implements DuplexStreamInterface
 
     public function resume()
     {
-        if ($this->readable) {
+        if (!$this->closed) {
             $this->loop->addReadStream($this->stream, array($this, 'handleData'));
         }
-    }
-
-    public function write($data)
-    {
-        if (!$this->writable) {
-            return false;
-        }
-
-        return $this->buffer->write($data);
-    }
-
-    public function close()
-    {
-        if (!$this->writable && !$this->closing) {
-            return;
-        }
-
-        $this->closing = false;
-
-        $this->readable = false;
-        $this->writable = false;
-
-        $this->emit('close');
-        $this->loop->removeStream($this->stream);
-        $this->buffer->close();
-        $this->removeAllListeners();
-
-        $this->handleClose();
-    }
-
-    public function end($data = null)
-    {
-        if (!$this->writable) {
-            return;
-        }
-
-        $this->closing = true;
-
-        $this->readable = false;
-        $this->writable = false;
-
-        $this->buffer->end($data);
     }
 
     public function pipe(WritableStreamInterface $dest, array $options = array())
@@ -149,7 +94,23 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         return Util::pipe($this, $dest, $options);
     }
 
-    public function handleData($stream)
+    public function close()
+    {
+        if ($this->closed) {
+            return;
+        }
+
+        $this->closed = true;
+
+        $this->emit('close');
+        $this->loop->removeStream($this->stream);
+        $this->removeAllListeners();
+
+        $this->handleClose();
+    }
+
+    /** @internal */
+    public function handleData()
     {
         $error = null;
         set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
@@ -162,7 +123,7 @@ class Stream extends EventEmitter implements DuplexStreamInterface
             );
         });
 
-        $data = stream_get_contents($stream, $this->bufferSize === null ? -1 : $this->bufferSize);
+        $data = stream_get_contents($this->stream, $this->bufferSize === null ? -1 : $this->bufferSize);
 
         restore_error_handler();
 
@@ -181,19 +142,12 @@ class Stream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
+    /** @internal */
     public function handleClose()
     {
         if (is_resource($this->stream)) {
             fclose($this->stream);
         }
-    }
-
-    /**
-     * @return WritableStreamInterface|Buffer
-     */
-    public function getBuffer()
-    {
-        return $this->buffer;
     }
 
     /**

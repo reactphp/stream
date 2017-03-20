@@ -19,6 +19,11 @@ class EnforceBlockingWrapper
         return false;
     }
 
+    public function stream_eof()
+    {
+        return false;
+    }
+
     public function stream_set_option($option, $arg1, $arg2)
     {
         if ($option === STREAM_OPTION_BLOCKING) {
