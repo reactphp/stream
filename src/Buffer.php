@@ -99,7 +99,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
             );
         });
 
-        $sent = fwrite($this->stream, $this->data);
+        $sent = fwrite($this->stream, $this->data, $this->softLimit);
 
         restore_error_handler();
 
