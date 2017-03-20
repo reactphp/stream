@@ -44,7 +44,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
 
         // ensure resource is opened for reading (fopen mode must contain "r" or "+")
         $meta = stream_get_meta_data($stream);
-        if (isset($meta['mode']) && strpos($meta['mode'], 'r') === strpos($meta['mode'], '+')) {
+        if (isset($meta['mode']) && $meta['mode'] !== '' && strpos($meta['mode'], 'r') === strpos($meta['mode'], '+')) {
             throw new InvalidArgumentException('Given stream resource is not opened in read mode');
         }
 

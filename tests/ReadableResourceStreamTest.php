@@ -34,6 +34,10 @@ class ReadableResourceStreamTest extends TestCase
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStream()
     {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('HHVM does not report fopen mode for STDOUT');
+        }
+
         $loop = $this->createLoopMock();
 
         $this->setExpectedException('InvalidArgumentException');

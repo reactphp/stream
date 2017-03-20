@@ -5,11 +5,12 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 
-class Buffer extends EventEmitter implements WritableStreamInterface
+class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
     public $stream;
-    public $listening = false;
     public $softLimit = 65536;
+
+    private $listening = false;
     private $writable = true;
     private $closed = false;
     private $loop;
@@ -19,6 +20,11 @@ class Buffer extends EventEmitter implements WritableStreamInterface
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
+        }
+
+        $meta = stream_get_meta_data($stream);
+        if (isset($meta['mode']) && str_replace(array('b', 't'), '', $meta['mode']) === 'r') {
+            throw new \InvalidArgumentException('Given stream resource is not opened in write mode');
         }
 
         // this class relies on non-blocking I/O in order to not interrupt the event loop
@@ -87,6 +93,7 @@ class Buffer extends EventEmitter implements WritableStreamInterface
         $this->removeAllListeners();
     }
 
+    /** @internal */
     public function handleWrite()
     {
         $error = null;
