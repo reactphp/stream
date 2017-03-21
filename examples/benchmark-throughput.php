@@ -14,7 +14,7 @@ $of = str_replace('/dev/fd/', 'php://fd/', $of);
 $loop = new React\EventLoop\StreamSelectLoop();
 
 // setup information stream
-$info = new React\Stream\Stream(STDERR, $loop);
+$info = new React\Stream\DuplexResourceStream(STDERR, $loop);
 $info->pause();
 if (extension_loaded('xdebug')) {
     $info->write('NOTICE: The "xdebug" extension is loaded, this has a major impact on performance.' . PHP_EOL);

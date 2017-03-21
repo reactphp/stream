@@ -6,10 +6,10 @@ use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
-class Stream extends EventEmitter implements DuplexStreamInterface
+class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
     /**
-     * Controls the maximum buffer size in bytes to ready at once from the stream.
+     * Controls the maximum buffer size in bytes to read at once from the stream.
      *
      * This can be a positive number which means that up to X bytes will be read
      * at once from the underlying stream resource. Note that the actual number
