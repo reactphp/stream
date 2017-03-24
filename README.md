@@ -629,6 +629,16 @@ $stream->write('nope'); // NO-OP
 $stream->end(); // NO-OP
 ```
 
+If this stream is a `DuplexStreamInterface`, calling this method SHOULD
+also end its readable side, unless the stream supports half-open mode.
+In other words, after calling this method, these streams SHOULD switch
+into non-writable AND non-readable mode, see also `isReadable()`.
+This implies that in this case, the stream SHOULD NOT emit any `data`
+or `end` events anymore.
+Streams MAY choose to use the `pause()` method logic for this, but
+special care may have to be taken to ensure a following call to the
+`resume()` method SHOULD NOT continue emitting readable events.
+
 Note that this method should not be confused with the `close()` method.
 
 #### close()

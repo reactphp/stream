@@ -237,6 +237,19 @@ class DuplexResourceStreamTest extends TestCase
         $this->assertFalse($conn->isWritable());
     }
 
+    /**
+     * @covers React\Stream\DuplexResourceStream::end
+     */
+    public function testEndRemovesReadStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('removeReadStream');
+
+        $conn = new DuplexResourceStream($stream, $loop);
+        $conn->end('bye');
+    }
+
     public function testEndedStreamsShouldNotWrite()
     {
         $file = tempnam(sys_get_temp_dir(), 'reactphptest_');
