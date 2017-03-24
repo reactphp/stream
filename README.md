@@ -725,6 +725,9 @@ Otherwise, it will throw an `InvalidArgumentException`:
 $stream = new ReadableResourceStream(false, $loop);
 ```
 
+See also the [`DuplexResourceStream`](#readableresourcestream) for read-and-write
+stream resources otherwise.
+
 Internally, this class tries to enable non-blocking mode on the stream resource
 which may not be supported for all stream resources.
 Most notably, this is not supported by pipes on Windows (STDIN etc.).
@@ -788,6 +791,9 @@ Otherwise, it will throw an `InvalidArgumentException`:
 $stream = new WritableResourceStream(false, $loop);
 ```
 
+See also the [`DuplexResourceStream`](#readableresourcestream) for read-and-write
+stream resources otherwise.
+
 Internally, this class tries to enable non-blocking mode on the stream resource
 which may not be supported for all stream resources.
 Most notably, this is not supported by pipes on Windows (STDOUT, STDERR etc.).
@@ -841,13 +847,18 @@ $stream->end();
 
 See also [`DuplexStreamInterface`](#duplexstreaminterface) for more details.
 
-The first parameter given to the constructor MUST be a valid stream resource.
+The first parameter given to the constructor MUST be a valid stream resource
+that is opened for reading *and* writing.
 Otherwise, it will throw an `InvalidArgumentException`:
 
 ```php
 // throws InvalidArgumentException
 $stream = new DuplexResourceStream(false, $loop);
 ```
+
+See also the [`ReadableResourceStream`](#readableresourcestream) for read-only
+and the [`WritableResourceStream`](#writableresourcestream) for write-only
+stream resources otherwise.
 
 Internally, this class tries to enable non-blocking mode on the stream resource
 which may not be supported for all stream resources.

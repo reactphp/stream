@@ -32,6 +32,21 @@ class DuplexResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
      */
+    public function testConstructorThrowsExceptionOnWriteOnlyStream()
+    {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('HHVM does not report fopen mode for STDOUT');
+        }
+
+        $loop = $this->createLoopMock();
+
+        $this->setExpectedException('InvalidArgumentException');
+        new DuplexResourceStream(STDOUT, $loop);
+    }
+
+    /**
+     * @covers React\Stream\DuplexResourceStream::__construct
+     */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
         if (!in_array('blocking', stream_get_wrappers())) {
