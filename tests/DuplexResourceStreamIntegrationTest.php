@@ -2,11 +2,11 @@
 
 namespace React\Tests\Stream;
 
-use React\Stream\Stream;
+use React\Stream\DuplexResourceStream;
 use React\EventLoop as rel;
 use React\Stream\ReadableResourceStream;
 
-class StreamIntegrationTest extends TestCase
+class DuplexResourceStreamIntegrationTest extends TestCase
 {
     public function loopProvider()
     {
@@ -31,8 +31,8 @@ class StreamIntegrationTest extends TestCase
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new Stream($sockA, $loop);
-        $streamB = new Stream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA, $loop);
+        $streamB = new DuplexResourceStream($sockB, $loop);
 
         $bufferSize = 4096;
         $streamA->bufferSize = $bufferSize;
@@ -70,8 +70,8 @@ class StreamIntegrationTest extends TestCase
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new Stream($sockA, $loop);
-        $streamB = new Stream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA, $loop);
+        $streamB = new DuplexResourceStream($sockB, $loop);
 
         // limit seems to be 192 KiB
         $size = 256 * 1024;
@@ -110,8 +110,8 @@ class StreamIntegrationTest extends TestCase
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new Stream($sockA, $loop);
-        $streamB = new Stream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA, $loop);
+        $streamB = new DuplexResourceStream($sockB, $loop);
 
         // end streamA without writing any data
         $streamA->end();
@@ -138,8 +138,8 @@ class StreamIntegrationTest extends TestCase
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new Stream($sockA, $loop);
-        $streamB = new Stream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA, $loop);
+        $streamB = new DuplexResourceStream($sockB, $loop);
 
         // end streamA without writing any data
         $streamA->pause();
@@ -171,8 +171,8 @@ class StreamIntegrationTest extends TestCase
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
 
-        $streamA = new Stream($client, $loop);
-        $streamB = new Stream($peer, $loop);
+        $streamA = new DuplexResourceStream($client, $loop);
+        $streamB = new DuplexResourceStream($peer, $loop);
 
         // end streamA without writing any data
         $streamA->pause();
@@ -204,8 +204,8 @@ class StreamIntegrationTest extends TestCase
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
 
-        $streamA = new Stream($peer, $loop);
-        $streamB = new Stream($client, $loop);
+        $streamA = new DuplexResourceStream($peer, $loop);
+        $streamB = new DuplexResourceStream($client, $loop);
 
         // end streamA without writing any data
         $streamA->pause();

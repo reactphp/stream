@@ -36,6 +36,7 @@ descriptor based implementation with an in-memory write buffer.
   * [DuplexStreamInterface](#duplexstreaminterface)
   * [ReadableResourceStream](#readableresourcestream)
   * [WritableResourceStream](#writableresourcestream)
+  * [DuplexResourceStream](#duplexresourcestream)
 * [Usage](#usage)
 * [Install](#install)
 * [Tests](#tests)
@@ -724,6 +725,9 @@ Otherwise, it will throw an `InvalidArgumentException`:
 $stream = new ReadableResourceStream(false, $loop);
 ```
 
+See also the [`DuplexResourceStream`](#readableresourcestream) for read-and-write
+stream resources otherwise.
+
 Internally, this class tries to enable non-blocking mode on the stream resource
 which may not be supported for all stream resources.
 Most notably, this is not supported by pipes on Windows (STDIN etc.).
@@ -787,6 +791,9 @@ Otherwise, it will throw an `InvalidArgumentException`:
 $stream = new WritableResourceStream(false, $loop);
 ```
 
+See also the [`DuplexResourceStream`](#readableresourcestream) for read-and-write
+stream resources otherwise.
+
 Internally, this class tries to enable non-blocking mode on the stream resource
 which may not be supported for all stream resources.
 Most notably, this is not supported by pipes on Windows (STDOUT, STDERR etc.).
@@ -822,6 +829,94 @@ $stream->softLimit = 8192;
 ```
 
 See also [`write()`](#write) for more details.
+
+### DuplexResourceStream
+
+The `DuplexResourceStream` is a concrete implementation of the
+[`DuplexStreamInterface`](#duplexstreaminterface) for PHP's stream resources.
+
+This can be used to represent a read-and-write resource like a file stream opened
+in read and write mode mode or a stream such as a TCP/IP connection:
+
+```php
+$conn = stream_socket_client('tcp://google.com:80');
+$stream = new DuplexResourceStream($conn, $loop);
+$stream->write('hello!');
+$stream->end();
+```
+
+See also [`DuplexStreamInterface`](#duplexstreaminterface) for more details.
+
+The first parameter given to the constructor MUST be a valid stream resource
+that is opened for reading *and* writing.
+Otherwise, it will throw an `InvalidArgumentException`:
+
+```php
+// throws InvalidArgumentException
+$stream = new DuplexResourceStream(false, $loop);
+```
+
+See also the [`ReadableResourceStream`](#readableresourcestream) for read-only
+and the [`WritableResourceStream`](#writableresourcestream) for write-only
+stream resources otherwise.
+
+Internally, this class tries to enable non-blocking mode on the stream resource
+which may not be supported for all stream resources.
+Most notably, this is not supported by pipes on Windows (STDOUT, STDERR etc.).
+If this fails, it will throw a `RuntimeException`:
+
+```php
+// throws RuntimeException on Windows
+$stream = new DuplexResourceStream(STDOUT, $loop);
+```
+
+Once the constructor is called with a valid stream resource, this class will
+take care of the underlying stream resource.
+You SHOULD only use its public API and SHOULD NOT interfere with the underlying
+stream resource manually.
+Should you need to access the underlying stream resource, you can use the public
+`$stream` property like this:
+
+```php
+var_dump(stream_get_meta_data($stream->stream));
+```
+
+The `$bufferSize` property controls the maximum buffer size in bytes to read
+at once from the stream.
+This value SHOULD NOT be changed unless you know what you're doing.
+This can be a positive number which means that up to X bytes will be read
+at once from the underlying stream resource. Note that the actual number
+of bytes read may be lower if the stream resource has less than X bytes
+currently available.
+This can be `null` which means "read everything available" from the
+underlying stream resource.
+This should read until the stream resource is not readable anymore
+(i.e. underlying buffer drained), note that this does not neccessarily
+mean it reached EOF.
+
+```php
+$stream->bufferSize = 8192;
+```
+
+Any `write()` calls to this class will not be performaned instantly, but will
+be performaned asynchronously, once the EventLoop reports the stream resource is
+ready to accept data.
+For this, it uses an in-memory buffer string to collect all outstanding writes.
+This buffer has a soft-limit applied which defines how much data it is willing
+to accept before the caller SHOULD stop sending further data.
+It currently defaults to 64 KiB and can be controlled through the public
+`$softLimit` property like this:
+
+```php
+$buffer = $stream->getBuffer();
+$buffer->softLimit = 8192;
+```
+
+See also [`write()`](#write) for more details.
+
+> BC note: This class was previously called `Stream`.
+  The `Stream` class still exists for BC reasons and will be removed in future
+  versions of this package.
 
 ## Usage
 ```php
