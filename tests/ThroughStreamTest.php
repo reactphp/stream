@@ -10,6 +10,15 @@ use React\Stream\ThroughStream;
  */
 class ThroughStreamTest extends TestCase
 {
+    /**
+     * @test
+     * @expectedException InvalidArgumentException
+     */
+    public function itShouldRejectInvalidCallback()
+    {
+        new ThroughStream(123);
+    }
+
     /** @test */
     public function itShouldReturnTrueForAnyDataWrittenToIt()
     {
@@ -24,6 +33,22 @@ class ThroughStreamTest extends TestCase
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
+        $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldEmitAnyDataWrittenToItPassedThruFunction()
+    {
+        $through = new ThroughStream('strtoupper');
+        $through->on('data', $this->expectCallableOnceWith('FOO'));
+        $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldEmitAnyDataWrittenToItPassedThruCallback()
+    {
+        $through = new ThroughStream('strtoupper');
+        $through->on('data', $this->expectCallableOnceWith('FOO'));
         $through->write('foo');
     }
 

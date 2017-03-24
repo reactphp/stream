@@ -3,6 +3,7 @@
 namespace React\Stream;
 
 use Evenement\EventEmitter;
+use InvalidArgumentException;
 
 class ThroughStream extends EventEmitter implements DuplexStreamInterface
 {
@@ -11,10 +12,15 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
     private $closed = false;
     private $paused = false;
     private $drain = false;
+    private $callback;
 
-    public function filter($data)
+    public function __construct($callback = null)
     {
-        return $data;
+        if ($callback !== null && !is_callable($callback)) {
+            throw new InvalidArgumentException('Invalid transformation callback given');
+        }
+
+        $this->callback = $callback;
     }
 
     public function pause()
@@ -92,7 +98,17 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->closed = true;
         $this->paused = true;
         $this->drain = false;
+        $this->callback = null;
 
         $this->emit('close');
+    }
+
+    private function filter($data)
+    {
+        if ($this->callback !== null) {
+            $data = call_user_func($this->callback, $data);
+        }
+
+        return $data;
     }
 }
