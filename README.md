@@ -914,6 +914,10 @@ $buffer->softLimit = 8192;
 
 See also [`write()`](#write) for more details.
 
+> BC note: This class was previously called `Stream`.
+  The `Stream` class still exists for BC reasons and will be removed in future
+  versions of this package.
+
 ## Usage
 ```php
     $loop = React\EventLoop\Factory::create();
