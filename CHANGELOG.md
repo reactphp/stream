@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.6.0 (2017-03-26)
+
+* Feature / Fix / BC break: Add `DuplexResourceStream` and deprecate `Stream`
+  (#85 by @clue)
+
+  ```php
+  // old (does still work for BC reasons)
+  $stream = new Stream($connection, $loop);
+
+  // new
+  $stream = new DuplexResourceStream($connection, $loop);
+  ```
+
+  Note that the `DuplexResourceStream` now rejects read-only or write-only
+  streams, so this may affect BC. If you want a read-only or write-only
+  resource, use `ReadableResourceStream` or `WritableResourceStream` instead of
+  `DuplexResourceStream`.
+
+  > BC note: This class was previously called `Stream`. The `Stream` class still
+    exists for BC reasons and will be removed in future versions of this package.
+
+* Feature / BC break: Add `WritableResourceStream` (previously called `Buffer`)
+  (#84 by @clue)
+
+  ```php
+  // old
+  $stream = new Buffer(STDOUT, $loop);
+
+  // new
+  $stream = new WritableResourceStream(STDOUT, $loop);
+  ```
+
+* Feature: Add `ReadableResourceStream`
+  (#83 by @clue)
+
+  ```php
+  $stream = new ReadableResourceStream(STDIN, $loop);
+  ```
+
+* Fix / BC Break: Enforce using non-blocking I/O
+  (#47 by @clue)
+
+  > BC note: This is known to affect process pipes on Windows which do not
+    support non-blocking I/O and could thus block the whole EventLoop previously.
+
+* Feature / Fix / BC break: Consistent semantics for
+  `DuplexStreamInterface::end()` to ensure it SHOULD also end readable side
+  (#86 by @clue)
+
+* Fix: Do not use unbuffered reads on pipe streams for legacy PHP < 5.4
+  (#80 by @clue)
+
 ## 0.5.0 (2017-03-08)
 
 * Feature / BC break: Consistent `end` event semantics (EOF)
