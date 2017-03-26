@@ -43,10 +43,32 @@ class CompositeStreamTest extends TestCase
             ->expects($this->once())
             ->method('resume');
         $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable
+            ->expects($this->any())
+            ->method('isWritable')
+            ->willReturn(true);
 
         $composite = new CompositeStream($readable, $writable);
         $composite->isReadable();
         $composite->pause();
+        $composite->resume();
+    }
+
+    /** @test */
+    public function itShouldNotForwardResumeIfStreamIsNotWritable()
+    {
+        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable
+            ->expects($this->never())
+            ->method('resume');
+
+        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable
+            ->expects($this->once())
+            ->method('isWritable')
+            ->willReturn(false);
+
+        $composite = new CompositeStream($readable, $writable);
         $composite->resume();
     }
 

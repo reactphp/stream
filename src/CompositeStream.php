@@ -46,6 +46,10 @@ class CompositeStream extends EventEmitter implements DuplexStreamInterface
 
     public function resume()
     {
+        if (!$this->writable->isWritable()) {
+            return;
+        }
+
         if ($this->pipeSource) {
             $this->pipeSource->resume();
         }
@@ -70,6 +74,7 @@ class CompositeStream extends EventEmitter implements DuplexStreamInterface
 
     public function end($data = null)
     {
+        $this->readable->pause();
         $this->writable->end($data);
     }
 

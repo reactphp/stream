@@ -146,6 +146,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 
         $this->readable = false;
         $this->writable = false;
+        $this->pause();
 
         $this->buffer->end($data);
     }
