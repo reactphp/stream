@@ -185,5 +185,6 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->callback = null;
 
         $this->emit('close');
+        $this->removeAllListeners();
     }
 }
