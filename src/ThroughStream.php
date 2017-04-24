@@ -2,17 +2,15 @@
 
 namespace React\Stream;
 
-class ThroughStream extends CompositeStream
+use Evenement\EventEmitter;
+
+class ThroughStream extends EventEmitter implements DuplexStreamInterface
 {
+    private $readable = true;
+    private $writable = true;
+    private $closed = false;
     private $paused = false;
-
-    public function __construct()
-    {
-        $readable = new ReadableStream();
-        $writable = new WritableStream();
-
-        parent::__construct($readable, $writable);
-    }
+    private $drain = false;
 
     public function filter($data)
     {
@@ -21,39 +19,80 @@ class ThroughStream extends CompositeStream
 
     public function pause()
     {
-        parent::pause();
         $this->paused = true;
     }
 
     public function resume()
     {
-        parent::resume();
+        if ($this->drain) {
+            $this->drain = false;
+            $this->emit('drain');
+        }
         $this->paused = false;
+    }
+
+    public function pipe(WritableStreamInterface $dest, array $options = array())
+    {
+        return Util::pipe($this, $dest, $options);
+    }
+
+    public function isReadable()
+    {
+        return $this->readable;
+    }
+
+    public function isWritable()
+    {
+        return $this->writable;
     }
 
     public function write($data)
     {
-        if (!$this->writable->isWritable()) {
+        if (!$this->writable) {
             return false;
         }
 
-        $this->readable->emit('data', array($this->filter($data)));
+        $this->emit('data', array($this->filter($data)));
 
-        return $this->writable->isWritable() && !$this->paused;
+        if ($this->paused) {
+            $this->drain = true;
+            return false;
+        }
+
+        return true;
     }
 
     public function end($data = null)
     {
-        if (!$this->writable->isWritable()) {
+        if (!$this->writable) {
             return;
         }
 
         if (null !== $data) {
-            $this->readable->emit('data', array($this->filter($data)));
+            $this->write($data);
         }
 
-        $this->readable->emit('end');
+        $this->readable = false;
+        $this->writable = false;
+        $this->paused = true;
+        $this->drain = false;
 
-        $this->writable->end();
+        $this->emit('end');
+        $this->close();
+    }
+
+    public function close()
+    {
+        if ($this->closed) {
+            return;
+        }
+
+        $this->readable = false;
+        $this->writable = false;
+        $this->closed = true;
+        $this->paused = true;
+        $this->drain = false;
+
+        $this->emit('close');
     }
 }

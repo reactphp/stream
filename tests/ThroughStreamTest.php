@@ -11,11 +11,53 @@ use React\Stream\ThroughStream;
 class ThroughStreamTest extends TestCase
 {
     /** @test */
+    public function itShouldReturnTrueForAnyDataWrittenToIt()
+    {
+        $through = new ThroughStream();
+        $ret = $through->write('foo');
+
+        $this->assertTrue($ret);
+    }
+
+    /** @test */
     public function itShouldEmitAnyDataWrittenToIt()
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
         $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenPaused()
+    {
+        $through = new ThroughStream();
+        $through->pause();
+        $ret = $through->write('foo');
+
+        $this->assertFalse($ret);
+    }
+
+    /** @test */
+    public function itShouldEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenToItWhenPaused()
+    {
+        $through = new ThroughStream();
+        $through->pause();
+        $through->write('foo');
+
+        $through->on('drain', $this->expectCallableOnce());
+        $through->resume();
+    }
+
+    /** @test */
+    public function itShouldReturnTrueForAnyDataWrittenToItWhenResumedAfterPause()
+    {
+        $through = new ThroughStream();
+        $through->on('drain', $this->expectCallableNever());
+        $through->pause();
+        $through->resume();
+        $ret = $through->write('foo');
+
+        $this->assertTrue($ret);
     }
 
     /** @test */
@@ -121,34 +163,6 @@ class ThroughStreamTest extends TestCase
     {
         $through = new ThroughStream();
         $this->assertTrue($through->isWritable());
-    }
-
-    /** @test */
-    public function pauseShouldDelegateToPipeSource()
-    {
-        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('pause'))->getMock();
-        $input
-            ->expects($this->once())
-            ->method('pause');
-
-        $through = new ThroughStream();
-        $input->pipe($through);
-
-        $through->pause();
-    }
-
-    /** @test */
-    public function resumeShouldDelegateToPipeSource()
-    {
-        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('resume'))->getMock();
-        $input
-            ->expects($this->once())
-            ->method('resume');
-
-        $through = new ThroughStream();
-        $input->pipe($through);
-
-        $through->resume();
     }
 
     /** @test */
