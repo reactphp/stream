@@ -972,6 +972,23 @@ $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
 $through->write(array(2, true));
 ```
 
+The callback function is allowed to throw an `Exception`. In this case,
+the stream will emit an `error` event and then [`close()`](#close-1) the stream.
+
+```php
+$through = new ThroughStream(function ($data) {
+    if (!is_string($data)) {
+        throw new \UnexpectedValueException('Only strings allowed');
+    }
+    return $data;
+});
+$through->on('error', $this->expectCallableOnce()));
+$through->on('close', $this->expectCallableOnce()));
+$through->on('data', $this->expectCallableNever()));
+
+$through->write(2);
+```
+
 ## Usage
 ```php
     $loop = React\EventLoop\Factory::create();

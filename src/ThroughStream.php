@@ -51,6 +51,23 @@ use InvalidArgumentException;
  * $through->write(array(2, true));
  * ```
  *
+ * The callback function is allowed to throw an `Exception`. In this case,
+ * the stream will emit an `error` event and then [`close()`](#close-1) the stream.
+ *
+ * ```php
+ * $through = new ThroughStream(function ($data) {
+ *     if (!is_string($data)) {
+ *         throw new \UnexpectedValueException('Only strings allowed');
+ *     }
+ *     return $data;
+ * });
+ * $through->on('error', $this->expectCallableOnce()));
+ * $through->on('close', $this->expectCallableOnce()));
+ * $through->on('data', $this->expectCallableNever()));
+ *
+ * $through->write(2);
+ * ```
+ *
  * @see WritableStreamInterface::write()
  * @see WritableStreamInterface::end()
  * @see DuplexStreamInterface::close()
@@ -109,7 +126,18 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
             return false;
         }
 
-        $this->emit('data', array($this->filter($data)));
+        if ($this->callback !== null) {
+            try {
+                $data = call_user_func($this->callback, $data);
+            } catch (\Exception $e) {
+                $this->emit('error', array($e));
+                $this->close();
+
+                return false;
+            }
+        }
+
+        $this->emit('data', array($data));
 
         if ($this->paused) {
             $this->drain = true;
@@ -127,6 +155,11 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
 
         if (null !== $data) {
             $this->write($data);
+
+            // return if write() already caused the stream to close
+            if (!$this->writable) {
+                return;
+            }
         }
 
         $this->readable = false;
@@ -152,14 +185,5 @@ class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->callback = null;
 
         $this->emit('close');
-    }
-
-    private function filter($data)
-    {
-        if ($this->callback !== null) {
-            $data = call_user_func($this->callback, $data);
-        }
-
-        return $data;
     }
 }

@@ -53,6 +53,40 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsException()
+    {
+        $through = new ThroughStream(function () {
+            throw new \RuntimeException();
+        });
+        $through->on('error', $this->expectCallableOnce());
+        $through->on('close', $this->expectCallableOnce());
+        $through->on('data', $this->expectCallableNever());
+        $through->on('end', $this->expectCallableNever());
+
+        $through->write('foo');
+
+        $this->assertFalse($through->isReadable());
+        $this->assertFalse($through->isWritable());
+    }
+
+    /** @test */
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsExceptionOnEnd()
+    {
+        $through = new ThroughStream(function () {
+            throw new \RuntimeException();
+        });
+        $through->on('error', $this->expectCallableOnce());
+        $through->on('close', $this->expectCallableOnce());
+        $through->on('data', $this->expectCallableNever());
+        $through->on('end', $this->expectCallableNever());
+
+        $through->end('foo');
+
+        $this->assertFalse($through->isReadable());
+        $this->assertFalse($through->isWritable());
+    }
+
+    /** @test */
     public function itShouldReturnFalseForAnyDataWrittenToItWhenPaused()
     {
         $through = new ThroughStream();
