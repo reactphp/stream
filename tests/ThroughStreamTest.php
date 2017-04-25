@@ -10,6 +10,15 @@ use React\Stream\ThroughStream;
  */
 class ThroughStreamTest extends TestCase
 {
+    /**
+     * @test
+     * @expectedException InvalidArgumentException
+     */
+    public function itShouldRejectInvalidCallback()
+    {
+        new ThroughStream(123);
+    }
+
     /** @test */
     public function itShouldReturnTrueForAnyDataWrittenToIt()
     {
@@ -25,6 +34,56 @@ class ThroughStreamTest extends TestCase
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
         $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldEmitAnyDataWrittenToItPassedThruFunction()
+    {
+        $through = new ThroughStream('strtoupper');
+        $through->on('data', $this->expectCallableOnceWith('FOO'));
+        $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldEmitAnyDataWrittenToItPassedThruCallback()
+    {
+        $through = new ThroughStream('strtoupper');
+        $through->on('data', $this->expectCallableOnceWith('FOO'));
+        $through->write('foo');
+    }
+
+    /** @test */
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsException()
+    {
+        $through = new ThroughStream(function () {
+            throw new \RuntimeException();
+        });
+        $through->on('error', $this->expectCallableOnce());
+        $through->on('close', $this->expectCallableOnce());
+        $through->on('data', $this->expectCallableNever());
+        $through->on('end', $this->expectCallableNever());
+
+        $through->write('foo');
+
+        $this->assertFalse($through->isReadable());
+        $this->assertFalse($through->isWritable());
+    }
+
+    /** @test */
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsExceptionOnEnd()
+    {
+        $through = new ThroughStream(function () {
+            throw new \RuntimeException();
+        });
+        $through->on('error', $this->expectCallableOnce());
+        $through->on('close', $this->expectCallableOnce());
+        $through->on('data', $this->expectCallableNever());
+        $through->on('end', $this->expectCallableNever());
+
+        $through->end('foo');
+
+        $this->assertFalse($through->isReadable());
+        $this->assertFalse($through->isWritable());
     }
 
     /** @test */
