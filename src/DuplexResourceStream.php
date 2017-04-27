@@ -16,15 +16,15 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
      * of bytes read may be lower if the stream resource has less than X bytes
      * currently available.
      *
-     * This can be `null` which means read everything available from the
+     * This can be `-1` which means read everything available from the
      * underlying stream resource.
      * This should read until the stream resource is not readable anymore
      * (i.e. underlying buffer drained), note that this does not neccessarily
      * mean it reached EOF.
      *
-     * @var int|null
+     * @var int
      */
-    public $bufferSize = 65536;
+    private $bufferSize;
 
     private $stream;
     protected $readable = true;
@@ -33,7 +33,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
     protected $loop;
     protected $buffer;
 
-    public function __construct($stream, LoopInterface $loop, WritableStreamInterface $buffer = null)
+    public function __construct($stream, LoopInterface $loop, $readChunkSize = null, WritableStreamInterface $buffer = null)
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -69,6 +69,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 
         $this->stream = $stream;
         $this->loop = $loop;
+        $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
         $this->buffer = $buffer;
 
         $that = $this;
@@ -169,7 +170,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
             );
         });
 
-        $data = stream_get_contents($stream, $this->bufferSize === null ? -1 : $this->bufferSize);
+        $data = stream_get_contents($stream, $this->bufferSize);
 
         restore_error_handler();
 

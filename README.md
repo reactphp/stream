@@ -753,21 +753,22 @@ take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
 
-The `$bufferSize` property controls the maximum buffer size in bytes to read
-at once from the stream.
+This class takes an optional `int|null $readChunkSize` parameter that controls
+the maximum buffer size in bytes to read at once from the stream.
+You can use a `null` value here in order to apply its default value.
 This value SHOULD NOT be changed unless you know what you're doing.
 This can be a positive number which means that up to X bytes will be read
 at once from the underlying stream resource. Note that the actual number
 of bytes read may be lower if the stream resource has less than X bytes
 currently available.
-This can be `null` which means "read everything available" from the
+This can be `-1` which means "read everything available" from the
 underlying stream resource.
 This should read until the stream resource is not readable anymore
 (i.e. underlying buffer drained), note that this does not neccessarily
 mean it reached EOF.
 
 ```php
-$stream->bufferSize = 8192;
+$stream = new ReadableResourceStream(STDIN, $loop, 8192);
 ```
 
 ### WritableResourceStream
@@ -873,21 +874,23 @@ take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
 
-The `$bufferSize` property controls the maximum buffer size in bytes to read
-at once from the stream.
+This class takes an optional `int|null $readChunkSize` parameter that controls
+the maximum buffer size in bytes to read at once from the stream.
+You can use a `null` value here in order to apply its default value.
 This value SHOULD NOT be changed unless you know what you're doing.
 This can be a positive number which means that up to X bytes will be read
 at once from the underlying stream resource. Note that the actual number
 of bytes read may be lower if the stream resource has less than X bytes
 currently available.
-This can be `null` which means "read everything available" from the
+This can be `-1` which means "read everything available" from the
 underlying stream resource.
 This should read until the stream resource is not readable anymore
 (i.e. underlying buffer drained), note that this does not neccessarily
 mean it reached EOF.
 
 ```php
-$stream->bufferSize = 8192;
+$conn = stream_socket_client('tcp://google.com:80');
+$stream = new DuplexResourceStream($conn, $loop, 8192);
 ```
 
 Any `write()` calls to this class will not be performaned instantly, but will
