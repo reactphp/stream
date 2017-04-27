@@ -820,11 +820,14 @@ ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
 to accept before the caller SHOULD stop sending further data.
-It currently defaults to 64 KiB and can be controlled through the public
-`$softLimit` property like this:
+
+This class takes an optional `int|null $writeBufferSoftLimit` parameter that controls
+this maximum buffer size in bytes.
+You can use a `null` value here in order to apply its default value.
+This value SHOULD NOT be changed unless you know what you're doing.
 
 ```php
-$stream->softLimit = 8192;
+$stream = new WritableResourceStream(STDOUT, $loop, 8192);
 ```
 
 See also [`write()`](#write) for more details.
@@ -899,15 +902,22 @@ ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
 to accept before the caller SHOULD stop sending further data.
-It currently defaults to 64 KiB and can be controlled through the public
-`$softLimit` property like this:
+
+This class takes another optional `WritableStreamInterface|null $buffer` parameter
+that controls this write behavior of this stream.
+You can use a `null` value here in order to apply its default value.
+This value SHOULD NOT be changed unless you know what you're doing.
+
+If you want to change the write buffer soft limit, you can pass an instance of
+[`WritableResourceStream`](#writableresourcestream) like this:
 
 ```php
-$buffer = $stream->getBuffer();
-$buffer->softLimit = 8192;
+$conn = stream_socket_client('tcp://google.com:80');
+$buffer = new WritableResourceStream($conn, $loop, 8192);
+$stream = new DuplexResourceStream($conn, $loop, null, $buffer);
 ```
 
-See also [`write()`](#write) for more details.
+See also [`WritableResourceStream`](#writableresourcestream) for more details.
 
 ### ThroughStream
 

@@ -197,14 +197,6 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
     }
 
     /**
-     * @return WritableStreamInterface
-     */
-    public function getBuffer()
-    {
-        return $this->buffer;
-    }
-
-    /**
      * Returns whether this is a pipe resource in a legacy environment
      *
      * @param resource $resource

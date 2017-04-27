@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use React\Stream\DuplexResourceStream;
 use Clue\StreamFilter as Filter;
+use React\Stream\WritableResourceStream;
 
 class DuplexResourceStreamTest extends TestCase
 {
@@ -71,8 +72,6 @@ class DuplexResourceStreamTest extends TestCase
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
         $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
-
-        $this->assertSame($buffer, $conn->getBuffer());
     }
 
     public function testCloseShouldEmitCloseEvent()
@@ -284,12 +283,12 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $conn = new DuplexResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
+        $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
 
         $conn->on('drain', $this->expectCallableOnce());
         $conn->on('error', $this->expectCallableOnce());
 
-        $buffer = $conn->getBuffer();
         $buffer->emit('drain');
         $buffer->emit('error', array(new \RuntimeException('Whoops')));
     }
