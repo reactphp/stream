@@ -59,7 +59,7 @@ use Evenement\EventEmitterInterface;
  *     This event is mostly used internally, see also `pipe()` for more details.
  *
  * error event:
- *     The `error` event will be emitted whenever an error occurs, usually while
+ *     The `error` event will be emitted once a fatal error occurs, usually while
  *     trying to write to this stream.
  *     The event receives a single `Exception` argument for the error instance.
  *
@@ -69,21 +69,20 @@ use Evenement\EventEmitterInterface;
  *     });
  *     ```
  *
- *     This event MAY be emitted any number of times, which should be zero
- *     times if this is a stream that is successfully terminated.
- *     It SHOULD be emitted whenever the stream detects an error, such as a
- *     transmission error.
- *     It SHOULD NOT be emitted after a `close` event.
+ *     This event SHOULD be emitted once the stream detects a fatal error, such
+ *     as a fatal transmission error.
+ *     It SHOULD NOT be emitted after a previous `error` or `close` event.
+ *     It MUST NOT be emitted if this is not a fatal error condition, such as
+ *     a temporary network issue that did not cause any data to be lost.
+ *
+ *     After the stream errors, it MUST close the stream and SHOULD thus be
+ *     followed by a `close` event and then switch to non-writable mode, see
+ *     also `close()` and `isWritable()`.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     only deal with data transmission and may choose
- *     to only emit this for a fatal transmission error once and will thus
- *     likely close (terminate) the stream in response.
- *     If this is a fatal error that results in the stream being closed, it
- *     SHOULD be followed by a `close` event.
- *
- *     Other higher-level protocols may choose to keep the stream alive after
- *     this event, if they can recover from an error condition.
+ *     to only emit this for a fatal transmission error once and will then
+ *     close (terminate) the stream in response.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
  *     how the readable side of the stream also implements an `error` event.

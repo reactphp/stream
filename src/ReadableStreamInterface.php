@@ -79,7 +79,7 @@ use Evenement\EventEmitterInterface;
  *     stream.
  *
  * error event:
- *     The `error` event will be emitted whenever an error occurs, usually while
+ *     The `error` event will be emitted once a fatal error occurs, usually while
  *     trying to read from this stream.
  *     The event receives a single `Exception` argument for the error instance.
  *
@@ -89,23 +89,23 @@ use Evenement\EventEmitterInterface;
  *     });
  *     ```
  *
- *     This event MAY be emitted any number of times, which should be zero
- *     times if this is a stream that is successfully terminated.
- *     It SHOULD be emitted whenever the stream detects an error, such as a
- *     transmission error or after an unexpected `data` or premature `end` event.
- *     It SHOULD NOT be emitted after a `close` event.
+ *     This event SHOULD be emitted once the stream detects a fatal error, such
+ *     as a fatal transmission error or after an unexpected `data` or premature
+ *     `end` event.
+ *     It SHOULD NOT be emitted after a previous `error`, `end` or `close` event.
+ *     It MUST NOT be emitted if this is not a fatal error condition, such as
+ *     a temporary network issue that did not cause any data to be lost.
+ *
+ *     After the stream errors, it MUST close the stream and SHOULD thus be
+ *     followed by a `close` event and then switch to non-readable mode, see
+ *     also `close()` and `isReadable()`.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     only deal with data transmission and do not make assumption about data
  *     boundaries (such as unexpected `data` or premature `end` events).
  *     In other words, many lower-level protocols (such as TCP/IP) may choose
- *     to only emit this for a fatal transmission error once and will thus
- *     likely close (terminate) the stream in response.
- *     If this is a fatal error that results in the stream being closed, it
- *     SHOULD be followed by a `close` event.
- *
- *     Other higher-level protocols may choose to keep the stream alive after
- *     this event, if they can recover from an error condition.
+ *     to only emit this for a fatal transmission error once and will then
+ *     close (terminate) the stream in response.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
  *     how the writable side of the stream also implements an `error` event.
@@ -131,7 +131,7 @@ use Evenement\EventEmitterInterface;
  *     Unlike the `end` event, this event SHOULD be emitted whenever the stream
  *     closes, irrespective of whether this happens implicitly due to an
  *     unrecoverable error or explicitly when either side closes the stream.
- *     If you only want to detect a *succesful* end, you should use the `end`
+ *     If you only want to detect a *successful* end, you should use the `end`
  *     event instead.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
