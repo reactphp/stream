@@ -3,8 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\CompositeStream;
-use React\Stream\ReadableStream;
-use React\Stream\WritableStream;
+use React\Stream\ThroughStream;
 
 /**
  * @covers React\Stream\CompositeStream
@@ -105,8 +104,8 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldForwardCloseOnlyOnce()
     {
-        $readable = new ReadableStream();
-        $writable = new WritableStream();
+        $readable = new ThroughStream();
+        $writable = new ThroughStream();
 
         $composite = new CompositeStream($readable, $writable);
         $composite->on('close', $this->expectCallableOnce());
@@ -118,8 +117,8 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldReceiveForwardedEvents()
     {
-        $readable = new ReadableStream();
-        $writable = new WritableStream();
+        $readable = new ThroughStream();
+        $writable = new ThroughStream();
 
         $composite = new CompositeStream($readable, $writable);
         $composite->on('data', $this->expectCallableOnce());
@@ -142,7 +141,7 @@ class CompositeStreamTest extends TestCase
 
         $composite = new CompositeStream($readable, $writable);
 
-        $input = new ReadableStream();
+        $input = new ThroughStream();
         $input->pipe($composite);
         $input->emit('data', array('foo'));
     }
@@ -157,7 +156,7 @@ class CompositeStreamTest extends TestCase
 
         $composite = new CompositeStream($readable, $writable);
 
-        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('pause', 'resume'))->getMock();
+        $input = $this->getMockBuilder('React\Stream\ThroughStream')->setMethods(array('pause', 'resume'))->getMock();
         $input
             ->expects($this->once())
             ->method('pause');
@@ -176,7 +175,7 @@ class CompositeStreamTest extends TestCase
 
         $composite = new CompositeStream($readable, $writable);
 
-        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('pause', 'resume'))->getMock();
+        $input = $this->getMockBuilder('React\Stream\ThroughStream')->setMethods(array('pause', 'resume'))->getMock();
         $input
             ->expects($this->once())
             ->method('resume');
@@ -189,15 +188,12 @@ class CompositeStreamTest extends TestCase
     public function itShouldForwardPauseAndResumeUpstreamWhenPipedTo()
     {
         $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
-        $writable = $this->getMockBuilder('React\Stream\WritableStream')->setMethods(array('write'))->getMock();
-        $writable
-            ->expects($this->once())
-            ->method('write')
-            ->will($this->returnValue(false));
+        $writable = new ThroughStream();
+        $writable->pause();
 
         $composite = new CompositeStream($readable, $writable);
 
-        $input = $this->getMockBuilder('React\Stream\ReadableStream')->setMethods(array('pause', 'resume'))->getMock();
+        $input = $this->getMockBuilder('React\Stream\ThroughStream')->setMethods(array('pause', 'resume'))->getMock();
         $input
             ->expects($this->once())
             ->method('pause');
@@ -213,7 +209,7 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldForwardPipeCallsToReadableStream()
     {
-        $readable = new ReadableStream();
+        $readable = new ThroughStream();
         $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $writable->expects($this->any())->method('isWritable')->willReturn(True);
         $composite = new CompositeStream($readable, $writable);

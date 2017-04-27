@@ -3,10 +3,9 @@
 namespace React\Tests\Stream;
 
 use React\Stream\WritableResourceStream;
-use React\Stream\ReadableStream;
 use React\Stream\Util;
-use React\Stream\WritableStream;
 use React\Stream\CompositeStream;
+use React\Stream\ThroughStream;
 
 /**
  * @covers React\Stream\Util
@@ -77,7 +76,7 @@ class UtilTest extends TestCase
             ->expects($this->once())
             ->method('pause');
 
-        $writable = new WritableStream();
+        $writable = new ThroughStream();
 
         Util::pipe($readable, $writable);
 
@@ -191,8 +190,8 @@ class UtilTest extends TestCase
 
     public function testPipeSetsUpListeners()
     {
-        $source = new ReadableStream();
-        $dest = new WritableStream();
+        $source = new ThroughStream();
+        $dest = new ThroughStream();
 
         $this->assertCount(0, $source->listeners('data'));
         $this->assertCount(0, $source->listeners('end'));
@@ -207,8 +206,8 @@ class UtilTest extends TestCase
 
     public function testPipeClosingSourceRemovesListeners()
     {
-        $source = new ReadableStream();
-        $dest = new WritableStream();
+        $source = new ThroughStream();
+        $dest = new ThroughStream();
 
         Util::pipe($source, $dest);
 
@@ -221,8 +220,8 @@ class UtilTest extends TestCase
 
     public function testPipeClosingDestRemovesListeners()
     {
-        $source = new ReadableStream();
-        $dest = new WritableStream();
+        $source = new ThroughStream();
+        $dest = new ThroughStream();
 
         Util::pipe($source, $dest);
 
@@ -251,8 +250,8 @@ class UtilTest extends TestCase
     /** @test */
     public function forwardEventsShouldSetupForwards()
     {
-        $source = new ReadableStream();
-        $target = new ReadableStream();
+        $source = new ThroughStream();
+        $target = new ThroughStream();
 
         Util::forwardEvents($source, $target, array('data'));
         $target->on('data', $this->expectCallableOnce());

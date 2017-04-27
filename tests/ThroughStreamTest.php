@@ -2,7 +2,6 @@
 
 namespace React\Tests\Stream;
 
-use React\Stream\ReadableStream;
 use React\Stream\ThroughStream;
 
 /**
@@ -122,7 +121,7 @@ class ThroughStreamTest extends TestCase
     /** @test */
     public function pipingStuffIntoItShouldWork()
     {
-        $readable = new ReadableStream();
+        $readable = new ThroughStream();
 
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
