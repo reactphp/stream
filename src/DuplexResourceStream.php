@@ -26,7 +26,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
      */
     public $bufferSize = 65536;
 
-    public $stream;
+    private $stream;
     protected $readable = true;
     protected $writable = true;
     protected $closing = false;

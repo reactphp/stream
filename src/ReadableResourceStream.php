@@ -31,7 +31,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
     /**
      * @var resource
      */
-    public $stream;
+    private $stream;
 
     private $closed = false;
     private $loop;
