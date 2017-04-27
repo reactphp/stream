@@ -7,7 +7,7 @@ use React\EventLoop\LoopInterface;
 
 class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
-    public $stream;
+    private $stream;
     public $softLimit = 65536;
 
     private $listening = false;
@@ -118,9 +118,7 @@ class WritableResourceStream extends EventEmitter implements WritableStreamInter
         // Should this turn out to be a permanent error later, it will eventually
         // send *nothing* and we can detect this.
         if ($sent === 0 || $sent === false) {
-            if ($error === null) {
-                $error = new \RuntimeException('Send failed');
-            } else {
+            if ($error !== null) {
                 $error = new \ErrorException(
                     $error['message'],
                     0,
@@ -130,7 +128,7 @@ class WritableResourceStream extends EventEmitter implements WritableStreamInter
                 );
             }
 
-            $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error->getMessage(), 0, $error)));
+            $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . ($error !== null ? $error->getMessage() : 'Unknown error'), 0, $error)));
             $this->close();
 
             return;

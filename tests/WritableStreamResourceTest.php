@@ -142,32 +142,6 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWriteEmitsErrorWhenResourceIsNotWritable()
-    {
-        if (defined('HHVM_VERSION')) {
-            // via https://github.com/reactphp/stream/pull/52/files#r75493076
-            $this->markTestSkipped('HHVM allows writing to read-only memory streams');
-        }
-
-        $stream = fopen('php://temp', 'r+');
-        $loop = $this->createLoopMock();
-
-        $buffer = new WritableResourceStream($stream, $loop);
-
-        // nasty hack to replace with reaad-only stream resource
-        $buffer->stream = fopen('php://temp', 'r');
-
-        $buffer->on('error', $this->expectCallableOnce());
-        //$buffer->on('close', $this->expectCallableOnce());
-
-        $buffer->write('hello');
-        $buffer->handleWrite();
-    }
-
-    /**
-     * @covers React\Stream\WritableResourceStream::write
-     * @covers React\Stream\WritableResourceStream::handleWrite
-     */
     public function testWriteDetectsWhenOtherSideIsClosed()
     {
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);

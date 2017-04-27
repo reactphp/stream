@@ -752,12 +752,6 @@ Once the constructor is called with a valid stream resource, this class will
 take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
-Should you need to access the underlying stream resource, you can use the public
-`$stream` property like this:
-
-```php
-var_dump(stream_get_meta_data($stream->stream));
-```
 
 The `$bufferSize` property controls the maximum buffer size in bytes to read
 at once from the stream.
@@ -818,12 +812,6 @@ Once the constructor is called with a valid stream resource, this class will
 take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
-Should you need to access the underlying stream resource, you can use the public
-`$stream` property like this:
-
-```php
-var_dump(stream_get_meta_data($stream->stream));
-```
 
 Any `write()` calls to this class will not be performaned instantly, but will
 be performaned asynchronously, once the EventLoop reports the stream resource is
@@ -884,12 +872,6 @@ Once the constructor is called with a valid stream resource, this class will
 take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
-Should you need to access the underlying stream resource, you can use the public
-`$stream` property like this:
-
-```php
-var_dump(stream_get_meta_data($stream->stream));
-```
 
 The `$bufferSize` property controls the maximum buffer size in bytes to read
 at once from the stream.
