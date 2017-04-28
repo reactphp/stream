@@ -753,21 +753,22 @@ take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
 
-The `$bufferSize` property controls the maximum buffer size in bytes to read
-at once from the stream.
+This class takes an optional `int|null $readChunkSize` parameter that controls
+the maximum buffer size in bytes to read at once from the stream.
+You can use a `null` value here in order to apply its default value.
 This value SHOULD NOT be changed unless you know what you're doing.
 This can be a positive number which means that up to X bytes will be read
 at once from the underlying stream resource. Note that the actual number
 of bytes read may be lower if the stream resource has less than X bytes
 currently available.
-This can be `null` which means "read everything available" from the
+This can be `-1` which means "read everything available" from the
 underlying stream resource.
 This should read until the stream resource is not readable anymore
 (i.e. underlying buffer drained), note that this does not neccessarily
 mean it reached EOF.
 
 ```php
-$stream->bufferSize = 8192;
+$stream = new ReadableResourceStream(STDIN, $loop, 8192);
 ```
 
 ### WritableResourceStream
@@ -819,11 +820,14 @@ ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
 to accept before the caller SHOULD stop sending further data.
-It currently defaults to 64 KiB and can be controlled through the public
-`$softLimit` property like this:
+
+This class takes an optional `int|null $writeBufferSoftLimit` parameter that controls
+this maximum buffer size in bytes.
+You can use a `null` value here in order to apply its default value.
+This value SHOULD NOT be changed unless you know what you're doing.
 
 ```php
-$stream->softLimit = 8192;
+$stream = new WritableResourceStream(STDOUT, $loop, 8192);
 ```
 
 See also [`write()`](#write) for more details.
@@ -873,21 +877,23 @@ take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
 
-The `$bufferSize` property controls the maximum buffer size in bytes to read
-at once from the stream.
+This class takes an optional `int|null $readChunkSize` parameter that controls
+the maximum buffer size in bytes to read at once from the stream.
+You can use a `null` value here in order to apply its default value.
 This value SHOULD NOT be changed unless you know what you're doing.
 This can be a positive number which means that up to X bytes will be read
 at once from the underlying stream resource. Note that the actual number
 of bytes read may be lower if the stream resource has less than X bytes
 currently available.
-This can be `null` which means "read everything available" from the
+This can be `-1` which means "read everything available" from the
 underlying stream resource.
 This should read until the stream resource is not readable anymore
 (i.e. underlying buffer drained), note that this does not neccessarily
 mean it reached EOF.
 
 ```php
-$stream->bufferSize = 8192;
+$conn = stream_socket_client('tcp://google.com:80');
+$stream = new DuplexResourceStream($conn, $loop, 8192);
 ```
 
 Any `write()` calls to this class will not be performaned instantly, but will
@@ -896,15 +902,22 @@ ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
 to accept before the caller SHOULD stop sending further data.
-It currently defaults to 64 KiB and can be controlled through the public
-`$softLimit` property like this:
+
+This class takes another optional `WritableStreamInterface|null $buffer` parameter
+that controls this write behavior of this stream.
+You can use a `null` value here in order to apply its default value.
+This value SHOULD NOT be changed unless you know what you're doing.
+
+If you want to change the write buffer soft limit, you can pass an instance of
+[`WritableResourceStream`](#writableresourcestream) like this:
 
 ```php
-$buffer = $stream->getBuffer();
-$buffer->softLimit = 8192;
+$conn = stream_socket_client('tcp://google.com:80');
+$buffer = new WritableResourceStream($conn, $loop, 8192);
+$stream = new DuplexResourceStream($conn, $loop, null, $buffer);
 ```
 
-See also [`write()`](#write) for more details.
+See also [`WritableResourceStream`](#writableresourcestream) for more details.
 
 ### ThroughStream
 

@@ -120,7 +120,7 @@ class ReadableResourceStreamTest extends TestCase
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream, $loop, 4321);
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
@@ -131,7 +131,7 @@ class ReadableResourceStreamTest extends TestCase
         $conn->handleData($stream);
 
         $this->assertTrue($conn->isReadable());
-        $this->assertEquals($conn->bufferSize, strlen($capturedData));
+        $this->assertEquals(4321, strlen($capturedData));
     }
 
     /**
@@ -145,8 +145,7 @@ class ReadableResourceStreamTest extends TestCase
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop);
-        $conn->bufferSize = null;
+        $conn = new ReadableResourceStream($stream, $loop, -1);
 
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;

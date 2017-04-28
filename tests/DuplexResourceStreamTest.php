@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use React\Stream\DuplexResourceStream;
 use Clue\StreamFilter as Filter;
+use React\Stream\WritableResourceStream;
 
 class DuplexResourceStreamTest extends TestCase
 {
@@ -70,9 +71,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
-        $conn = new DuplexResourceStream($stream, $loop, $buffer);
-
-        $this->assertSame($buffer, $conn->getBuffer());
+        $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
     }
 
     public function testCloseShouldEmitCloseEvent()
@@ -97,7 +96,7 @@ class DuplexResourceStreamTest extends TestCase
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
         $buffer->expects($this->once())->method('end')->with('foo');
 
-        $conn = new DuplexResourceStream($stream, $loop, $buffer);
+        $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
         $conn->end('foo');
     }
 
@@ -149,7 +148,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $capturedData = null;
 
-        $conn = new DuplexResourceStream($stream, $loop);
+        $conn = new DuplexResourceStream($stream, $loop, 4321);
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
@@ -160,7 +159,7 @@ class DuplexResourceStreamTest extends TestCase
         $conn->handleData($stream);
 
         $this->assertTrue($conn->isReadable());
-        $this->assertEquals($conn->bufferSize, strlen($capturedData));
+        $this->assertEquals(4321, strlen($capturedData));
     }
 
     /**
@@ -174,8 +173,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $capturedData = null;
 
-        $conn = new DuplexResourceStream($stream, $loop);
-        $conn->bufferSize = null;
+        $conn = new DuplexResourceStream($stream, $loop, -1);
 
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
@@ -285,12 +283,12 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $conn = new DuplexResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream, $loop);
+        $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
 
         $conn->on('drain', $this->expectCallableOnce());
         $conn->on('error', $this->expectCallableOnce());
 
-        $buffer = $conn->getBuffer();
         $buffer->emit('drain');
         $buffer->emit('error', array(new \RuntimeException('Whoops')));
     }

@@ -8,15 +8,15 @@ use React\EventLoop\LoopInterface;
 class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
     private $stream;
-    public $softLimit = 65536;
+    private $loop;
+    private $softLimit;
 
     private $listening = false;
     private $writable = true;
     private $closed = false;
-    private $loop;
     private $data = '';
 
-    public function __construct($stream, LoopInterface $loop)
+    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null)
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -35,6 +35,7 @@ class WritableResourceStream extends EventEmitter implements WritableStreamInter
 
         $this->stream = $stream;
         $this->loop = $loop;
+        $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
     }
 
     public function isWritable()

@@ -31,14 +31,11 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new DuplexResourceStream($sockA, $loop);
-        $streamB = new DuplexResourceStream($sockB, $loop);
-
         $bufferSize = 4096;
-        $streamA->bufferSize = $bufferSize;
-        $streamB->bufferSize = $bufferSize;
+        $streamA = new DuplexResourceStream($sockA, $loop, $bufferSize);
+        $streamB = new DuplexResourceStream($sockB, $loop, $bufferSize);
 
-        $testString = str_repeat("*", $streamA->bufferSize + 1);
+        $testString = str_repeat("*", $bufferSize + 1);
 
         $buffer = "";
         $streamB->on('data', function ($data) use (&$buffer) {

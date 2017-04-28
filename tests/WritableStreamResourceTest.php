@@ -115,8 +115,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createWriteableLoopMock();
         $loop->preventWrites = true;
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 4;
+        $buffer = new WritableResourceStream($stream, $loop, 4);
         $buffer->on('error', $this->expectCallableNever());
 
         $this->assertTrue($buffer->write("foo"));
@@ -132,8 +131,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 3;
+        $buffer = new WritableResourceStream($stream, $loop, 3);
 
         $this->assertFalse($buffer->write("foo"));
     }
@@ -148,8 +146,7 @@ class WritableResourceStreamTest extends TestCase
 
         $loop = $this->createWriteableLoopMock();
 
-        $buffer = new WritableResourceStream($a, $loop);
-        $buffer->softLimit = 4;
+        $buffer = new WritableResourceStream($a, $loop, 4);
         $buffer->on('error', $this->expectCallableOnce());
 
         fclose($b);
@@ -166,8 +163,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 2;
+        $buffer = new WritableResourceStream($stream, $loop, 2);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -184,8 +180,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 2;
+        $buffer = new WritableResourceStream($stream, $loop, 2);
         $buffer->on('error', $this->expectCallableNever());
 
         $buffer->once('drain', function () use ($buffer) {
@@ -209,8 +204,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 2;
+        $buffer = new WritableResourceStream($stream, $loop, 2);
 
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -227,8 +221,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 2;
+        $buffer = new WritableResourceStream($stream, $loop, 2);
 
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -247,8 +240,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->softLimit = 2;
+        $buffer = new WritableResourceStream($stream, $loop, 2);
 
         $buffer->on('drain', function () use ($buffer) {
             $buffer->close();

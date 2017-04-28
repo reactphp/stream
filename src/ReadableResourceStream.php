@@ -18,15 +18,15 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
      * of bytes read may be lower if the stream resource has less than X bytes
      * currently available.
      *
-     * This can be `null` which means read everything available from the
+     * This can be `-1` which means read everything available from the
      * underlying stream resource.
      * This should read until the stream resource is not readable anymore
      * (i.e. underlying buffer drained), note that this does not neccessarily
      * mean it reached EOF.
      *
-     * @var int|null
+     * @var int
      */
-    public $bufferSize = 65536;
+    private $bufferSize;
 
     /**
      * @var resource
@@ -36,7 +36,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
     private $closed = false;
     private $loop;
 
-    public function __construct($stream, LoopInterface $loop)
+    public function __construct($stream, LoopInterface $loop, $readChunkSize = null)
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -68,6 +68,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
 
         $this->stream = $stream;
         $this->loop = $loop;
+        $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
 
         $this->resume();
     }
@@ -123,7 +124,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
             );
         });
 
-        $data = stream_get_contents($this->stream, $this->bufferSize === null ? -1 : $this->bufferSize);
+        $data = stream_get_contents($this->stream, $this->bufferSize);
 
         restore_error_handler();
 
