@@ -8,6 +8,9 @@ use InvalidArgumentException;
 
 class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
+    private $stream;
+    private $loop;
+
     /**
      * Controls the maximum buffer size in bytes to read at once from the stream.
      *
@@ -25,13 +28,11 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
      * @var int
      */
     private $bufferSize;
+    private $buffer;
 
-    private $stream;
-    protected $readable = true;
-    protected $writable = true;
-    protected $closing = false;
-    protected $loop;
-    protected $buffer;
+    private $readable = true;
+    private $writable = true;
+    private $closing = false;
 
     public function __construct($stream, LoopInterface $loop, $readChunkSize = null, WritableStreamInterface $buffer = null)
     {
@@ -157,6 +158,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
         return Util::pipe($this, $dest, $options);
     }
 
+    /** @internal */
     public function handleData($stream)
     {
         $error = null;
@@ -189,6 +191,7 @@ class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
+    /** @internal */
     public function handleClose()
     {
         if (is_resource($this->stream)) {

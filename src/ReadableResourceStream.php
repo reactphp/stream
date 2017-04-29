@@ -9,6 +9,13 @@ use InvalidArgumentException;
 class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
 {
     /**
+     * @var resource
+     */
+    private $stream;
+
+    private $loop;
+
+    /**
      * Controls the maximum buffer size in bytes to read at once from the stream.
      *
      * This value SHOULD NOT be changed unless you know what you're doing.
@@ -28,13 +35,7 @@ class ReadableResourceStream extends EventEmitter implements ReadableStreamInter
      */
     private $bufferSize;
 
-    /**
-     * @var resource
-     */
-    private $stream;
-
     private $closed = false;
-    private $loop;
 
     public function __construct($stream, LoopInterface $loop, $readChunkSize = null)
     {
