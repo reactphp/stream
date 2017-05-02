@@ -6,7 +6,7 @@ use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
-class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
+final class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
     private $stream;
     private $loop;

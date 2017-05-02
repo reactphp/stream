@@ -6,7 +6,7 @@ use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
-class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
+final class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
 {
     /**
      * @var resource
