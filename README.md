@@ -53,6 +53,15 @@ read-only streams and the readable side of duplex streams.
 Besides defining a few methods, this interface also implements the
 `EventEmitterInterface` which allows you to react to certain events.
 
+Every implementation of this interface MUST follow these event semantics in
+order to be considered a well-behaving stream.
+
+> Note that higher-level implementations of this interface may choose to
+  define additional events with dedicated semantics not defined as part of
+  this low-level stream specification. Conformance with these event semantics
+  is out of scope for this interface, so you may also have to refer to the
+  documentation of such a higher-level implementation.
+
 #### data event
 
 The `data` event will be emitted whenever some data was read/received
@@ -383,6 +392,15 @@ write-only streams and the writable side of duplex streams.
 Besides defining a few methods, this interface also implements the
 `EventEmitterInterface` which allows you to react to certain events.
 
+Every implementation of this interface MUST follow these event semantics in
+order to be considered a well-behaving stream.
+
+> Note that higher-level implementations of this interface may choose to
+  define additional events with dedicated semantics not defined as part of
+  this low-level stream specification. Conformance with these event semantics
+  is out of scope for this interface, so you may also have to refer to the
+  documentation of such a higher-level implementation.
+
 #### drain event
 
 The `drain` event will be emitted whenever the write buffer became full
@@ -702,6 +720,15 @@ If you're new to this concept, you should look into the
 Besides defining a few methods, this interface also implements the
 `EventEmitterInterface` which allows you to react to the same events defined
 on the `ReadbleStreamInterface` and `WritableStreamInterface`.
+
+Every implementation of this interface MUST follow these event semantics in
+order to be considered a well-behaving stream.
+
+> Note that higher-level implementations of this interface may choose to
+  define additional events with dedicated semantics not defined as part of
+  this low-level stream specification. Conformance with these event semantics
+  is out of scope for this interface, so you may also have to refer to the
+  documentation of such a higher-level implementation.
 
 See also [`ReadableStreamInterface`](#readablestreaminterface) and
 [`WritableStreamInterface`](#writablestreaminterface) for more details.

@@ -15,6 +15,15 @@ namespace React\Stream;
  * `EventEmitterInterface` which allows you to react to the same events defined
  * on the `ReadbleStreamInterface` and `WritableStreamInterface`.
  *
+ * Every implementation of this interface MUST follow these event semantics in
+ * order to be considered a well-behaving stream.
+ *
+ * > Note that higher-level implementations of this interface may choose to
+ *   define additional events with dedicated semantics not defined as part of
+ *   this low-level stream specification. Conformance with these event semantics
+ *   is out of scope for this interface, so you may also have to refer to the
+ *   documentation of such a higher-level implementation.
+ *
  * @see ReadableStreamInterface
  * @see WritableStreamInterface
  */
