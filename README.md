@@ -1035,6 +1035,11 @@ $ composer require react/stream:^0.6
 
 More details about version upgrades can be found in the [CHANGELOG](CHANGELOG.md).
 
+This project aims to run on any platform and thus does not require any PHP
+extensions and supports running on legacy PHP 5.3 through current PHP 7+ and HHVM.
+It's *highly recommended to use PHP 7+* for this project due to its vast
+performance improvements.
+
 ## Tests
 
 To run the test suite, you first need to clone this repo and then install all
