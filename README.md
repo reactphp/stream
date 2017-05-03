@@ -781,6 +781,14 @@ creating a stream instance.
 However, if you are writing a lower-level component or want to create a stream
 instance from a stream resource, then the following chapter is for you.
 
+> Note that the following examples use `fopen()` and `stream_socket_client()`
+  for illustration purposes only.
+  These functions SHOULD NOT be used in a truly async program because each call
+  may take several seconds to complete and would block the EventLoop otherwise.
+  Additionally, the `fopen()` call will return a file handle on some platforms
+  which may or may not be supported by all EventLoop implementations.
+  As an alternative, you may want to use higher-level libraries listed above.
+
 ### ReadableResourceStream
 
 The `ReadableResourceStream` is a concrete implementation of the
@@ -1065,16 +1073,26 @@ $through->write(2);
 ```
 
 ## Usage
+
+The following example can be used to pipe the contents of a source file into
+a destination file without having to ever read the whole file into memory:
+
 ```php
-    $loop = React\EventLoop\Factory::create();
+$loop = new React\EventLoop\StreamSelectLoop::create();
 
-    $source = new React\Stream\ReadableResourceStream(fopen('omg.txt', 'r'), $loop);
-    $dest = new React\Stream\WritableResourceStream(fopen('wtf.txt', 'w'), $loop);
+$source = new React\Stream\ReadableResourceStream(fopen('source.txt', 'r'), $loop);
+$dest = new React\Stream\WritableResourceStream(fopen('destination.txt', 'w'), $loop);
 
-    $source->pipe($dest);
+$source->pipe($dest);
 
-    $loop->run();
+$loop->run();
 ```
+
+> Note that this example uses `fopen()` for illustration purposes only.
+  This should not be used in a truly async program because the filesystem is
+  inherently blocking and each call could potentially take several seconds.
+  See also [creating streams](#creating-streams) for more sophisticated
+  examples.
 
 ## Install
 
