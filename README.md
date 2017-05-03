@@ -13,7 +13,7 @@ descriptor based implementation with an in-memory write buffer.
 
 **Table of contents**
 
-* [API](#api)
+* [Stream usage](#stream-usage)
   * [ReadableStreamInterface](#readablestreaminterface)
     * [data event](#data-event)
     * [end event](#end-event)
@@ -34,6 +34,7 @@ descriptor based implementation with an in-memory write buffer.
     * [end()](#end)
     * [close()](#close-1)
   * [DuplexStreamInterface](#duplexstreaminterface)
+* [Creating streams](#creating-streams)
   * [ReadableResourceStream](#readableresourcestream)
   * [WritableResourceStream](#writableresourcestream)
   * [DuplexResourceStream](#duplexresourcestream)
@@ -43,7 +44,29 @@ descriptor based implementation with an in-memory write buffer.
 * [Tests](#tests)
 * [License](#license)
 
-## API
+## Stream usage
+
+ReactPHP uses the concept of "streams" throughout its ecosystem to provide a
+consistent higher-level abstraction for processing streams of arbitrary data
+contents and size.
+While a stream itself is a quite low-level concept, it can be used as a powerful
+abstraction to build higher-level components and protocols on top.
+
+If you're new to this concept, it helps to think of them as a water pipe:
+You can consume water from a source or you can produce water and forward (pipe)
+it to any destination (sink).
+
+Similarly, streams can either be
+
+* readable (such as `STDIN` terminal input) or
+* writable (such as `STDOUT` terminal output) or
+* duplex (both readable *and* writable, such as a TCP/IP connection)
+
+Accordingly, this package defines the following three interfaces
+
+* [`ReadableStreamInterface`](#readablestreaminterface)
+* [`WritableStreamInterface`](#writablestreaminterface)
+* [`DuplexStreamInterface`](#duplexstreaminterface)
 
 ### ReadableStreamInterface
 
@@ -732,6 +755,18 @@ order to be considered a well-behaving stream.
 
 See also [`ReadableStreamInterface`](#readablestreaminterface) and
 [`WritableStreamInterface`](#writablestreaminterface) for more details.
+
+## Creating streams
+
+ReactPHP uses the concept of "streams" throughout its ecosystem, so that
+many higher-level consumers of this package only deal with
+[stream usage](#stream-usage).
+This implies that stream instances are most often created within some
+higher-level components and many consumers never actually have to deal with
+creating a stream instance.
+
+However, if you are writing a lower-level component or want to create a stream
+instance from a stream resource, then the following chapter is for you.
 
 ### ReadableResourceStream
 
