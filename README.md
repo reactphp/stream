@@ -833,6 +833,12 @@ mean it reached EOF.
 $stream = new ReadableResourceStream(STDIN, $loop, 8192);
 ```
 
+> PHP bug warning: If the PHP process has explicitly been started without a
+  `STDIN` stream, then trying to read from `STDIN` may return data from
+  another stream resource. This does not happen if you start this with an empty
+  stream like `php test.php < /dev/null` instead of `php test.php <&-`.
+  See [#81](https://github.com/reactphp/stream/issues/81) for more details.
+
 ### WritableResourceStream
 
 The `WritableResourceStream` is a concrete implementation of the
