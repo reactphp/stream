@@ -73,7 +73,7 @@ use InvalidArgumentException;
  * @see DuplexStreamInterface::close()
  * @see WritableStreamInterface::pipe()
  */
-class ThroughStream extends EventEmitter implements DuplexStreamInterface
+final class ThroughStream extends EventEmitter implements DuplexStreamInterface
 {
     private $readable = true;
     private $writable = true;

@@ -2,7 +2,7 @@
 
 namespace React\Stream;
 
-class Util
+final class Util
 {
     /**
      * Pipes all the data from the given $source into the $dest

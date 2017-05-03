@@ -5,7 +5,7 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 
-class WritableResourceStream extends EventEmitter implements WritableStreamInterface
+final class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
     private $stream;
     private $loop;
