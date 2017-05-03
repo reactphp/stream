@@ -43,6 +43,7 @@ descriptor based implementation with an in-memory write buffer.
 * [Install](#install)
 * [Tests](#tests)
 * [License](#license)
+* [More](#more)
 
 ## Stream usage
 
@@ -765,6 +766,18 @@ This implies that stream instances are most often created within some
 higher-level components and many consumers never actually have to deal with
 creating a stream instance.
 
+* Use [react/socket](https://github.com/reactphp/socket)
+  if you want to accept incoming or establish outgoing plaintext TCP/IP or
+  secure TLS socket connection streams.
+* Use [react/http](https://github.com/reactphp/http)
+  if you want to receive an incoming HTTP request body streams.
+* Use [react/child-process](https://github.com/reactphp/child-process)
+  if you want to communicate with child processes via process pipes such as
+  STDIN, STDOUT, STDERR etc.
+* Use experimental [react/filesystem](https://github.com/reactphp/filesystem)
+  if you want to read from / write to the filesystem.
+* See also the last chapter for [more real-world applications](#more).
+
 However, if you are writing a lower-level component or want to create a stream
 instance from a stream resource, then the following chapter is for you.
 
@@ -1094,3 +1107,11 @@ $ php vendor/bin/phpunit
 ## License
 
 MIT, see [LICENSE file](LICENSE).
+
+## More
+
+* See [creating streams](#creating-streams) for more information on how streams
+  are created in real-world applications.
+* See our [users wiki](https://github.com/reactphp/react/wiki/Users) and the
+  [dependents on Packagist](https://packagist.org/packages/react/stream/dependents)
+  for a list of packages that use streams in real-world applications.
