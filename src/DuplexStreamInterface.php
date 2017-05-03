@@ -15,6 +15,13 @@ namespace React\Stream;
  * `EventEmitterInterface` which allows you to react to the same events defined
  * on the `ReadbleStreamInterface` and `WritableStreamInterface`.
  *
+ * The event callback functions MUST be a valid `callable` that obeys strict
+ * parameter definitions and MUST accept event parameters exactly as documented.
+ * The event callback functions MUST NOT throw an `Exception`.
+ * The return value of the event callback functions will be ignored and has no
+ * effect, so for performance reasons you're recommended to not return any
+ * excessive data structures.
+ *
  * Every implementation of this interface MUST follow these event semantics in
  * order to be considered a well-behaving stream.
  *
