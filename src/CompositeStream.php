@@ -15,6 +15,10 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
         $this->readable = $readable;
         $this->writable = $writable;
 
+        if (!$readable->isReadable() || !$writable->isWritable()) {
+            return $this->close();
+        }
+
         Util::forwardEvents($this->readable, $this, array('data', 'end', 'error'));
         Util::forwardEvents($this->writable, $this, array('drain', 'error', 'pipe'));
 

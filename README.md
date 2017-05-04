@@ -38,6 +38,7 @@ descriptor based implementation with an in-memory write buffer.
   * [WritableResourceStream](#writableresourcestream)
   * [DuplexResourceStream](#duplexresourcestream)
   * [ThroughStream](#throughstream)
+  * [CompositeStream](#compositestream)
 * [Usage](#usage)
 * [Install](#install)
 * [Tests](#tests)
@@ -1009,6 +1010,44 @@ $through->on('data', $this->expectCallableNever()));
 
 $through->write(2);
 ```
+
+### CompositeStream
+
+The `CompositeStream` implements the
+[`DuplexStreamInterface`](#duplexstreaminterface) and can be used to create a
+single duplex stream from two individual streams implementing
+[`ReadableStreamInterface`](#readablestreaminterface) and
+[`WritableStreamInterface`](#writablestreaminterface) respectively.
+
+This is useful for some APIs which may require a single
+[`DuplexStreamInterface`](#duplexstreaminterface) or simply because it's often
+more convenient to work with a single stream instance like this:
+
+```php
+$stdin = new ReadableStreamResource(STDIN, $loop);
+$stdout = new WritableStreamResource(STDOUT, $loop);
+
+$stdio = new CompositeStream($stdin, $stdout);
+
+$stdio->on('data', function ($chunk) use ($stdio) {
+    $stdio->write('You said: ' . $chunk);
+});
+```
+
+This is a well-behaving stream which forwards all stream events from the
+underlying streams and forwards all streams calls to the underlying streams.
+
+If you `write()` to the duplex stream, it will simply `write()` to the
+writable side and return its status.
+
+If you `end()` the duplex stream, it will `end()` the writable side and will
+`pause()` the readable side.
+
+If you `close()` the duplex stream, both input streams will be closed.
+If either of the two input streams emits a `close` event, the duplex stream
+will also close.
+If either of the two input streams is already closed while constructing the
+duplex stream, it will `close()` the other side and return a closed stream.
 
 ## Usage
 ```php
