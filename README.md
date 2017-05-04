@@ -13,7 +13,7 @@ descriptor based implementation with an in-memory write buffer.
 
 **Table of contents**
 
-* [API](#api)
+* [Stream usage](#stream-usage)
   * [ReadableStreamInterface](#readablestreaminterface)
     * [data event](#data-event)
     * [end event](#end-event)
@@ -34,6 +34,7 @@ descriptor based implementation with an in-memory write buffer.
     * [end()](#end)
     * [close()](#close-1)
   * [DuplexStreamInterface](#duplexstreaminterface)
+* [Creating streams](#creating-streams)
   * [ReadableResourceStream](#readableresourcestream)
   * [WritableResourceStream](#writableresourcestream)
   * [DuplexResourceStream](#duplexresourcestream)
@@ -42,8 +43,31 @@ descriptor based implementation with an in-memory write buffer.
 * [Install](#install)
 * [Tests](#tests)
 * [License](#license)
+* [More](#more)
 
-## API
+## Stream usage
+
+ReactPHP uses the concept of "streams" throughout its ecosystem to provide a
+consistent higher-level abstraction for processing streams of arbitrary data
+contents and size.
+While a stream itself is a quite low-level concept, it can be used as a powerful
+abstraction to build higher-level components and protocols on top.
+
+If you're new to this concept, it helps to think of them as a water pipe:
+You can consume water from a source or you can produce water and forward (pipe)
+it to any destination (sink).
+
+Similarly, streams can either be
+
+* readable (such as `STDIN` terminal input) or
+* writable (such as `STDOUT` terminal output) or
+* duplex (both readable *and* writable, such as a TCP/IP connection)
+
+Accordingly, this package defines the following three interfaces
+
+* [`ReadableStreamInterface`](#readablestreaminterface)
+* [`WritableStreamInterface`](#writablestreaminterface)
+* [`DuplexStreamInterface`](#duplexstreaminterface)
 
 ### ReadableStreamInterface
 
@@ -754,6 +778,38 @@ order to be considered a well-behaving stream.
 See also [`ReadableStreamInterface`](#readablestreaminterface) and
 [`WritableStreamInterface`](#writablestreaminterface) for more details.
 
+## Creating streams
+
+ReactPHP uses the concept of "streams" throughout its ecosystem, so that
+many higher-level consumers of this package only deal with
+[stream usage](#stream-usage).
+This implies that stream instances are most often created within some
+higher-level components and many consumers never actually have to deal with
+creating a stream instance.
+
+* Use [react/socket](https://github.com/reactphp/socket)
+  if you want to accept incoming or establish outgoing plaintext TCP/IP or
+  secure TLS socket connection streams.
+* Use [react/http](https://github.com/reactphp/http)
+  if you want to receive an incoming HTTP request body streams.
+* Use [react/child-process](https://github.com/reactphp/child-process)
+  if you want to communicate with child processes via process pipes such as
+  STDIN, STDOUT, STDERR etc.
+* Use experimental [react/filesystem](https://github.com/reactphp/filesystem)
+  if you want to read from / write to the filesystem.
+* See also the last chapter for [more real-world applications](#more).
+
+However, if you are writing a lower-level component or want to create a stream
+instance from a stream resource, then the following chapter is for you.
+
+> Note that the following examples use `fopen()` and `stream_socket_client()`
+  for illustration purposes only.
+  These functions SHOULD NOT be used in a truly async program because each call
+  may take several seconds to complete and would block the EventLoop otherwise.
+  Additionally, the `fopen()` call will return a file handle on some platforms
+  which may or may not be supported by all EventLoop implementations.
+  As an alternative, you may want to use higher-level libraries listed above.
+
 ### ReadableResourceStream
 
 The `ReadableResourceStream` is a concrete implementation of the
@@ -818,6 +874,12 @@ mean it reached EOF.
 ```php
 $stream = new ReadableResourceStream(STDIN, $loop, 8192);
 ```
+
+> PHP bug warning: If the PHP process has explicitly been started without a
+  `STDIN` stream, then trying to read from `STDIN` may return data from
+  another stream resource. This does not happen if you start this with an empty
+  stream like `php test.php < /dev/null` instead of `php test.php <&-`.
+  See [#81](https://github.com/reactphp/stream/issues/81) for more details.
 
 ### WritableResourceStream
 
@@ -1032,16 +1094,26 @@ $through->write(2);
 ```
 
 ## Usage
+
+The following example can be used to pipe the contents of a source file into
+a destination file without having to ever read the whole file into memory:
+
 ```php
-    $loop = React\EventLoop\Factory::create();
+$loop = new React\EventLoop\StreamSelectLoop::create();
 
-    $source = new React\Stream\ReadableResourceStream(fopen('omg.txt', 'r'), $loop);
-    $dest = new React\Stream\WritableResourceStream(fopen('wtf.txt', 'w'), $loop);
+$source = new React\Stream\ReadableResourceStream(fopen('source.txt', 'r'), $loop);
+$dest = new React\Stream\WritableResourceStream(fopen('destination.txt', 'w'), $loop);
 
-    $source->pipe($dest);
+$source->pipe($dest);
 
-    $loop->run();
+$loop->run();
 ```
+
+> Note that this example uses `fopen()` for illustration purposes only.
+  This should not be used in a truly async program because the filesystem is
+  inherently blocking and each call could potentially take several seconds.
+  See also [creating streams](#creating-streams) for more sophisticated
+  examples.
 
 ## Install
 
@@ -1079,3 +1151,11 @@ $ php vendor/bin/phpunit
 ## License
 
 MIT, see [LICENSE file](LICENSE).
+
+## More
+
+* See [creating streams](#creating-streams) for more information on how streams
+  are created in real-world applications.
+* See our [users wiki](https://github.com/reactphp/react/wiki/Users) and the
+  [dependents on Packagist](https://packagist.org/packages/react/stream/dependents)
+  for a list of packages that use streams in real-world applications.
