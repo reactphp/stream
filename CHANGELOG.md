@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.7.0 (2017-05-04)
+
+*   Removed / BC break: Remove deprecated and unneeded functionality
+    (#45, #87, #90, #91 and #93 by @clue)
+
+    *   Remove deprecated `Stream` class, use `DuplexResourceStream` instead
+        (#87 by @clue)
+      
+    *   Remove public `$buffer` property, use new constructor parameters instead
+        (#91 by @clue)
+
+    *   Remove public `$stream` property from all resource streams
+        (#90 by @clue)
+
+    *   Remove undocumented and now unused `ReadableStream` and `WritableStream`
+        (#93 by @clue)
+
+    *   Remove `BufferedSink`
+        (#45 by @clue)
+
+*   Feature / BC break: Simplify `ThroughStream` by using data callback instead of
+    inheritance. It is now a direct implementation of `DuplexStreamInterface`.
+    (#88 and #89 by @clue)
+
+    ```php
+    $through = new ThroughStream(function ($data) {
+        return json_encode($data) . PHP_EOL;
+    });
+    $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
+
+    $through->write(array(2, true));
+    ```
+
+*   Feature / BC break: The `CompositeStream` starts closed if either side is
+    already closed and forwards pause to pipe source on first write attempt.
+    (#96 and #103 by @clue)
+    
+    If either side of the composite stream closes, it will also close the other
+    side. We now also ensure that if either side is already closed during
+    instantiation, it will also close the other side.
+
+*   BC break: Mark all classes as `final` and
+    mark internal API as `private` to discourage inheritance
+    (#95 and #99 by @clue)
+
+*   Feature / BC break: Only emit `error` event for fatal errors
+    (#92 by @clue)
+
+    >   The `error` event was previously also allowed to be emitted for non-fatal
+        errors, but our implementations actually only ever emitted this as a fatal
+        error and then closed the stream.
+
+*   Feature: Explicitly allow custom events and exclude any semantics
+    (#97 by @clue)
+
+*   Support legacy PHP 5.3 through PHP 7.1 and HHVM and improve usage documentation
+    (#100 and #102 by @clue)
+
+*   Actually require all dependencies so this is self-contained and improve
+    forward compatibility with EventLoop v1.0 and v0.5
+    (#94 and #98 by @clue)
+
 ## 0.6.0 (2017-03-26)
 
 * Feature / Fix / BC break: Add `DuplexResourceStream` and deprecate `Stream`
