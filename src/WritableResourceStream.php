@@ -10,13 +10,14 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     private $stream;
     private $loop;
     private $softLimit;
+    private $writeChunkSize;
 
     private $listening = false;
     private $writable = true;
     private $closed = false;
     private $data = '';
 
-    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null)
+    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null, $writeChunkSize = null)
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -36,6 +37,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         $this->stream = $stream;
         $this->loop = $loop;
         $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
+        $this->writeChunkSize = ($writeChunkSize === null) ? -1 : (int)$writeChunkSize;
     }
 
     public function isWritable()
@@ -107,7 +109,11 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
             );
         });
 
-        $sent = fwrite($this->stream, $this->data);
+        if ($this->writeChunkSize === -1) {
+            $sent = fwrite($this->stream, $this->data);
+        } else {
+            $sent = fwrite($this->stream, $this->data, $this->writeChunkSize);
+        }
 
         restore_error_handler();
 
