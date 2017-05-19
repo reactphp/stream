@@ -941,6 +941,21 @@ This value SHOULD NOT be changed unless you know what you're doing.
 $stream = new WritableResourceStream(STDOUT, $loop, 8192);
 ```
 
+This class takes an optional `int|null $writeChunkSize` parameter that controls
+this maximum buffer size in bytes to write at once to the stream.
+You can use a `null` value here in order to apply its default value.
+This value SHOULD NOT be changed unless you know what you're doing.
+This can be a positive number which means that up to X bytes will be written
+at once to the underlying stream resource. Note that the actual number
+of bytes written may be lower if the stream resource has less than X bytes
+currently available.
+This can be `-1` which means "write everything available" to the
+underlying stream resource.
+
+```php
+$stream = new WritableResourceStream(STDOUT, $loop, null, 8192);
+```
+
 See also [`write()`](#write) for more details.
 
 ### DuplexResourceStream
