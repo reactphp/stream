@@ -12,7 +12,7 @@ use Evenement\EventEmitterInterface;
  * `EventEmitterInterface` which allows you to react to certain events:
  *
  * drain event:
- *     The `drain` event will be emitted whenever the write buffer became full
+ *     The `drain` event MUST be emitted whenever the write buffer became full
  *     previously and is now ready to accept more data.
  *
  *     ```php
@@ -31,7 +31,7 @@ use Evenement\EventEmitterInterface;
  *     This event is mostly used internally, see also `write()` for more details.
  *
  * pipe event:
- *     The `pipe` event will be emitted whenever a readable stream is `pipe()`d
+ *     The `pipe` event MUST be emitted whenever a readable stream is `pipe()`d
  *     into this stream.
  *     The event receives a single `ReadableStreamInterface` argument for the
  *     source stream.
@@ -59,23 +59,24 @@ use Evenement\EventEmitterInterface;
  *     This event is mostly used internally, see also `pipe()` for more details.
  *
  * error event:
- *     The `error` event will be emitted once a fatal error occurs, usually while
+ *     The `error` event MUST be emitted once a fatal error occurs, usually while
  *     trying to write to this stream.
- *     The event receives a single `Exception` argument for the error instance.
+ *     The event receives a single `Throwable` / `Exception` argument for the error
+ *     instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on('error', function ($e) {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
  *
- *     This event SHOULD be emitted once the stream detects a fatal error, such
+ *     This event MUST be emitted once the stream detects a fatal error, such
  *     as a fatal transmission error.
- *     It SHOULD NOT be emitted after a previous `error` or `close` event.
+ *     It MUST NOT be emitted after a previous `error` or `close` event.
  *     It MUST NOT be emitted if this is not a fatal error condition, such as
  *     a temporary network issue that did not cause any data to be lost.
  *
- *     After the stream errors, it MUST close the stream and SHOULD thus be
+ *     After the stream errors, it MUST close the stream and MUST thus be
  *     followed by a `close` event and then switch to non-writable mode, see
  *     also `close()` and `isWritable()`.
  *
@@ -90,7 +91,7 @@ use Evenement\EventEmitterInterface;
  *     stream which should result in the same error processing.
  *
  * close event:
- *     The `close` event will be emitted once the stream closes (terminates).
+ *     The `close` event MUST be emitted once the stream closes (terminates).
  *
  *     ```php
  *     $stream->on('close', function () {
@@ -98,14 +99,14 @@ use Evenement\EventEmitterInterface;
  *     });
  *     ```
  *
- *     This event SHOULD be emitted once or never at all, depending on whether
+ *     This event MUST be emitted once or never at all, depending on whether
  *     the stream ever terminates.
- *     It SHOULD NOT be emitted after a previous `close` event.
+ *     It MUST NOT be emitted after a previous `close` event.
  *
  *     After the stream is closed, it MUST switch to non-writable mode,
  *     see also `isWritable()`.
  *
- *     This event SHOULD be emitted whenever the stream closes, irrespective of
+ *     This event MUST be emitted whenever the stream closes, irrespective of
  *     whether this happens implicitly due to an unrecoverable error or
  *     explicitly when either side closes the stream.
  *
@@ -184,25 +185,25 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * Many common streams (such as a TCP/IP connection or file-based stream)
      * may choose to buffer all given data and schedule a future flush by using
-     * an underlying EventLoop to check when the resource is actually writable.
+     * an underlying event loop to check when the resource is actually writable.
      *
-     * If a stream cannot handle writing (or flushing) the data, it SHOULD emit
-     * an `error` event and MAY `close()` the stream if it can not recover from
+     * If a stream cannot handle writing (or flushing) the data, it MUST emit
+     * an `error` event and MUST `close()` the stream if it can not recover from
      * this error.
      *
      * If the internal buffer is full after adding `$data`, then `write()`
-     * SHOULD return `false`, indicating that the caller should stop sending
+     * MUST return `false`, indicating that the caller should stop sending
      * data until the buffer drains.
-     * The stream SHOULD send a `drain` event once the buffer is ready to accept
+     * The stream MUST send a `drain` event once the buffer is ready to accept
      * more data.
      *
      * Similarly, if the the stream is not writable (already in a closed state)
-     * it MUST NOT process the given `$data` and SHOULD return `false`,
+     * it MUST NOT process the given `$data` and MUST return `false`,
      * indicating that the caller should stop sending data.
      *
-     * The given `$data` argument MAY be of mixed type, but it's usually
-     * recommended it SHOULD be a `string` value or MAY use a type that allows
-     * representation as a `string` for maximum compatibility.
+     * The given `$data` argument MAY be of mixed type, but it's RECOMMENDED
+     * to be a `string` value or a type that allows representation as a
+     * `string` for maximum compatibility.
      *
      * Many common streams (such as a TCP/IP connection or a file-based stream)
      * will only accept the raw (binary) payload data that is transferred over
@@ -237,9 +238,9 @@ interface WritableStreamInterface extends EventEmitterInterface
      * this method MAY `close()` the stream immediately.
      *
      * If there's still data in the buffer that needs to be flushed first, then
-     * this method SHOULD try to write out this data and only then `close()`
+     * this method MUST try to write out this data and only then `close()`
      * the stream.
-     * Once the stream is closed, it SHOULD emit a `close` event.
+     * Once the stream is closed, it MUST emit a `close` event.
      *
      * Note that this interface gives you no control over explicitly flushing
      * the buffered data, as finding the appropriate time for this is beyond the
@@ -248,7 +249,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * Many common streams (such as a TCP/IP connection or file-based stream)
      * may choose to buffer all given data and schedule a future flush by using
-     * an underlying EventLoop to check when the resource is actually writable.
+     * an underlying event loop to check when the resource is actually writable.
      *
      * You can optionally pass some final data that is written to the stream
      * before ending the stream. If a non-`null` value is given as `$data`, then
@@ -305,8 +306,8 @@ interface WritableStreamInterface extends EventEmitterInterface
      * $stream->close();
      * ```
      *
-     * Once the stream is closed, it SHOULD emit a `close` event.
-     * Note that this event SHOULD NOT be emitted more than once, in particular
+     * Once the stream is closed, it MUST emit a `close` event.
+     * Note that this event MUST NOT be emitted more than once, in particular
      * if this method is called multiple times.
      *
      * After calling this method, the stream MUST switch into a non-writable
