@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.1 (2017-05-20)
+
+*   Feature: Add optional `$writeChunkSize` parameter to limit maximum number of
+    bytes to write at once.
+    (#105 by @clue)
+
+    ```php
+    $stream = new WritableResourceStream(STDOUT, $loop, null, 8192);
+    ```
+
+*   Ignore HHVM test failures for now until Travis tests work again
+    (#106 by @clue)
+
 ## 0.7.0 (2017-05-04)
 
 *   Removed / BC break: Remove deprecated and unneeded functionality
