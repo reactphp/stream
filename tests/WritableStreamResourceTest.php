@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use Clue\StreamFilter as Filter;
 use React\Stream\WritableResourceStream;
 
 class WritableResourceStreamTest extends TestCase
@@ -294,19 +295,24 @@ class WritableResourceStreamTest extends TestCase
     public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
         $stream = fopen('php://temp', 'r+');
+        $filterBuffer = '';
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
+        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+            $filterBuffer .= $chunk;
+            return $chunk;
+        });
+
         $this->assertTrue($buffer->isWritable());
         $buffer->end('final words');
         $this->assertFalse($buffer->isWritable());
 
         $buffer->handleWrite();
-        rewind($stream);
-        $this->assertSame('final words', stream_get_contents($stream));
+        $this->assertSame('final words', $filterBuffer);
     }
 
     /**
@@ -402,16 +408,22 @@ class WritableResourceStreamTest extends TestCase
     public function testWritingToClosedWritableResourceStreamShouldNotWriteToStream()
     {
         $stream = fopen('php://temp', 'r+');
+        $filterBuffer = '';
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
+
+        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+            $filterBuffer .= $chunk;
+            return $chunk;
+        });
+
         $buffer->close();
 
         $buffer->write('foo');
 
         $buffer->handleWrite();
-        rewind($stream);
-        $this->assertSame('', stream_get_contents($stream));
+        $this->assertSame('', $filterBuffer);
     }
 
     /**
