@@ -94,6 +94,16 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 
         $this->emit('close', array($this));
         $this->removeAllListeners();
+
+        $this->handleClose();
+    }
+
+    /** @internal */
+    public function handleClose()
+    {
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+        }
     }
 
     /** @internal */
