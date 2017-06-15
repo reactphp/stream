@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2 (2017-06-15)
+
+*   Bug fix: WritableResourceStream: Close the underlying stream when closing the stream.
+    (#107 by @WyriHaximus)  
+
 ## 0.7.1 (2017-05-20)
 
 *   Feature: Add optional `$writeChunkSize` parameter to limit maximum number of
