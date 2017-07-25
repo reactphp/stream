@@ -1153,7 +1153,7 @@ The following example can be used to pipe the contents of a source file into
 a destination file without having to ever read the whole file into memory:
 
 ```php
-$loop = new React\EventLoop\StreamSelectLoop::create();
+$loop = new React\EventLoop\StreamSelectLoop;
 
 $source = new React\Stream\ReadableResourceStream(fopen('source.txt', 'r'), $loop);
 $dest = new React\Stream\WritableResourceStream(fopen('destination.txt', 'w'), $loop);
