@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.3 (2017-08-05)
+
+*   Improvement: Support Événement 3.0 a long side 2.0 and 1.0
+    (#108 by @WyriHaximus)  
+*   Readme: Corrected loop initialization in usage example
+    (#109 by @pulyavin)  
+*   Travis: Lock linux distribution preventing future builds from breaking
+    (#110 by @clue)  
+
 ## 0.7.2 (2017-06-15)
 
 *   Bug fix: WritableResourceStream: Close the underlying stream when closing the stream.
