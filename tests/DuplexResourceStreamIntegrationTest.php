@@ -248,7 +248,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('echo -n a;sleep 0.1;echo -n b;sleep 0.1;echo -n c', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('echo a;sleep 0.1;echo b;sleep 0.1;echo c', 'r'), $loop);
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -260,7 +260,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         $loop->run();
 
-        $this->assertEquals('abc', $buffer);
+        $this->assertEquals("a\n" . "b\n" . "c\n", $buffer);
     }
 
     /**
