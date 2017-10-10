@@ -925,8 +925,8 @@ take care of the underlying stream resource.
 You SHOULD only use its public API and SHOULD NOT interfere with the underlying
 stream resource manually.
 
-Any `write()` calls to this class will not be performaned instantly, but will
-be performaned asynchronously, once the EventLoop reports the stream resource is
+Any `write()` calls to this class will not be performed instantly, but will
+be performed asynchronously, once the EventLoop reports the stream resource is
 ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
@@ -1022,8 +1022,8 @@ $conn = stream_socket_client('tcp://google.com:80');
 $stream = new DuplexResourceStream($conn, $loop, 8192);
 ```
 
-Any `write()` calls to this class will not be performaned instantly, but will
-be performaned asynchronously, once the EventLoop reports the stream resource is
+Any `write()` calls to this class will not be performed instantly, but will
+be performed asynchronously, once the EventLoop reports the stream resource is
 ready to accept data.
 For this, it uses an in-memory buffer string to collect all outstanding writes.
 This buffer has a soft-limit applied which defines how much data it is willing
