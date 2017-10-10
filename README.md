@@ -1122,8 +1122,8 @@ This is useful for some APIs which may require a single
 more convenient to work with a single stream instance like this:
 
 ```php
-$stdin = new ReadableStreamResource(STDIN, $loop);
-$stdout = new WritableStreamResource(STDOUT, $loop);
+$stdin = new ReadableResourceStream(STDIN, $loop);
+$stdout = new WritableResourceStream(STDOUT, $loop);
 
 $stdio = new CompositeStream($stdin, $stdout);
 
