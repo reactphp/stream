@@ -189,6 +189,25 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
+    public function itShouldForwardCloseAndRemoveAllListeners()
+    {
+        $in = new ThroughStream();
+
+        $composite = new CompositeStream($in, $in);
+        $composite->on('close', $this->expectCallableOnce());
+
+        $this->assertTrue($composite->isReadable());
+        $this->assertTrue($composite->isWritable());
+        $this->assertCount(1, $composite->listeners('close'));
+
+        $composite->close();
+
+        $this->assertFalse($composite->isReadable());
+        $this->assertFalse($composite->isWritable());
+        $this->assertCount(0, $composite->listeners('close'));
+    }
+
+    /** @test */
     public function itShouldReceiveForwardedEvents()
     {
         $readable = new ThroughStream();
