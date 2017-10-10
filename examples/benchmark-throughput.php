@@ -33,9 +33,9 @@ $timeout = $loop->addTimer($t, function () use ($in, &$bytes) {
 });
 
 // print stream position once stream closes
-$in->on('close', function () use ($fh, $start, $timeout, $info) {
+$in->on('close', function () use ($fh, $start, $loop, $timeout, $info) {
     $t = microtime(true) - $start;
-    $timeout->cancel();
+    $loop->cancelTimer($timeout);
 
     $bytes = ftell($fh);
 
