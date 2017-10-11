@@ -24,7 +24,7 @@ use Evenement\EventEmitterInterface;
  *
  *     This event MAY be emitted any number of times, which may be zero times if
  *     this stream does not send any data at all.
- *     It SHOULD not be emitted after an `end` or `close` event.
+ *     It MUST not be emitted after an `end` or `close` event.
  *
  *     The given `$data` argument may be of mixed type, but it's usually
  *     recommended it SHOULD be a `string` value or MAY use a type that allows
@@ -43,7 +43,7 @@ use Evenement\EventEmitterInterface;
  *     these low-level data chunks in order to achieve proper message framing.
  *
  * end event:
- *     The `end` event will be emitted once the source stream has successfully
+ *     The `end` event MUST be emitted once the source stream has successfully
  *     reached the end of the stream (EOF).
  *
  *     ```php
@@ -52,13 +52,13 @@ use Evenement\EventEmitterInterface;
  *     });
  *     ```
  *
- *     This event SHOULD be emitted once or never at all, depending on whether
+ *     This event MUST be emitted once or never at all, depending on whether
  *     a successful end was detected.
- *     It SHOULD NOT be emitted after a previous `end` or `close` event.
+ *     It MUST NOT be emitted after a previous `end` or `close` event.
  *     It MUST NOT be emitted if the stream closes due to a non-successful
  *     end, such as after a previous `error` event.
  *
- *     After the stream is ended, it MUST switch to non-readable mode,
+ *     After the stream has ended, it MUST switch to non-readable mode,
  *     see also `isReadable()`.
  *
  *     This event will only be emitted if the *end* was reached successfully,
@@ -66,7 +66,7 @@ use Evenement\EventEmitterInterface;
  *     closed. Not all streams know this concept of a "successful end".
  *     Many use-cases involve detecting when the stream closes (terminates)
  *     instead, in this case you should use the `close` event.
- *     After the stream emits an `end` event, it SHOULD usually be followed by a
+ *     After the stream emits an `end` event, it MUST be followed by a
  *     `close` event.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
@@ -79,24 +79,25 @@ use Evenement\EventEmitterInterface;
  *     stream.
  *
  * error event:
- *     The `error` event will be emitted once a fatal error occurs, usually while
+ *     The `error` event MUST be emitted once a fatal error occurs, usually while
  *     trying to read from this stream.
- *     The event receives a single `Exception` argument for the error instance.
+ *     The event receives a single `Throwable` / `Exception` argument for the error
+ *     instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on('error', function ($e) {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
  *
- *     This event SHOULD be emitted once the stream detects a fatal error, such
+ *     This event MUST be emitted once the stream detects a fatal error, such
  *     as a fatal transmission error or after an unexpected `data` or premature
  *     `end` event.
- *     It SHOULD NOT be emitted after a previous `error`, `end` or `close` event.
+ *     It MUST NOT be emitted after a previous `error`, `end` or `close` event.
  *     It MUST NOT be emitted if this is not a fatal error condition, such as
  *     a temporary network issue that did not cause any data to be lost.
  *
- *     After the stream errors, it MUST close the stream and SHOULD thus be
+ *     After the stream errors, it MUST close the stream and MUST thus be
  *     followed by a `close` event and then switch to non-readable mode, see
  *     also `close()` and `isReadable()`.
  *
@@ -113,7 +114,7 @@ use Evenement\EventEmitterInterface;
  *     stream which should result in the same error processing.
  *
  * close event:
- *     The `close` event will be emitted once the stream closes (terminates).
+ *     The `close` event MUST be emitted once the stream closes (terminates).
  *
  *     ```php
  *     $stream->on('close', function () {
@@ -121,14 +122,14 @@ use Evenement\EventEmitterInterface;
  *     });
  *     ```
  *
- *     This event SHOULD be emitted once or never at all, depending on whether
+ *     This event MUST be emitted once or never at all, depending on whether
  *     the stream ever terminates.
- *     It SHOULD NOT be emitted after a previous `close` event.
+ *     It MUST NOT be emitted after a previous `close` event.
  *
  *     After the stream is closed, it MUST switch to non-readable mode,
  *     see also `isReadable()`.
  *
- *     Unlike the `end` event, this event SHOULD be emitted whenever the stream
+ *     Unlike the `end` event, this event MUST be emitted whenever the stream
  *     closes, irrespective of whether this happens implicitly due to an
  *     unrecoverable error or explicitly when either side closes the stream.
  *     If you only want to detect a *successful* end, you should use the `end`
@@ -146,7 +147,7 @@ use Evenement\EventEmitterInterface;
  *
  * The event callback functions MUST be a valid `callable` that obeys strict
  * parameter definitions and MUST accept event parameters exactly as documented.
- * The event callback functions MUST NOT throw an `Exception`.
+ * The event callback functions MUST NOT throw an `Exception` / `Throwable`.
  * The return value of the event callback functions will be ignored and has no
  * effect, so for performance reasons you're recommended to not return any
  * excessive data structures.
@@ -169,7 +170,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      *
      * This method can be used to check if the stream still accepts incoming
      * data events or if it is ended or closed already.
-     * Once the stream is non-readable, no further `data` or `end` events SHOULD
+     * Once the stream is non-readable, no further `data` or `end` events MUST
      * be emitted.
      *
      * ```php
@@ -189,7 +190,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      *
      * If this stream is a `DuplexStreamInterface`, you should also notice
      * how the writable side of the stream also implements an `isWritable()`
-     * method. Unless this is a half-open duplex stream, they SHOULD usually
+     * method. Unless this is a half-open duplex stream, they will usually
      * have the same return value.
      *
      * @return bool
@@ -333,13 +334,13 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * $stream->close();
      * ```
      *
-     * Once the stream is closed, it SHOULD emit a `close` event.
-     * Note that this event SHOULD NOT be emitted more than once, in particular
+     * Once the stream is closed, it MUST emit a `close` event.
+     * Note that this event MUST NOT be emitted more than once, in particular
      * if this method is called multiple times.
      *
      * After calling this method, the stream MUST switch into a non-readable
      * mode, see also `isReadable()`.
-     * This means that no further `data` or `end` events SHOULD be emitted.
+     * This means that no further `data` or `end` events MUST be emitted.
      *
      * ```php
      * $stream->close();
