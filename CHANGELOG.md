@@ -1,13 +1,29 @@
 # Changelog
 
+## 0.7.4 (2017-10-11)
+
+*   Fix: Remove event listeners from `CompositeStream` once closed and
+    remove undocumented left-over `close` event argument
+    (#116 by @clue)
+
+*   Minor documentation improvements: Fix wrong class name in example,
+    fix typos in README and
+    fix forward compatibility with upcoming EventLoop releases in example
+    (#113 by @docteurklein and #114 and #115 by @clue)
+
+*   Improve test suite by running against Mac OS X on Travis
+    (#112 by @clue)
+
 ## 0.7.3 (2017-08-05)
 
 *   Improvement: Support Événement 3.0 a long side 2.0 and 1.0
-    (#108 by @WyriHaximus)  
+    (#108 by @WyriHaximus)
+
 *   Readme: Corrected loop initialization in usage example
-    (#109 by @pulyavin)  
+    (#109 by @pulyavin)
+
 *   Travis: Lock linux distribution preventing future builds from breaking
-    (#110 by @clue)  
+    (#110 by @clue)
 
 ## 0.7.2 (2017-06-15)
 
@@ -129,7 +145,7 @@
   ```
 
 * Fix / BC Break: Enforce using non-blocking I/O
-  (#47 by @clue)
+  (#46 by @clue)
 
   > BC note: This is known to affect process pipes on Windows which do not
     support non-blocking I/O and could thus block the whole EventLoop previously.
