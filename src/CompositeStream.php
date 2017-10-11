@@ -6,9 +6,9 @@ use Evenement\EventEmitter;
 
 final class CompositeStream extends EventEmitter implements DuplexStreamInterface
 {
-    protected $readable;
-    protected $writable;
-    protected $closed = false;
+    private $readable;
+    private $writable;
+    private $closed = false;
 
     public function __construct(ReadableStreamInterface $readable, WritableStreamInterface $writable)
     {
@@ -77,5 +77,6 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
         $this->writable->close();
 
         $this->emit('close');
+        $this->removeAllListeners();
     }
 }
