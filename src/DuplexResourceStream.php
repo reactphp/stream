@@ -33,11 +33,12 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     private $readable = true;
     private $writable = true;
     private $closing = false;
+    private $allowHalfOpen = false;
 
-    public function __construct($stream, LoopInterface $loop, $readChunkSize = null, WritableStreamInterface $buffer = null)
+    public function __construct($stream, LoopInterface $loop, $readChunkSize = null, WritableStreamInterface $buffer = null, $options = array())
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
-             throw new InvalidArgumentException('First parameter must be a valid stream resource');
+            throw new InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
         // ensure resource is opened for reading and wrting (fopen mode must contain "+")
@@ -65,13 +66,14 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         }
 
         if ($buffer === null) {
-            $buffer = new WritableResourceStream($stream, $loop);
+            $buffer = new WritableResourceStream($stream, $loop, null, null, $options);
         }
 
         $this->stream = $stream;
         $this->loop = $loop;
         $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
         $this->buffer = $buffer;
+        $this->allowHalfOpen = isset($options['allowHalfOpen']) ? $options['allowHalfOpen'] : false;;
 
         $that = $this;
 
@@ -79,7 +81,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
             $that->emit('error', array($error));
         });
 
-        $this->buffer->on('close', array($this, 'close'));
+        $this->buffer->on('close', array($this, $this->allowHalfOpen ? 'end' : 'close'));
 
         $this->buffer->on('drain', function () use ($that) {
             $that->emit('drain');
@@ -138,6 +140,19 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->handleClose();
     }
 
+    public function halfClose()
+    {
+        if (!$this->writable && !$this->closing) {
+            return;
+        }
+
+        $this->closing = true;
+
+        $this->readable = false;
+        $this->writable = true;
+        $this->pause();
+    }
+
     public function end($data = null)
     {
         if (!$this->writable) {
@@ -146,9 +161,11 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         $this->closing = true;
 
-        $this->readable = false;
         $this->writable = false;
-        $this->pause();
+        if (!$this->allowHalfOpen) {
+            $this->readable = false;
+            $this->pause();
+        }
 
         $this->buffer->end($data);
     }
@@ -184,10 +201,14 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         if ($data !== '') {
             $this->emit('data', array($data));
-        } else{
+        } else {
             // no data read => we reached the end and close the stream
             $this->emit('end');
-            $this->close();
+            if ($this->allowHalfOpen) {
+                $this->halfClose();
+            } else {
+                $this->close();
+            }
         }
     }
 
