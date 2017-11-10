@@ -23,8 +23,9 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
+        // ensure resource is opened for writing (fopen mode must contain either of "waxc+")
         $meta = stream_get_meta_data($stream);
-        if (isset($meta['mode']) && str_replace(array('b', 't'), '', $meta['mode']) === 'r') {
+        if (isset($meta['mode']) && $meta['mode'] !== '' && strtr($meta['mode'], 'waxc+', '.....') === $meta['mode']) {
             throw new \InvalidArgumentException('Given stream resource is not opened in write mode');
         }
 

@@ -21,6 +21,21 @@ class WritableResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
+     */
+    public function testConstructorWithExcessiveMode()
+    {
+        // excessive flags are ignored for temp streams, so we have to use a file stream
+        $name = tempnam(sys_get_temp_dir(), 'test');
+        $stream = @fopen($name, 'w+eANYTHING');
+        unlink($name);
+
+        $loop = $this->createLoopMock();
+        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer->close();
+    }
+
+    /**
+     * @covers React\Stream\WritableResourceStream::__construct
      * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsIfNotAValidStreamResource()
@@ -40,6 +55,21 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
+        new WritableResourceStream($stream, $loop);
+    }
+
+    /**
+     * @covers React\Stream\WritableResourceStream::__construct
+     * @expectedException InvalidArgumentException
+     */
+    public function testConstructorThrowsExceptionOnReadOnlyStreamWithExcessiveMode()
+    {
+        // excessive flags are ignored for temp streams, so we have to use a file stream
+        $name = tempnam(sys_get_temp_dir(), 'test');
+        $stream = fopen($name, 'reANYTHING');
+        unlink($name);
+
+        $loop = $this->createLoopMock();
         new WritableResourceStream($stream, $loop);
     }
 

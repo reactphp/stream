@@ -22,6 +22,21 @@ class DuplexResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
      */
+    public function testConstructorWithExcessiveMode()
+    {
+        // excessive flags are ignored for temp streams, so we have to use a file stream
+        $name = tempnam(sys_get_temp_dir(), 'test');
+        $stream = @fopen($name, 'r+eANYTHING');
+        unlink($name);
+
+        $loop = $this->createLoopMock();
+        $buffer = new DuplexResourceStream($stream, $loop);
+        $buffer->close();
+    }
+
+    /**
+     * @covers React\Stream\DuplexResourceStream::__construct
+     */
     public function testConstructorThrowsExceptionOnInvalidStream()
     {
         $loop = $this->createLoopMock();
@@ -43,6 +58,21 @@ class DuplexResourceStreamTest extends TestCase
 
         $this->setExpectedException('InvalidArgumentException');
         new DuplexResourceStream(STDOUT, $loop);
+    }
+
+    /**
+     * @covers React\Stream\DuplexResourceStream::__construct
+     * @expectedException InvalidArgumentException
+     */
+    public function testConstructorThrowsExceptionOnWriteOnlyStreamWithExcessiveMode()
+    {
+        // excessive flags are ignored for temp streams, so we have to use a file stream
+        $name = tempnam(sys_get_temp_dir(), 'test');
+        $stream = fopen($name, 'weANYTHING');
+        unlink($name);
+
+        $loop = $this->createLoopMock();
+        new DuplexResourceStream($stream, $loop);
     }
 
     /**
