@@ -36,6 +36,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     private $bufferSize;
 
     private $closed = false;
+    private $listening = false;
 
     public function __construct($stream, LoopInterface $loop, $readChunkSize = null)
     {
@@ -81,13 +82,17 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
     public function pause()
     {
-        $this->loop->removeReadStream($this->stream);
+        if ($this->listening) {
+            $this->loop->removeReadStream($this->stream);
+            $this->listening = false;
+        }
     }
 
     public function resume()
     {
-        if (!$this->closed) {
+        if (!$this->listening && !$this->closed) {
             $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            $this->listening = true;
         }
     }
 
@@ -105,10 +110,12 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         $this->closed = true;
 
         $this->emit('close');
-        $this->loop->removeStream($this->stream);
+        $this->pause();
         $this->removeAllListeners();
 
-        $this->handleClose();
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+        }
     }
 
     /** @internal */
@@ -141,14 +148,6 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
-        }
-    }
-
-    /** @internal */
-    public function handleClose()
-    {
-        if (is_resource($this->stream)) {
-            fclose($this->stream);
         }
     }
 
