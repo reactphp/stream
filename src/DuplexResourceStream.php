@@ -131,11 +131,13 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->writable = false;
 
         $this->emit('close');
-        $this->loop->removeStream($this->stream);
+        $this->pause();
         $this->buffer->close();
         $this->removeAllListeners();
 
-        $this->handleClose();
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+        }
     }
 
     public function end($data = null)
@@ -188,14 +190,6 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
-        }
-    }
-
-    /** @internal */
-    public function handleClose()
-    {
-        if (is_resource($this->stream)) {
-            fclose($this->stream);
         }
     }
 

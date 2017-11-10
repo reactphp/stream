@@ -242,10 +242,25 @@ class DuplexResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $loop->expects($this->once())->method('removeReadStream');
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+        $loop->expects($this->once())->method('removeReadStream')->with($stream);
 
         $conn = new DuplexResourceStream($stream, $loop);
         $conn->end('bye');
+    }
+
+    /**
+     * @covers React\Stream\DuplexResourceStream::close
+     */
+    public function testCloseRemovesReadStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+        $loop->expects($this->once())->method('removeReadStream')->with($stream);
+
+        $conn = new DuplexResourceStream($stream, $loop);
+        $conn->close();
     }
 
     public function testEndedStreamsShouldNotWrite()

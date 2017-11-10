@@ -105,10 +105,12 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         $this->closed = true;
 
         $this->emit('close');
-        $this->loop->removeStream($this->stream);
+        $this->pause();
         $this->removeAllListeners();
 
-        $this->handleClose();
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+        }
     }
 
     /** @internal */
@@ -141,14 +143,6 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
-        }
-    }
-
-    /** @internal */
-    public function handleClose()
-    {
-        if (is_resource($this->stream)) {
-            fclose($this->stream);
         }
     }
 

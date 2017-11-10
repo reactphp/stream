@@ -205,6 +205,20 @@ class ReadableResourceStreamTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\ReadableResourceStream::close
+     */
+    public function testCloseRemovesReadStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+        $loop->expects($this->once())->method('removeReadStream')->with($stream);
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->close();
+    }
+
+    /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
     public function testDataFiltered()
