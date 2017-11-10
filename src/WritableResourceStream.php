@@ -16,8 +16,9 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     private $writable = true;
     private $closed = false;
     private $data = '';
+    private $allowHalfOpen = false;
 
-    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null, $writeChunkSize = null)
+    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null, $writeChunkSize = null, $options = array())
     {
         if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -38,6 +39,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         $this->loop = $loop;
         $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
         $this->writeChunkSize = ($writeChunkSize === null) ? -1 : (int)$writeChunkSize;
+        $this->allowHalfOpen = isset($options['allowHalfOpen']) ? $options['allowHalfOpen'] : false;
     }
 
     public function isWritable()
@@ -96,7 +98,13 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         $this->removeAllListeners();
 
         if (is_resource($this->stream)) {
-            fclose($this->stream);
+            // TODO: maybe check if socket is readable? http://php.net/manual/en/function.stream-get-meta-data.php
+            @stream_socket_shutdown($this->stream, 1);
+            stream_set_blocking($this->stream, false);
+
+            if (!$this->allowHalfOpen) {
+                fclose($this->stream);
+            }
         }
     }
 
