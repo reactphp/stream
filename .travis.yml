@@ -6,7 +6,7 @@ php:
   - 5.5
   - 5.6
   - 7.0
-# - 7.0 # Mac OS X test setup, see below
+# - 7.0 # Mac OS X test setup, ignore errors, see below
   - 7.1
   - nightly # ignore errors, see below
   - hhvm # ignore errors, see below
@@ -27,6 +27,7 @@ matrix:
   allow_failures:
     - php: nightly
     - php: hhvm
+    - os: osx
 
 install:
   # OSX install inspired by https://github.com/kiler129/TravisCI-OSX-PHP
