@@ -33,6 +33,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     private $readable = true;
     private $writable = true;
     private $closing = false;
+    private $listening = false;
 
     public function __construct($stream, LoopInterface $loop, $readChunkSize = null, WritableStreamInterface $buffer = null)
     {
@@ -100,13 +101,17 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
     public function pause()
     {
-        $this->loop->removeReadStream($this->stream);
+        if ($this->listening) {
+            $this->loop->removeReadStream($this->stream);
+            $this->listening = false;
+        }
     }
 
     public function resume()
     {
-        if ($this->readable) {
+        if (!$this->listening && $this->readable) {
             $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            $this->listening = true;
         }
     }
 

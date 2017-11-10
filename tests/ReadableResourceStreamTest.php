@@ -205,6 +205,35 @@ class ReadableResourceStreamTest extends TestCase
     }
 
     /**
+     * @covers React\Stream\ReadableResourceStream::pause
+     */
+    public function testPauseRemovesReadStreamFromLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+        $loop->expects($this->once())->method('removeReadStream')->with($stream);
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->pause();
+        $conn->pause();
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::pause
+     */
+    public function testResumeDoesAddStreamToLoopOnlyOnce()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->resume();
+        $conn->resume();
+    }
+
+    /**
      * @covers React\Stream\ReadableResourceStream::close
      */
     public function testCloseRemovesReadStreamFromLoop()
@@ -216,6 +245,35 @@ class ReadableResourceStreamTest extends TestCase
 
         $conn = new ReadableResourceStream($stream, $loop);
         $conn->close();
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::close
+     */
+    public function testCloseAfterPauseRemovesReadStreamFromLoopOnce()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+        $loop->expects($this->once())->method('removeReadStream')->with($stream);
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->pause();
+        $conn->close();
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::close
+     */
+    public function testResumeAfterCloseDoesAddReadStreamToLoopOnlyOnce()
+    {
+        $stream = fopen('php://temp', 'r+');
+        $loop = $this->createLoopMock();
+        $loop->expects($this->once())->method('addReadStream')->with($stream);
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->close();
+        $conn->resume();
     }
 
     /**
