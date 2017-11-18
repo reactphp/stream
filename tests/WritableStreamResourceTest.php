@@ -75,6 +75,7 @@ class WritableResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
+     * @expectedException RuntimeException
      */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
@@ -85,7 +86,6 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
         new WritableResourceStream($stream, $loop);
     }
 
