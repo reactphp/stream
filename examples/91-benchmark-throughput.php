@@ -1,6 +1,22 @@
 <?php
 
+// Benchmark to measure throughput performance piping an input stream to an output stream.
+// This allows you to get an idea of how fast stream processing with PHP can be
+// and also to play around with differnt types of input and output streams.
+//
+// This example accepts a number of parameters to control the timeout (-t 1),
+// the input file (-i /dev/zero) and the output file (-o /dev/null).
+//
+// $ php examples/91-benchmark-throughput.php
+// $ php examples/91-benchmark-throughput.php -t 10 -o zero.bin
+// $ php examples/91-benchmark-throughput.php -t 60 -i zero.bin
+
 require __DIR__ . '/../vendor/autoload.php';
+
+if (DIRECTORY_SEPARATOR === '\\') {
+    fwrite(STDERR, 'Non-blocking console I/O not supported on Microsoft Windows' . PHP_EOL);
+    exit(1);
+}
 
 $args = getopt('i:o:t:');
 $if = isset($args['i']) ? $args['i'] : '/dev/zero';
