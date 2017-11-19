@@ -46,4 +46,4 @@ install:
 
 script:
   - vendor/bin/phpunit --coverage-text
-  - time php examples/benchmark-throughput.php
+  - time php examples/91-benchmark-throughput.php

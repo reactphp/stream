@@ -7,9 +7,9 @@
 // This example accepts a number of parameters to control the timeout (-t 1),
 // the input file (-i /dev/zero) and the output file (-o /dev/null).
 //
-// $ php examples/benchmark-throughput.php
-// $ php examples/benchmark-throughput.php -t 10 -o zero.bin
-// $ php examples/benchmark-throughput.php -t 60 -i zero.bin
+// $ php examples/91-benchmark-throughput.php
+// $ php examples/91-benchmark-throughput.php -t 10 -o zero.bin
+// $ php examples/91-benchmark-throughput.php -t 60 -i zero.bin
 
 require __DIR__ . '/../vendor/autoload.php';
 

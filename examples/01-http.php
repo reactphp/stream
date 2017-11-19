@@ -8,8 +8,8 @@
 // This simple example only accepts an optional host parameter to send the
 // request to.
 //
-// $ php examples/http.php
-// $ php examples/http.php reactphp.org
+// $ php examples/01-http.php
+// $ php examples/01-http.php reactphp.org
 
 use React\EventLoop\Factory;
 use React\Stream\DuplexResourceStream;

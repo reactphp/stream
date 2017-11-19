@@ -4,9 +4,9 @@
 // This allows you to output everything you type on your keyboard or to redirect
 // the pipes to show contents of files and other streams.
 //
-// $ php examples/cat.php
-// $ php examples/cat.php < README.md
-// $ echo hello | php examples/cat.php
+// $ php examples/11-cat.php
+// $ php examples/11-cat.php < README.md
+// $ echo hello | php examples/11-cat.php
 
 use React\EventLoop\Factory;
 use React\Stream\ReadableResourceStream;
