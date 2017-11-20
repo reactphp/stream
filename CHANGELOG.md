@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.5 (2017-11-20)
+
+*   Fix: Igore excessive `fopen()` mode flags for `WritableResourceStream`
+    (#119 by @clue)
+
+*   Fix: Fix forward compatibility with upcoming EventLoop releases
+    (#121 by @clue)
+
+*   Restructure examples to ease getting started
+    (#123 by @clue)
+
+*   Improve test suite by adding forward compatibility with PHPUnit 6 and
+    ignore Mac OS X test failures for now until Travis tests work again
+    (#122 by @gabriel-caruso and #120 by @clue)
+
 ## 0.7.4 (2017-10-11)
 
 *   Fix: Remove event listeners from `CompositeStream` once closed and

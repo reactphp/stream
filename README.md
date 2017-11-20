@@ -5,11 +5,12 @@
 Event-driven readable and writable streams for non-blocking I/O in [ReactPHP](https://reactphp.org/).
 
 In order to make the [EventLoop](https://github.com/reactphp/event-loop)
-easier to use, this component introduces the concept of "streams".
+easier to use, this component introduces the powerful concept of "streams".
+Streams allow you to efficiently process huge amounts of data (such as a multi
+Gigabyte file download) in small chunks without having to store everything in
+memory at once.
 They are very similar to the streams found in PHP itself,
 but have an interface more suited for async, non-blocking I/O.
-Mainly it provides interfaces for readable and writable streams, plus a file
-descriptor based implementation with an in-memory write buffer.
 
 **Table of contents**
 
@@ -1177,7 +1178,7 @@ The recommended way to install this library is [through Composer](https://getcom
 This will install the latest supported version:
 
 ```bash
-$ composer require react/stream:^0.7.4
+$ composer require react/stream:^0.7.5
 ```
 
 More details about version upgrades can be found in the [CHANGELOG](CHANGELOG.md).
