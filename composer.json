@@ -12,12 +12,14 @@
         "phpunit/phpunit": "^6.4 || ^5.7 || ^4.8.35",
         "clue/stream-filter": "~1.2"
     },
-    "suggest": {
-        "react/event-loop": "^0.4"
-    },
     "autoload": {
         "psr-4": {
             "React\\Stream\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "React\\Tests\\Stream\\": "tests"
         }
     }
 }
