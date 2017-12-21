@@ -1,4 +1,4 @@
-# Stream Component
+# Stream
 
 [![Build Status](https://travis-ci.org/reactphp/stream.svg?branch=master)](https://travis-ci.org/reactphp/stream)
 
@@ -1178,10 +1178,10 @@ The recommended way to install this library is [through Composer](https://getcom
 This will install the latest supported version:
 
 ```bash
-$ composer require react/stream:^0.7.5
+$ composer require react/stream:^0.7.6
 ```
 
-More details about version upgrades can be found in the [CHANGELOG](CHANGELOG.md).
+See also the [CHANGELOG](CHANGELOG.md) for details about version upgrades.
 
 This project aims to run on any platform and thus does not require any PHP
 extensions and supports running on legacy PHP 5.3 through current PHP 7+ and HHVM.
