@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Stream\DuplexResourceStream;
 use React\Stream\WritableResourceStream;
 
@@ -28,7 +29,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $loop->run();
+        $this->awaitStreamClose($stream, $loop);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -50,7 +51,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $loop->run();
+        $this->awaitStreamClose($stream, $loop);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -72,7 +73,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $loop->run();
+        $this->awaitStreamClose($stream, $loop);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -99,8 +100,23 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $loop->run();
+        $this->awaitStreamClose($stream, $loop);
 
         $this->assertNotEquals('', $buffer);
+    }
+
+    private function awaitStreamClose(DuplexResourceStream $stream, LoopInterface $loop, $timeout = 10.0)
+    {
+        $stream->on('close', function () use ($loop) {
+            $loop->stop();
+        });
+
+        $that = $this;
+        $loop->addTimer($timeout, function () use ($loop, $that) {
+            $loop->stop();
+            $that->fail('Timed out while waiting for stream to close');
+        });
+
+        $loop->run();
     }
 }
