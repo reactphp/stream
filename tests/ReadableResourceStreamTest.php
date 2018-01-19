@@ -9,6 +9,7 @@ class ReadableResourceStreamTest extends TestCase
 {
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructor()
     {
@@ -20,6 +21,7 @@ class ReadableResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructorWithExcessiveMode()
     {
@@ -224,6 +226,7 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
+        $conn->on('error', $this->expectCallableNever());
         $conn->on('data', function ($data) use ($conn) {
             $conn->close();
         });

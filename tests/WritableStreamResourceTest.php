@@ -9,18 +9,19 @@ class WritableResourceStreamTest extends TestCase
 {
     /**
      * @covers React\Stream\WritableResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructor()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
+        new WritableResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructorWithExcessiveMode()
     {

@@ -10,17 +10,19 @@ class DuplexResourceStreamTest extends TestCase
 {
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructor()
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $conn = new DuplexResourceStream($stream, $loop);
+        new DuplexResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructorWithExcessiveMode()
     {
@@ -93,6 +95,7 @@ class DuplexResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
+     * @doesNotPerformAssertions
      */
     public function testConstructorAcceptsBuffer()
     {
@@ -405,6 +408,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
+        $conn->on('error', $this->expectCallableNever());
         $conn->on('data', function ($data) use ($conn) {
             $conn->close();
         });
