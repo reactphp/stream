@@ -2,8 +2,8 @@
 
 namespace React\Tests\Stream;
 
-use React\Stream\DuplexResourceStream;
 use React\EventLoop\Factory;
+use React\Stream\DuplexResourceStream;
 use React\Stream\WritableResourceStream;
 
 /**
@@ -35,7 +35,7 @@ class FunctionalInternetTest extends TestCase
 
     public function testUploadBiggerBlockPlain()
     {
-        $size = 1000 * 30;
+        $size = 50 * 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
 
         $loop = Factory::create();
@@ -79,7 +79,7 @@ class FunctionalInternetTest extends TestCase
 
     public function testUploadBiggerBlockSecureRequiresSmallerChunkSize()
     {
-        $size = 1000 * 30000;
+        $size = 50 * 1000;
         $stream = stream_socket_client('tls://httpbin.org:443');
 
         $loop = Factory::create();
