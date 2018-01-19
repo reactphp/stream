@@ -30,7 +30,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                     return function_exists('event_base_new');
                 },
                 function () {
-                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : LibEventLoop();
+                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop();
                 }
             ),
             array(
