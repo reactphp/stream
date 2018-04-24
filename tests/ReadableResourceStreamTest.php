@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use React\Stream\ReadableResourceStream;
 use Clue\StreamFilter as Filter;
+use React\Stream\Event;
 
 class ReadableResourceStreamTest extends TestCase
 {
@@ -99,7 +100,7 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('close', $this->expectCallableOnce());
+        $conn->on(Event\CLOSE, $this->expectCallableOnce());
 
         $conn->close();
 
@@ -112,7 +113,7 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('close', $this->expectCallableOnce());
+        $conn->on(Event\CLOSE, $this->expectCallableOnce());
 
         $conn->close();
         $conn->close();
@@ -130,7 +131,7 @@ class ReadableResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -153,7 +154,7 @@ class ReadableResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new ReadableResourceStream($stream, $loop, 4321);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -179,7 +180,7 @@ class ReadableResourceStreamTest extends TestCase
 
         $conn = new ReadableResourceStream($stream, $loop, -1);
 
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -201,7 +202,7 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('data', $this->expectCallableNever());
+        $conn->on(Event\DATA, $this->expectCallableNever());
 
         $conn->handleData($stream);
     }
@@ -226,8 +227,8 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('error', $this->expectCallableNever());
-        $conn->on('data', function ($data) use ($conn) {
+        $conn->on(Event\ERROR, $this->expectCallableNever());
+        $conn->on(Event\DATA, function ($data) use ($conn) {
             $conn->close();
         });
 
@@ -326,7 +327,7 @@ class ReadableResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -355,9 +356,9 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $conn->on('data', $this->expectCallableNever());
-        $conn->on('error', $this->expectCallableOnce());
-        $conn->on('close', $this->expectCallableOnce());
+        $conn->on(Event\DATA, $this->expectCallableNever());
+        $conn->on(Event\ERROR, $this->expectCallableOnce());
+        $conn->on(Event\CLOSE, $this->expectCallableOnce());
 
         fwrite($stream, "foobar\n");
         rewind($stream);

@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use React\Stream\CompositeStream;
 use React\Stream\ThroughStream;
+use React\Stream\Event;
 
 /**
  * @covers React\Stream\CompositeStream
@@ -30,7 +31,7 @@ class CompositeStreamTest extends TestCase
 
         $composite = new CompositeStream($readable, $writable);
 
-        $composite->on('close', $this->expectCallableNever());
+        $composite->on(Event\CLOSE, $this->expectCallableNever());
         $composite->close();
     }
 
@@ -50,7 +51,7 @@ class CompositeStreamTest extends TestCase
 
         $composite = new CompositeStream($readable, $writable);
 
-        $composite->on('close', $this->expectCallableNever());
+        $composite->on(Event\CLOSE, $this->expectCallableNever());
         $composite->close();
     }
 
@@ -182,7 +183,7 @@ class CompositeStreamTest extends TestCase
         $writable = new ThroughStream();
 
         $composite = new CompositeStream($readable, $writable);
-        $composite->on('close', $this->expectCallableOnce());
+        $composite->on(Event\CLOSE, $this->expectCallableOnce());
 
         $readable->close();
         $writable->close();
@@ -194,7 +195,7 @@ class CompositeStreamTest extends TestCase
         $in = new ThroughStream();
 
         $composite = new CompositeStream($in, $in);
-        $composite->on('close', $this->expectCallableOnce());
+        $composite->on(Event\CLOSE, $this->expectCallableOnce());
 
         $this->assertTrue($composite->isReadable());
         $this->assertTrue($composite->isWritable());
@@ -214,11 +215,11 @@ class CompositeStreamTest extends TestCase
         $writable = new ThroughStream();
 
         $composite = new CompositeStream($readable, $writable);
-        $composite->on('data', $this->expectCallableOnce());
-        $composite->on('drain', $this->expectCallableOnce());
+        $composite->on(Event\DATA, $this->expectCallableOnce());
+        $composite->on(Event\DRAIN, $this->expectCallableOnce());
 
-        $readable->emit('data', array('foo'));
-        $writable->emit('drain');
+        $readable->emit(Event\DATA, array('foo'));
+        $writable->emit(Event\DRAIN);
     }
 
     /** @test */
@@ -241,7 +242,7 @@ class CompositeStreamTest extends TestCase
 
         $input = new ThroughStream();
         $input->pipe($composite);
-        $input->emit('data', array('foo'));
+        $input->emit(Event\DATA, array('foo'));
     }
 
     /** @test */
@@ -262,6 +263,6 @@ class CompositeStreamTest extends TestCase
             ->with('foo');
 
         $composite->pipe($output);
-        $readable->emit('data', array('foo'));
+        $readable->emit(Event\DATA, array('foo'));
     }
 }

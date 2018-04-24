@@ -6,6 +6,7 @@ use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Stream\DuplexResourceStream;
 use React\Stream\WritableResourceStream;
+use React\Stream\Event;
 
 /**
  * @group internet
@@ -21,11 +22,11 @@ class FunctionalInternetTest extends TestCase
         $stream = new DuplexResourceStream($stream, $loop);
 
         $buffer = '';
-        $stream->on('data', function ($chunk) use (&$buffer) {
+        $stream->on(Event\DATA, function ($chunk) use (&$buffer) {
             $buffer .= $chunk;
         });
 
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
@@ -43,11 +44,11 @@ class FunctionalInternetTest extends TestCase
         $stream = new DuplexResourceStream($stream, $loop);
 
         $buffer = '';
-        $stream->on('data', function ($chunk) use (&$buffer) {
+        $stream->on(Event\DATA, function ($chunk) use (&$buffer) {
             $buffer .= $chunk;
         });
 
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
@@ -65,11 +66,11 @@ class FunctionalInternetTest extends TestCase
         $stream = new DuplexResourceStream($stream, $loop);
 
         $buffer = '';
-        $stream->on('data', function ($chunk) use (&$buffer) {
+        $stream->on(Event\DATA, function ($chunk) use (&$buffer) {
             $buffer .= $chunk;
         });
 
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
@@ -92,11 +93,11 @@ class FunctionalInternetTest extends TestCase
         );
 
         $buffer = '';
-        $stream->on('data', function ($chunk) use (&$buffer) {
+        $stream->on(Event\DATA, function ($chunk) use (&$buffer) {
             $buffer .= $chunk;
         });
 
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
@@ -107,7 +108,7 @@ class FunctionalInternetTest extends TestCase
 
     private function awaitStreamClose(DuplexResourceStream $stream, LoopInterface $loop, $timeout = 10.0)
     {
-        $stream->on('close', function () use ($loop) {
+        $stream->on(Event\CLOSE, function () use ($loop) {
             $loop->stop();
         });
 

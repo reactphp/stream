@@ -12,11 +12,11 @@ use Evenement\EventEmitterInterface;
  * `EventEmitterInterface` which allows you to react to certain events:
  *
  * drain event:
- *     The `drain` event will be emitted whenever the write buffer became full
+ *     The `React\Stream\Event\DRAIN` event will be emitted whenever the write buffer became full
  *     previously and is now ready to accept more data.
  *
  *     ```php
- *     $stream->on('drain', function () use ($stream) {
+ *     $stream->on(React\Stream\Event\DRAIN, function () use ($stream) {
  *         echo 'Stream is now ready to accept more data';
  *     });
  *     ```
@@ -31,17 +31,17 @@ use Evenement\EventEmitterInterface;
  *     This event is mostly used internally, see also `write()` for more details.
  *
  * pipe event:
- *     The `pipe` event will be emitted whenever a readable stream is `pipe()`d
+ *     The `React\Stream\Event\PIPE` event will be emitted whenever a readable stream is `pipe()`d
  *     into this stream.
  *     The event receives a single `ReadableStreamInterface` argument for the
  *     source stream.
  *
  *     ```php
- *     $stream->on('pipe', function (ReadableStreamInterface $source) use ($stream) {
+ *     $stream->on(React\Stream\Event\PIPE, function (ReadableStreamInterface $source) use ($stream) {
  *         echo 'Now receiving piped data';
  *
  *         // explicitly close target if source emits an error
- *         $source->on('error', function () use ($stream) {
+ *         $source->on(React\Stream\Event\ERROR, function () use ($stream) {
  *             $stream->close();
  *         });
  *     });
@@ -59,25 +59,26 @@ use Evenement\EventEmitterInterface;
  *     This event is mostly used internally, see also `pipe()` for more details.
  *
  * error event:
- *     The `error` event will be emitted once a fatal error occurs, usually while
+ *     The `React\Stream\Event\ERROR` event will be emitted once a fatal error occurs, usually while
  *     trying to write to this stream.
  *     The event receives a single `Exception` argument for the error instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on(React\Stream\Event\ERROR, function (Exception $e) {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
  *
  *     This event SHOULD be emitted once the stream detects a fatal error, such
  *     as a fatal transmission error.
- *     It SHOULD NOT be emitted after a previous `error` or `close` event.
+ *     It SHOULD NOT be emitted after a previous `React\Stream\Event\ERROR`
+ *     or a `React\Stream\Event\CLOSE` event.
  *     It MUST NOT be emitted if this is not a fatal error condition, such as
  *     a temporary network issue that did not cause any data to be lost.
  *
  *     After the stream errors, it MUST close the stream and SHOULD thus be
- *     followed by a `close` event and then switch to non-writable mode, see
- *     also `close()` and `isWritable()`.
+ *     followed by a `React\Stream\Event\CLOSE` event and then switch to
+ *     non-writable mode, see also `close()` and `isWritable()`.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     only deal with data transmission and may choose
@@ -85,22 +86,23 @@ use Evenement\EventEmitterInterface;
  *     close (terminate) the stream in response.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
- *     how the readable side of the stream also implements an `error` event.
+ *     how the readable side of the stream also implements an
+ *     `React\Stream\Event\ERROR` event.
  *     In other words, an error may occur while either reading or writing the
  *     stream which should result in the same error processing.
  *
  * close event:
- *     The `close` event will be emitted once the stream closes (terminates).
+ *     The `React\Stream\Event\CLOSE` event will be emitted once the stream closes (terminates).
  *
  *     ```php
- *     $stream->on('close', function () {
+ *     $stream->on(React\Stream\Event\CLOSE, function () {
  *         echo 'CLOSED';
  *     });
  *     ```
  *
  *     This event SHOULD be emitted once or never at all, depending on whether
  *     the stream ever terminates.
- *     It SHOULD NOT be emitted after a previous `close` event.
+ *     It SHOULD NOT be emitted after a previous `React\Stream\Event\CLOSE` event.
  *
  *     After the stream is closed, it MUST switch to non-writable mode,
  *     see also `isWritable()`.
@@ -115,7 +117,8 @@ use Evenement\EventEmitterInterface;
  *     a fatal transmission `error` event.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
- *     how the readable side of the stream also implements a `close` event.
+ *     how the readable side of the stream also implements a
+ *     `React\Stream\Event\CLOSE` event.
  *     In other words, after receiving this event, the stream MUST switch into
  *     non-writable AND non-readable mode, see also `isReadable()`.
  *     Note that this event should not be confused with the `end` event.
@@ -187,14 +190,14 @@ interface WritableStreamInterface extends EventEmitterInterface
      * an underlying EventLoop to check when the resource is actually writable.
      *
      * If a stream cannot handle writing (or flushing) the data, it SHOULD emit
-     * an `error` event and MAY `close()` the stream if it can not recover from
-     * this error.
+     * an `React\Stream\Event\ERROR` event and MAY `close()` the stream if it
+     * can not recover from this error.
      *
      * If the internal buffer is full after adding `$data`, then `write()`
      * SHOULD return `false`, indicating that the caller should stop sending
      * data until the buffer drains.
-     * The stream SHOULD send a `drain` event once the buffer is ready to accept
-     * more data.
+     * The stream SHOULD send a `React\Stream\Event\DRAIN` event once the
+     * buffer is ready to accept more data.
      *
      * Similarly, if the the stream is not writable (already in a closed state)
      * it MUST NOT process the given `$data` and SHOULD return `false`,
@@ -239,7 +242,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      * If there's still data in the buffer that needs to be flushed first, then
      * this method SHOULD try to write out this data and only then `close()`
      * the stream.
-     * Once the stream is closed, it SHOULD emit a `close` event.
+     * Once the stream is closed, it SHOULD emit a `React\Stream\Event\CLOSE` event.
      *
      * Note that this interface gives you no control over explicitly flushing
      * the buffered data, as finding the appropriate time for this is beyond the
@@ -281,8 +284,8 @@ interface WritableStreamInterface extends EventEmitterInterface
      * also end its readable side, unless the stream supports half-open mode.
      * In other words, after calling this method, these streams SHOULD switch
      * into non-writable AND non-readable mode, see also `isReadable()`.
-     * This implies that in this case, the stream SHOULD NOT emit any `data`
-     * or `end` events anymore.
+     * This implies that in this case, the stream SHOULD NOT emit any
+     * `React\Stream\Event\DATA` or `React\Stream\Event\END` events anymore.
      * Streams MAY choose to use the `pause()` method logic for this, but
      * special care may have to be taken to ensure a following call to the
      * `resume()` method SHOULD NOT continue emitting readable events.
@@ -305,7 +308,8 @@ interface WritableStreamInterface extends EventEmitterInterface
      * $stream->close();
      * ```
      *
-     * Once the stream is closed, it SHOULD emit a `close` event.
+     * Once the stream is closed, it SHOULD emit a
+     * `React\Stream\Event\CLOSE` event.
      * Note that this event SHOULD NOT be emitted more than once, in particular
      * if this method is called multiple times.
      *

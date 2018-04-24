@@ -12,19 +12,20 @@ use Evenement\EventEmitterInterface;
  * `EventEmitterInterface` which allows you to react to certain events:
  *
  * data event:
- *     The `data` event will be emitted whenever some data was read/received
- *     from this source stream.
+ *     The `React\Stream\Event\DATA` event will be emitted whenever some
+ *     data was read/received from this source stream.
  *     The event receives a single mixed argument for incoming data.
  *
  *     ```php
- *     $stream->on('data', function ($data) {
+ *     $stream->on(React\Stream\Event\DATA, function ($data) {
  *         echo $data;
  *     });
  *     ```
  *
  *     This event MAY be emitted any number of times, which may be zero times if
  *     this stream does not send any data at all.
- *     It SHOULD not be emitted after an `end` or `close` event.
+ *     It SHOULD not be emitted after an `React\Stream\Event\END` or
+ *     `React\Stream\Event\CLOSE` event.
  *
  *     The given `$data` argument may be of mixed type, but it's usually
  *     recommended it SHOULD be a `string` value or MAY use a type that allows
@@ -43,20 +44,21 @@ use Evenement\EventEmitterInterface;
  *     these low-level data chunks in order to achieve proper message framing.
  *
  * end event:
- *     The `end` event will be emitted once the source stream has successfully
- *     reached the end of the stream (EOF).
+ *     The `React\Stream\Event\END` event will be emitted once the source stream
+ *     has successfully reached the end of the stream (EOF).
  *
  *     ```php
- *     $stream->on('end', function () {
+ *     $stream->on(React\Stream\Event\END, function () {
  *         echo 'END';
  *     });
  *     ```
  *
  *     This event SHOULD be emitted once or never at all, depending on whether
  *     a successful end was detected.
- *     It SHOULD NOT be emitted after a previous `end` or `close` event.
+ *     It SHOULD NOT be emitted after a previous `React\Stream\Event\END` or
+ *     `React\Stream\Event\CLOSE` event.
  *     It MUST NOT be emitted if the stream closes due to a non-successful
- *     end, such as after a previous `error` event.
+ *     end, such as after a previous `React\Stream\Event\ERROR` event.
  *
  *     After the stream is ended, it MUST switch to non-readable mode,
  *     see also `isReadable()`.
@@ -65,9 +67,9 @@ use Evenement\EventEmitterInterface;
  *     not if the stream was interrupted by an unrecoverable error or explicitly
  *     closed. Not all streams know this concept of a "successful end".
  *     Many use-cases involve detecting when the stream closes (terminates)
- *     instead, in this case you should use the `close` event.
- *     After the stream emits an `end` event, it SHOULD usually be followed by a
- *     `close` event.
+ *     instead, in this case you should use the `React\Stream\Event\CLOSE` event.
+ *     After the stream emits an `React\Stream\Event\END` event, it SHOULD usually
+ *     be followed by a `React\Stream\Event\CLOSE` event.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     will emit this event if either the remote side closes the connection or
@@ -79,70 +81,75 @@ use Evenement\EventEmitterInterface;
  *     stream.
  *
  * error event:
- *     The `error` event will be emitted once a fatal error occurs, usually while
- *     trying to read from this stream.
+ *     The `React\Stream\Event\ERROR` event will be emitted once a fatal error
+ *     occurs, usually while trying to read from this stream.
  *     The event receives a single `Exception` argument for the error instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on(React\Stream\Event\ERROR, function (Exception $e) {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
  *
  *     This event SHOULD be emitted once the stream detects a fatal error, such
- *     as a fatal transmission error or after an unexpected `data` or premature
- *     `end` event.
- *     It SHOULD NOT be emitted after a previous `error`, `end` or `close` event.
+ *     as a fatal transmission error or after an unexpected `React\Stream\Event\DATA`
+ *     or premature `React\Stream\Event\END` event.
+ *     It SHOULD NOT be emitted after a previous `React\Stream\Event\ERROR`,
+ *     `React\Stream\Event\END` or `React\Stream\Event\CLOSE` event.
  *     It MUST NOT be emitted if this is not a fatal error condition, such as
  *     a temporary network issue that did not cause any data to be lost.
  *
  *     After the stream errors, it MUST close the stream and SHOULD thus be
- *     followed by a `close` event and then switch to non-readable mode, see
- *     also `close()` and `isReadable()`.
+ *     followed by a `React\Stream\Event\CLOSE` event and then switch to
+ *     non-readable mode, see also `close()` and `isReadable()`.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     only deal with data transmission and do not make assumption about data
- *     boundaries (such as unexpected `data` or premature `end` events).
+ *     boundaries (such as unexpected `React\Stream\Event\DATA` or premature
+ *     `React\Stream\Event\END` events).
  *     In other words, many lower-level protocols (such as TCP/IP) may choose
  *     to only emit this for a fatal transmission error once and will then
  *     close (terminate) the stream in response.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
- *     how the writable side of the stream also implements an `error` event.
+ *     how the writable side of the stream also implements an
+ *     `React\Stream\Event\ERROR` event.
  *     In other words, an error may occur while either reading or writing the
  *     stream which should result in the same error processing.
  *
  * close event:
- *     The `close` event will be emitted once the stream closes (terminates).
+ *     The `React\Stream\Event\CLOSE` event will be emitted once the stream closes (terminates).
  *
  *     ```php
- *     $stream->on('close', function () {
+ *     $stream->on(React\Stream\Event\CLOSE, function () {
  *         echo 'CLOSED';
  *     });
  *     ```
  *
  *     This event SHOULD be emitted once or never at all, depending on whether
  *     the stream ever terminates.
- *     It SHOULD NOT be emitted after a previous `close` event.
+ *     It SHOULD NOT be emitted after a previous `React\Stream\Event\CLOSE` event.
  *
  *     After the stream is closed, it MUST switch to non-readable mode,
  *     see also `isReadable()`.
  *
- *     Unlike the `end` event, this event SHOULD be emitted whenever the stream
- *     closes, irrespective of whether this happens implicitly due to an
- *     unrecoverable error or explicitly when either side closes the stream.
- *     If you only want to detect a *successful* end, you should use the `end`
- *     event instead.
+ *     Unlike the `React\Stream\Event\END` event, this event SHOULD be emitted
+ *     whenever the stream closes, irrespective of whether this happens implicitly
+ *     due to an unrecoverable error or explicitly when either side closes the stream.
+ *     If you only want to detect a *successful* end, you should use the
+ *     `React\Stream\Event\END` event instead.
  *
  *     Many common streams (such as a TCP/IP connection or a file-based stream)
  *     will likely choose to emit this event after reading a *successful* `end`
  *     event or after a fatal transmission `error` event.
  *
  *     If this stream is a `DuplexStreamInterface`, you should also notice
- *     how the writable side of the stream also implements a `close` event.
+ *     how the writable side of the stream also implements a
+ *     `React\Stream\Event\CLOSE` event.
  *     In other words, after receiving this event, the stream MUST switch into
  *     non-writable AND non-readable mode, see also `isWritable()`.
- *     Note that this event should not be confused with the `end` event.
+ *     Note that this event should not be confused with the
+ *     `React\Stream\Event\END` event.
  *
  * The event callback functions MUST be a valid `callable` that obeys strict
  * parameter definitions and MUST accept event parameters exactly as documented.
@@ -169,14 +176,14 @@ interface ReadableStreamInterface extends EventEmitterInterface
      *
      * This method can be used to check if the stream still accepts incoming
      * data events or if it is ended or closed already.
-     * Once the stream is non-readable, no further `data` or `end` events SHOULD
-     * be emitted.
+     * Once the stream is non-readable, no further `React\Stream\Event\DATA`
+     * or `React\Stream\Event\END` events SHOULD be emitted.
      *
      * ```php
      * assert($stream->isReadable() === false);
      *
-     * $stream->on('data', assertNeverCalled());
-     * $stream->on('end', assertNeverCalled());
+     * $stream->on(React\Stream\Event\DATA, assertNeverCalled());
+     * $stream->on(React\Stream\Event\END, assertNeverCalled());
      * ```
      *
      * A successfully opened stream always MUST start in readable mode.
@@ -205,18 +212,18 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * Unless otherwise noted, a successfully opened stream SHOULD NOT start
      * in paused state.
      *
-     * Once the stream is paused, no futher `data` or `end` events SHOULD
-     * be emitted.
+     * Once the stream is paused, no further `React\Stream\Event\DATA` or
+     * `React\Stream\Event\END` events SHOULD be emitted.
      *
      * ```php
      * $stream->pause();
      *
-     * $stream->on('data', assertShouldNeverCalled());
-     * $stream->on('end', assertShouldNeverCalled());
+     * $stream->on(React\Stream\Event\DATA, assertShouldNeverCalled());
+     * $stream->on(React\Stream\Event\END, assertShouldNeverCalled());
      * ```
      *
      * This method is advisory-only, though generally not recommended, the
-     * stream MAY continue emitting `data` events.
+     * stream MAY continue emitting `React\Stream\Event\DATA` events.
      *
      * You can continue processing events by calling `resume()` again.
      *
@@ -275,19 +282,21 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * ```
      *
      * By default, this will call `end()` on the destination stream once the
-     * source stream emits an `end` event. This can be disabled like this:
+     * source stream emits an `React\Stream\Event\END` event.
+     * This can be disabled like this:
      *
      * ```php
      * $source->pipe($dest, array('end' => false));
      * ```
      *
-     * Note that this only applies to the `end` event.
-     * If an `error` or explicit `close` event happens on the source stream,
-     * you'll have to manually close the destination stream:
+     * Note that this only applies to the `React\Stream\Event\END` event.
+     * If an `React\Stream\Event\ERROR` or explicit `React\Stream\Event\CLOSE`
+     * event happens on the source stream, you'll have to manually close
+     * the destination stream:
      *
      * ```php
      * $source->pipe($dest);
-     * $source->on('close', function () use ($dest) {
+     * $source->on(React\Stream\Event\CLOSE, function () use ($dest) {
      *     $dest->end('BYE!');
      * });
      * ```
@@ -316,7 +325,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * ```
      *
      * Once the pipe is set up successfully, the destination stream MUST emit
-     * a `pipe` event with this source stream an event argument.
+     * a `React\Stream\Event\PIPE` event with this source stream an event argument.
      *
      * @param WritableStreamInterface $dest
      * @param array $options
@@ -333,20 +342,21 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * $stream->close();
      * ```
      *
-     * Once the stream is closed, it SHOULD emit a `close` event.
+     * Once the stream is closed, it SHOULD emit a `React\Stream\Event\CLOSE` event.
      * Note that this event SHOULD NOT be emitted more than once, in particular
      * if this method is called multiple times.
      *
      * After calling this method, the stream MUST switch into a non-readable
      * mode, see also `isReadable()`.
-     * This means that no further `data` or `end` events SHOULD be emitted.
+     * This means that no further `React\Stream\Event\DATA` or `React\Stream\Event\END`
+     * events SHOULD be emitted.
      *
      * ```php
      * $stream->close();
      * assert($stream->isReadable() === false);
      *
-     * $stream->on('data', assertNeverCalled());
-     * $stream->on('end', assertNeverCalled());
+     * $stream->on(React\Stream\Event\DATA, assertNeverCalled());
+     * $stream->on(React\Stream\Event\END, assertNeverCalled());
      * ```
      *
      * If this stream is a `DuplexStreamInterface`, you should also notice

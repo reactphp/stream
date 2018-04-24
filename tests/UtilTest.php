@@ -6,6 +6,7 @@ use React\Stream\WritableResourceStream;
 use React\Stream\Util;
 use React\Stream\CompositeStream;
 use React\Stream\ThroughStream;
+use React\Stream\Event;
 
 /**
  * @covers React\Stream\Util
@@ -244,7 +245,7 @@ class UtilTest extends TestCase
 
         $writable->expects($this->once())->method('end');
 
-        $duplex->emit('end');
+        $duplex->emit(Event\END);
     }
 
     /** @test */
@@ -253,11 +254,11 @@ class UtilTest extends TestCase
         $source = new ThroughStream();
         $target = new ThroughStream();
 
-        Util::forwardEvents($source, $target, array('data'));
-        $target->on('data', $this->expectCallableOnce());
+        Util::forwardEvents($source, $target, array(Event\DATA));
+        $target->on(Event\DATA, $this->expectCallableOnce());
         $target->on('foo', $this->expectCallableNever());
 
-        $source->emit('data', array('hello'));
+        $source->emit(Event\DATA, array('hello'));
         $source->emit('foo', array('bar'));
     }
 

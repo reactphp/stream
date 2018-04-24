@@ -4,6 +4,7 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 use InvalidArgumentException;
+use React\Stream\Event;
 
 /**
  * The `ThroughStream` implements the
@@ -12,7 +13,7 @@ use InvalidArgumentException;
  *
  * ```php
  * $through = new ThroughStream();
- * $through->on('data', $this->expectCallableOnceWith('hello'));
+ * $through->on(React\Stream\Event\DATA, $this->expectCallableOnceWith('hello'));
  *
  * $through->write('hello');
  * ```
@@ -46,7 +47,7 @@ use InvalidArgumentException;
  * $through = new ThroughStream(function ($data) {
  *     return json_encode($data) . PHP_EOL;
  * });
- * $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
+ * $through->on(React\Stream\Event\DATA, $this->expectCallableOnceWith("[2, true]\n"));
  *
  * $through->write(array(2, true));
  * ```
@@ -61,9 +62,9 @@ use InvalidArgumentException;
  *     }
  *     return $data;
  * });
- * $through->on('error', $this->expectCallableOnce()));
- * $through->on('close', $this->expectCallableOnce()));
- * $through->on('data', $this->expectCallableNever()));
+ * $through->on(React\Stream\Event\ERROR, $this->expectCallableOnce()));
+ * $through->on(React\Stream\Event\CLOSE, $this->expectCallableOnce()));
+ * $through->on(React\Stream\Event\DATA, $this->expectCallableNever()));
  *
  * $through->write(2);
  * ```
@@ -100,7 +101,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
     {
         if ($this->drain) {
             $this->drain = false;
-            $this->emit('drain');
+            $this->emit(Event\DRAIN);
         }
         $this->paused = false;
     }
@@ -130,14 +131,14 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
             try {
                 $data = \call_user_func($this->callback, $data);
             } catch (\Exception $e) {
-                $this->emit('error', array($e));
+                $this->emit(Event\ERROR, array($e));
                 $this->close();
 
                 return false;
             }
         }
 
-        $this->emit('data', array($data));
+        $this->emit(Event\DATA, array($data));
 
         if ($this->paused) {
             $this->drain = true;
@@ -167,7 +168,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->paused = true;
         $this->drain = false;
 
-        $this->emit('end');
+        $this->emit(Event\END);
         $this->close();
     }
 
@@ -184,7 +185,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->drain = false;
         $this->callback = null;
 
-        $this->emit('close');
+        $this->emit(Event\CLOSE);
         $this->removeAllListeners();
     }
 }

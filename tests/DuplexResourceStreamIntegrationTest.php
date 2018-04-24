@@ -12,6 +12,7 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\LibEventLoop;
 use React\EventLoop\LibEvLoop;
 use React\EventLoop\StreamSelectLoop;
+use React\Stream\Event;
 
 class DuplexResourceStreamIntegrationTest extends TestCase
 {
@@ -73,7 +74,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $testString = str_repeat("*", $bufferSize + 1);
 
         $buffer = "";
-        $streamB->on('data', function ($data) use (&$buffer) {
+        $streamB->on(Event\DATA, function ($data) use (&$buffer) {
             $buffer .= $data;
         });
 
@@ -110,16 +111,16 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         // sending side sends and expects clean close with no errors
         $streamA->end(str_repeat('*', $size));
-        $streamA->on('close', $this->expectCallableOnce());
-        $streamA->on('error', $this->expectCallableNever());
+        $streamA->on(Event\CLOSE, $this->expectCallableOnce());
+        $streamA->on(Event\ERROR, $this->expectCallableNever());
 
         // receiving side counts bytes and expects clean close with no errors
         $received = 0;
-        $streamB->on('data', function ($chunk) use (&$received) {
+        $streamB->on(Event\DATA, function ($chunk) use (&$received) {
             $received += strlen($chunk);
         });
-        $streamB->on('close', $this->expectCallableOnce());
-        $streamB->on('error', $this->expectCallableNever());
+        $streamB->on(Event\CLOSE, $this->expectCallableOnce());
+        $streamB->on(Event\ERROR, $this->expectCallableNever());
 
         $loop->run();
 
@@ -149,7 +150,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamA->end();
 
         // streamB should not emit any data
-        $streamB->on('data', $this->expectCallableNever());
+        $streamB->on(Event\DATA, $this->expectCallableNever());
 
         $loop->run();
 
@@ -176,9 +177,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         // end streamA without writing any data
         $streamA->pause();
         $streamA->write('hello');
-        $streamA->on('close', $this->expectCallableOnce());
+        $streamA->on(Event\CLOSE, $this->expectCallableOnce());
 
-        $streamB->on('data', $this->expectCallableNever());
+        $streamB->on(Event\DATA, $this->expectCallableNever());
         $streamB->close();
 
         $loop->run();
@@ -209,9 +210,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         // end streamA without writing any data
         $streamA->pause();
         $streamA->write('hello');
-        $streamA->on('close', $this->expectCallableOnce());
+        $streamA->on(Event\CLOSE, $this->expectCallableOnce());
 
-        $streamB->on('data', $this->expectCallableNever());
+        $streamB->on(Event\DATA, $this->expectCallableNever());
         $streamB->close();
 
         $loop->run();
@@ -242,9 +243,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         // end streamA without writing any data
         $streamA->pause();
         $streamA->write('hello');
-        $streamA->on('close', $this->expectCallableOnce());
+        $streamA->on(Event\CLOSE, $this->expectCallableOnce());
 
-        $streamB->on('data', $this->expectCallableNever());
+        $streamB->on(Event\DATA, $this->expectCallableNever());
         $streamB->close();
 
         $loop->run();
@@ -265,9 +266,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $loop = $loopFactory();
 
         $stream = new ReadableResourceStream(popen('echo test', 'r'), $loop);
-        $stream->on('data', $this->expectCallableOnceWith("test\n"));
-        $stream->on('end', $this->expectCallableOnce());
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\DATA, $this->expectCallableOnceWith("test\n"));
+        $stream->on(Event\END, $this->expectCallableOnce());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $loop->run();
     }
@@ -286,12 +287,12 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream = new ReadableResourceStream(popen('echo a;sleep 0.1;echo b;sleep 0.1;echo c', 'r'), $loop);
 
         $buffer = '';
-        $stream->on('data', function ($chunk) use (&$buffer) {
+        $stream->on(Event\DATA, function ($chunk) use (&$buffer) {
             $buffer .= $chunk;
         });
 
-        $stream->on('end', $this->expectCallableOnce());
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\END, $this->expectCallableOnce());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $loop->run();
 
@@ -312,12 +313,12 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
 
         $bytes = 0;
-        $stream->on('data', function ($chunk) use (&$bytes) {
+        $stream->on(Event\DATA, function ($chunk) use (&$bytes) {
             $bytes += strlen($chunk);
         });
 
-        $stream->on('end', $this->expectCallableOnce());
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\END, $this->expectCallableOnce());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $loop->run();
 
@@ -336,9 +337,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $loop = $loopFactory();
 
         $stream = new ReadableResourceStream(popen('true', 'r'), $loop);
-        $stream->on('data', $this->expectCallableNever());
-        $stream->on('end', $this->expectCallableOnce());
-        $stream->on('error', $this->expectCallableNever());
+        $stream->on(Event\DATA, $this->expectCallableNever());
+        $stream->on(Event\END, $this->expectCallableOnce());
+        $stream->on(Event\ERROR, $this->expectCallableNever());
 
         $loop->run();
     }

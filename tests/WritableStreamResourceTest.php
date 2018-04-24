@@ -4,6 +4,7 @@ namespace React\Tests\Stream;
 
 use Clue\StreamFilter as Filter;
 use React\Stream\WritableResourceStream;
+use React\Stream\Event;
 
 class WritableResourceStreamTest extends TestCase
 {
@@ -100,7 +101,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createWriteableLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
 
         $buffer->write("foobar\n");
         rewind($stream);
@@ -148,7 +149,7 @@ class WritableResourceStreamTest extends TestCase
         $loop->preventWrites = true;
 
         $buffer = new WritableResourceStream($stream, $loop, 4);
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
 
         $this->assertTrue($buffer->write("foo"));
         $loop->preventWrites = false;
@@ -179,7 +180,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createWriteableLoopMock();
 
         $buffer = new WritableResourceStream($a, $loop, 4);
-        $buffer->on('error', $this->expectCallableOnce());
+        $buffer->on(Event\ERROR, $this->expectCallableOnce());
 
         fclose($b);
 
@@ -196,8 +197,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\DRAIN, $this->expectCallableOnce());
 
         $buffer->write("foo");
         $buffer->handleWrite();
@@ -213,7 +214,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
-        $buffer->on('error', $this->expectCallableNever());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
 
         $buffer->once('drain', function () use ($buffer) {
             $buffer->write("bar\n");
@@ -238,7 +239,7 @@ class WritableResourceStreamTest extends TestCase
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
 
-        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on(Event\DRAIN, $this->expectCallableOnce());
 
         $buffer->write("foo");
         $buffer->handleWrite();
@@ -255,9 +256,9 @@ class WritableResourceStreamTest extends TestCase
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
 
-        $buffer->on('drain', $this->expectCallableOnce());
+        $buffer->on(Event\DRAIN, $this->expectCallableOnce());
 
-        $buffer->on('close', $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableNever());
 
         $buffer->write("foo");
         $buffer->handleWrite();
@@ -274,11 +275,11 @@ class WritableResourceStreamTest extends TestCase
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
 
-        $buffer->on('drain', function () use ($buffer) {
+        $buffer->on(Event\DRAIN, function () use ($buffer) {
             $buffer->close();
         });
 
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event\CLOSE, $this->expectCallableOnce());
 
         $buffer->write("foo");
         $buffer->handleWrite();
@@ -293,8 +294,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableOnce());
 
         $this->assertTrue($buffer->isWritable());
         $buffer->end();
@@ -310,8 +311,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableNever());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableNever());
 
         $buffer->write('foo');
 
@@ -330,8 +331,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableOnce());
 
         Filter\append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
@@ -355,8 +356,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableNever());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableNever());
 
         $buffer->write('foo');
 
@@ -378,8 +379,8 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', $this->expectCallableNever());
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event\ERROR, $this->expectCallableNever());
+        $buffer->on(Event\CLOSE, $this->expectCallableOnce());
 
         $this->assertTrue($buffer->isWritable());
         $buffer->close();
@@ -426,7 +427,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('close', $this->expectCallableOnce());
+        $buffer->on(Event\CLOSE, $this->expectCallableOnce());
 
         $buffer->close();
         $buffer->close();
@@ -468,7 +469,7 @@ class WritableResourceStreamTest extends TestCase
         $error = null;
 
         $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', function ($message) use (&$error) {
+        $buffer->on(Event\ERROR, function ($message) use (&$error) {
             $error = $message;
         });
 
@@ -496,7 +497,7 @@ class WritableResourceStreamTest extends TestCase
         $error = null;
 
         $buffer = new WritableResourceStream($a, $loop);
-        $buffer->on('error', function($message) use (&$error) {
+        $buffer->on(Event\ERROR, function($message) use (&$error) {
             $error = $message;
         });
 

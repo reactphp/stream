@@ -15,7 +15,8 @@
     "autoload": {
         "psr-4": {
             "React\\Stream\\": "src"
-        }
+        },
+        "files": ["./src/events.php"]
     },
     "autoload-dev": {
         "psr-4": {

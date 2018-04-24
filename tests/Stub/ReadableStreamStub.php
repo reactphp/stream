@@ -6,6 +6,7 @@ use Evenement\EventEmitter;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableStreamInterface;
 use React\Stream\Util;
+use React\Stream\Event;
 
 class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
 {
@@ -20,19 +21,19 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
     // trigger data event
     public function write($data)
     {
-        $this->emit('data', array($data));
+        $this->emit(Event\DATA, array($data));
     }
 
     // trigger error event
     public function error($error)
     {
-        $this->emit('error', array($error));
+        $this->emit(Event\ERROR, array($error));
     }
 
     // trigger end event
     public function end()
     {
-        $this->emit('end', array());
+        $this->emit(Event\END, array());
     }
 
     public function pause()
@@ -49,7 +50,7 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
     {
         $this->readable = false;
 
-        $this->emit('close');
+        $this->emit(Event\CLOSE);
     }
 
     public function pipe(WritableStreamInterface $dest, array $options = array())

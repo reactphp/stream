@@ -5,6 +5,7 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
+use React\Stream\Event;
 
 final class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
@@ -76,14 +77,14 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         $that = $this;
 
-        $this->buffer->on('error', function ($error) use ($that) {
-            $that->emit('error', array($error));
+        $this->buffer->on(Event\ERROR, function ($error) use ($that) {
+            $that->emit(Event\ERROR, array($error));
         });
 
-        $this->buffer->on('close', array($this, 'close'));
+        $this->buffer->on(Event\CLOSE, array($this, 'close'));
 
-        $this->buffer->on('drain', function () use ($that) {
-            $that->emit('drain');
+        $this->buffer->on(Event\DRAIN, function () use ($that) {
+            $that->emit(Event\DRAIN);
         });
 
         $this->resume();
@@ -135,7 +136,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->readable = false;
         $this->writable = false;
 
-        $this->emit('close');
+        $this->emit(Event\CLOSE);
         $this->pause();
         $this->buffer->close();
         $this->removeAllListeners();
@@ -184,16 +185,19 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         \restore_error_handler();
 
         if ($error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
+            $this->emit(
+                Event\ERROR,
+                array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error))
+            );
             $this->close();
             return;
         }
 
         if ($data !== '') {
-            $this->emit('data', array($data));
+            $this->emit(Event\DATA, array($data));
         } elseif (\feof($this->stream)) {
             // no data read => we reached the end and close the stream
-            $this->emit('end');
+            $this->emit(Event\END);
             $this->close();
         }
     }

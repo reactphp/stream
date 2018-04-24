@@ -5,6 +5,7 @@ namespace React\Stream;
 use Evenement\EventEmitter;
 use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
+use React\Stream\Event;
 
 final class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
 {
@@ -109,7 +110,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
         $this->closed = true;
 
-        $this->emit('close');
+        $this->emit(Event\CLOSE);
         $this->pause();
         $this->removeAllListeners();
 
@@ -137,16 +138,19 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         \restore_error_handler();
 
         if ($error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
+            $this->emit(
+                Event\ERROR,
+                array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error))
+            );
             $this->close();
             return;
         }
 
         if ($data !== '') {
-            $this->emit('data', array($data));
+            $this->emit(Event\DATA, array($data));
         } elseif (\feof($this->stream)) {
             // no data read => we reached the end and close the stream
-            $this->emit('end');
+            $this->emit(Event\END);
             $this->close();
         }
     }

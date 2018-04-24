@@ -3,6 +3,7 @@
 namespace React\Stream;
 
 use Evenement\EventEmitter;
+use React\Stream\Event;
 
 final class CompositeStream extends EventEmitter implements DuplexStreamInterface
 {
@@ -19,11 +20,11 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
             return $this->close();
         }
 
-        Util::forwardEvents($this->readable, $this, array('data', 'end', 'error'));
-        Util::forwardEvents($this->writable, $this, array('drain', 'error', 'pipe'));
+        Util::forwardEvents($this->readable, $this, array(Event\DATA, Event\END, Event\ERROR));
+        Util::forwardEvents($this->writable, $this, array(Event\DRAIN, Event\ERROR, Event\PIPE));
 
-        $this->readable->on('close', array($this, 'close'));
-        $this->writable->on('close', array($this, 'close'));
+        $this->readable->on(Event\CLOSE, array($this, 'close'));
+        $this->writable->on(Event\CLOSE, array($this, 'close'));
     }
 
     public function isReadable()
@@ -76,7 +77,7 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
         $this->readable->close();
         $this->writable->close();
 
-        $this->emit('close');
+        $this->emit(Event\CLOSE);
         $this->removeAllListeners();
     }
 }

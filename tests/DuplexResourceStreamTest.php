@@ -5,6 +5,7 @@ namespace React\Tests\Stream;
 use React\Stream\DuplexResourceStream;
 use Clue\StreamFilter as Filter;
 use React\Stream\WritableResourceStream;
+use React\Stream\Event;
 
 class DuplexResourceStreamTest extends TestCase
 {
@@ -113,8 +114,8 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('close', $this->expectCallableOnce());
-        $conn->on('end', $this->expectCallableNever());
+        $conn->on(Event\CLOSE, $this->expectCallableOnce());
+        $conn->on(Event\END, $this->expectCallableNever());
 
         $conn->close();
 
@@ -159,7 +160,7 @@ class DuplexResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -182,7 +183,7 @@ class DuplexResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new DuplexResourceStream($stream, $loop, 4321);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -208,7 +209,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $conn = new DuplexResourceStream($stream, $loop, -1);
 
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -230,7 +231,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('data', $this->expectCallableNever());
+        $conn->on(Event\DATA, $this->expectCallableNever());
 
         $conn->handleData($stream);
     }
@@ -392,11 +393,11 @@ class DuplexResourceStreamTest extends TestCase
         $buffer = new WritableResourceStream($stream, $loop);
         $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
 
-        $conn->on('drain', $this->expectCallableOnce());
-        $conn->on('error', $this->expectCallableOnce());
+        $conn->on(Event\DRAIN, $this->expectCallableOnce());
+        $conn->on(Event\ERROR, $this->expectCallableOnce());
 
-        $buffer->emit('drain');
-        $buffer->emit('error', array(new \RuntimeException('Whoops')));
+        $buffer->emit(Event\DRAIN);
+        $buffer->emit(Event\ERROR, array(new \RuntimeException('Whoops')));
     }
 
     /**
@@ -408,8 +409,8 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('error', $this->expectCallableNever());
-        $conn->on('data', function ($data) use ($conn) {
+        $conn->on(Event\ERROR, $this->expectCallableNever());
+        $conn->on(Event\DATA, function ($data) use ($conn) {
             $conn->close();
         });
 
@@ -436,7 +437,7 @@ class DuplexResourceStreamTest extends TestCase
         $capturedData = null;
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('data', function ($data) use (&$capturedData) {
+        $conn->on(Event\DATA, function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
 
@@ -465,9 +466,9 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $conn->on('data', $this->expectCallableNever());
-        $conn->on('error', $this->expectCallableOnce());
-        $conn->on('close', $this->expectCallableOnce());
+        $conn->on(Event\DATA, $this->expectCallableNever());
+        $conn->on(Event\ERROR, $this->expectCallableOnce());
+        $conn->on(Event\CLOSE, $this->expectCallableOnce());
 
         fwrite($stream, "foobar\n");
         rewind($stream);
