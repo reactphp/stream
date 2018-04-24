@@ -13,6 +13,7 @@
 
 use React\EventLoop\Factory;
 use React\Stream\DuplexResourceStream;
+use React\Stream\Event;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -28,10 +29,10 @@ if (!$resource) {
 $loop = Factory::create();
 $stream = new DuplexResourceStream($resource, $loop);
 
-$stream->on('data', function ($chunk) {
+$stream->on(Event\DATA, function ($chunk) {
     echo $chunk;
 });
-$stream->on('close', function () {
+$stream->on(Event\CLOSE, function () {
     echo '[CLOSED]' . PHP_EOL;
 });
 
