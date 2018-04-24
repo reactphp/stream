@@ -266,9 +266,4 @@ class UtilTest extends TestCase
     {
         return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
     }
-
-    private function notEqualTo($value)
-    {
-        return new \PHPUnit_Framework_Constraint_Not($value);
-    }
 }
