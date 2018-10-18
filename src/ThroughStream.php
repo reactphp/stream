@@ -84,7 +84,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
 
     public function __construct($callback = null)
     {
-        if ($callback !== null && !is_callable($callback)) {
+        if ($callback !== null && !\is_callable($callback)) {
             throw new InvalidArgumentException('Invalid transformation callback given');
         }
 
@@ -128,7 +128,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
 
         if ($this->callback !== null) {
             try {
-                $data = call_user_func($this->callback, $data);
+                $data = \call_user_func($this->callback, $data);
             } catch (\Exception $e) {
                 $this->emit('error', array($e));
                 $this->close();

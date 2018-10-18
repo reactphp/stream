@@ -40,19 +40,19 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
     public function __construct($stream, LoopInterface $loop, $readChunkSize = null)
     {
-        if (!is_resource($stream) || get_resource_type($stream) !== "stream") {
+        if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
         }
 
         // ensure resource is opened for reading (fopen mode must contain "r" or "+")
-        $meta = stream_get_meta_data($stream);
-        if (isset($meta['mode']) && $meta['mode'] !== '' && strpos($meta['mode'], 'r') === strpos($meta['mode'], '+')) {
+        $meta = \stream_get_meta_data($stream);
+        if (isset($meta['mode']) && $meta['mode'] !== '' && \strpos($meta['mode'], 'r') === \strpos($meta['mode'], '+')) {
             throw new InvalidArgumentException('Given stream resource is not opened in read mode');
         }
 
         // this class relies on non-blocking I/O in order to not interrupt the event loop
         // e.g. pipes on Windows do not support this: https://bugs.php.net/bug.php?id=47918
-        if (stream_set_blocking($stream, 0) !== true) {
+        if (\stream_set_blocking($stream, 0) !== true) {
             throw new \RuntimeException('Unable to set stream resource to non-blocking mode');
         }
 
@@ -64,8 +64,8 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         // triggered), so we can ignore platforms not supporting this (HHVM).
         // Pipe streams (such as STDIN) do not seem to require this and legacy
         // PHP versions cause SEGFAULTs on unbuffered pipe streams, so skip this.
-        if (function_exists('stream_set_read_buffer') && !$this->isLegacyPipe($stream)) {
-            stream_set_read_buffer($stream, 0);
+        if (\function_exists('stream_set_read_buffer') && !$this->isLegacyPipe($stream)) {
+            \stream_set_read_buffer($stream, 0);
         }
 
         $this->stream = $stream;
@@ -113,8 +113,8 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         $this->pause();
         $this->removeAllListeners();
 
-        if (is_resource($this->stream)) {
-            fclose($this->stream);
+        if (\is_resource($this->stream)) {
+            \fclose($this->stream);
         }
     }
 
@@ -122,7 +122,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function handleData()
     {
         $error = null;
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
+        \set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
             $error = new \ErrorException(
                 $errstr,
                 0,
@@ -132,9 +132,9 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
             );
         });
 
-        $data = stream_get_contents($this->stream, $this->bufferSize);
+        $data = \stream_get_contents($this->stream, $this->bufferSize);
 
-        restore_error_handler();
+        \restore_error_handler();
 
         if ($error !== null) {
             $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
@@ -165,8 +165,8 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
      */
     private function isLegacyPipe($resource)
     {
-        if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512)) {
-            $meta = stream_get_meta_data($resource);
+        if (\PHP_VERSION_ID < 50428 || (\PHP_VERSION_ID >= 50500 && \PHP_VERSION_ID < 50512)) {
+            $meta = \stream_get_meta_data($resource);
 
             if (isset($meta['stream_type']) && $meta['stream_type'] === 'STDIO') {
                 return true;
