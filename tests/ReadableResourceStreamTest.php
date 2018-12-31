@@ -365,6 +365,25 @@ class ReadableResourceStreamTest extends TestCase
         $conn->handleData($stream);
     }
 
+    /**
+     * @covers React\Stream\ReadableResourceStream::handleData
+     */
+    public function testEmptyReadShouldntFcloseStream()
+    {
+        list($stream, $_) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+        $loop = $this->createLoopMock();
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->on('error', $this->expectCallableNever());
+        $conn->on('data', $this->expectCallableNever());
+        $conn->on('end', $this->expectCallableNever());
+
+        $conn->handleData();
+
+        fclose($stream);
+        fclose($_);
+    }
+
     private function createLoopMock()
     {
         return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();

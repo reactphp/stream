@@ -191,7 +191,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         if ($data !== '') {
             $this->emit('data', array($data));
-        } else{
+        } elseif (\feof($this->stream)) {
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();

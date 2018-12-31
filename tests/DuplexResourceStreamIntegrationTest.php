@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use Clue\StreamFilter as Filter;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
@@ -340,6 +341,43 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('error', $this->expectCallableNever());
 
         $loop->run();
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::handleData
+     * @dataProvider loopProvider
+     */
+    public function testEmptyReadShouldntFcloseStream($condition, $loopFactory)
+    {
+        if (true !== $condition()) {
+            return $this->markTestSkipped('Loop implementation not available');
+        }
+
+        $server = stream_socket_server('tcp://127.0.0.1:0');
+
+        $client = stream_socket_client(stream_socket_get_name($server, false));
+        $stream = stream_socket_accept($server);
+
+
+        // add a filter which returns an error when encountering an 'a' when reading
+        Filter\append($stream, function ($chunk) {
+            return '';
+        }, STREAM_FILTER_READ);
+
+        $loop = $loopFactory();
+
+        $conn = new DuplexResourceStream($stream, $loop);
+        $conn->on('error', $this->expectCallableNever());
+        $conn->on('data', $this->expectCallableNever());
+        $conn->on('end', $this->expectCallableNever());
+
+        fwrite($client, "foobar\n");
+
+        $conn->handleData($stream);
+
+        fclose($stream);
+        fclose($client);
+        fclose($server);
     }
 
     private function loopTick(LoopInterface $loop)
