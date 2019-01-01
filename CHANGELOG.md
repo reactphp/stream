@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 (2018-01-01)
+
+*   Improvement: Increase performance by optimizing global function and constant look ups
+    (#137 by @WyriHaximus)
+*   Travis: Test against PHP 7.3
+    (#138 by @WyriHaximus)
+*   Fix: Ignore empty reads 
+    (#139 by @WyriHaximus)
+
 ## 1.0.0 (2018-07-11)
 
 *   First stable LTS release, now following [SemVer](https://semver.org/).
