@@ -52,7 +52,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
         // this class relies on non-blocking I/O in order to not interrupt the event loop
         // e.g. pipes on Windows do not support this: https://bugs.php.net/bug.php?id=47918
-        if (\stream_set_blocking($stream, 0) !== true) {
+        if (\stream_set_blocking($stream, false) !== true) {
             throw new \RuntimeException('Unable to set stream resource to non-blocking mode');
         }
 
