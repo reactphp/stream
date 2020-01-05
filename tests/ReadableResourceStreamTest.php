@@ -137,7 +137,7 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
         $this->assertSame("foobar\n", $capturedData);
     }
 
@@ -160,7 +160,7 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
 
         $this->assertTrue($conn->isReadable());
         $this->assertEquals(4321, strlen($capturedData));
@@ -186,9 +186,9 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
-
         $this->assertTrue($conn->isReadable());
+        $conn->handleData();
+
         $this->assertEquals(100000, strlen($capturedData));
     }
 
@@ -203,7 +203,7 @@ class ReadableResourceStreamTest extends TestCase
         $conn = new ReadableResourceStream($stream, $loop);
         $conn->on('data', $this->expectCallableNever());
 
-        $conn->handleData($stream);
+        $conn->handleData();
     }
 
     public function testPipeShouldReturnDestination()
@@ -234,7 +234,7 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
     }
 
     /**
@@ -333,7 +333,7 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
         $this->assertSame("foobr\n", $capturedData);
     }
 
@@ -362,7 +362,7 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $conn->handleData();
     }
 
     /**
@@ -382,6 +382,30 @@ class ReadableResourceStreamTest extends TestCase
 
         fclose($stream);
         fclose($_);
+    }
+
+    /**
+     * @covers React\Stream\ReadableResourceStream::handleData
+     */
+    public function testItCanEndAfterReceivingData()
+    {
+        $stream = fopen(__DIR__ . '/fixture/simple-file.txt', 'r+');
+        $loop = $this->createLoopMock();
+
+        $capturedData = null;
+
+        $conn = new ReadableResourceStream($stream, $loop);
+        $conn->on('data', function ($data) use (&$capturedData) {
+            $capturedData = $data;
+        });
+        $hasEnded = false;
+        $conn->on('end', function () use (&$hasEnded) {
+            $hasEnded = true;
+        });
+
+        $conn->handleData();
+        $this->assertTrue($hasEnded);
+        $this->assertSame("hello\n", $capturedData);
     }
 
     private function createLoopMock()

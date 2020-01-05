@@ -144,7 +144,8 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
         if ($data !== '') {
             $this->emit('data', array($data));
-        } elseif (\feof($this->stream)) {
+        }
+        if (is_resource($this->stream) && \feof($this->stream)) {
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
