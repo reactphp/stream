@@ -20,12 +20,18 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
      */
     private $writeChunkSize;
 
+    /**
+     * @var int
+     */
+    private $maxConsecutiveZeroWrittenRetries;
+
     private $listening = false;
     private $writable = true;
     private $closed = false;
     private $data = '';
+    private $zeroWrites = 0;
 
-    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null, $writeChunkSize = null)
+    public function __construct($stream, LoopInterface $loop, $writeBufferSoftLimit = null, $writeChunkSize = null, $maxConsecutiveZeroWrittenRetries = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -47,6 +53,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         $this->loop = $loop;
         $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
         $this->writeChunkSize = ($writeChunkSize === null) ? -1 : (int)$writeChunkSize;
+        $this->maxConsecutiveZeroWrittenRetries = ($maxConsecutiveZeroWrittenRetries === null) ? 13 : (int)$maxConsecutiveZeroWrittenRetries;
     }
 
     public function isWritable()
@@ -136,7 +143,17 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         // report a temporary error (EAGAIN) which we do not raise here in order
         // to keep the stream open for further tries to write.
         // Should this turn out to be a permanent error later, it will eventually
-        // send *nothing* and we can detect this.
+        // send *nothing* and we can detect this. How ever, not every write that
+        // writes nothing is a closed stream, sometimes it's not ready yet even
+        // though it's reported as ready for writes. As such we should retry 
+        // writing several times before giving up.
+        if ($sent === 0 && $error === null && $this->zeroWrites <= $this->maxConsecutiveZeroWrittenRetries) {
+            $this->zeroWrites++;
+            return;
+        }
+
+        $this->zeroWrites = 0;
+
         if ($sent === 0 || $sent === false) {
             if ($error !== null) {
                 $error = new \ErrorException(
