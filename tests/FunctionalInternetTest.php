@@ -78,11 +78,20 @@ class FunctionalInternetTest extends TestCase
         $this->assertNotEquals('', $buffer);
     }
 
-    public function testUploadBiggerBlockSecureRequiresSmallerChunkSize()
+    public function testUploadBiggerBlockSecure()
     {
-        $size = 50 * 1000;
+        // A few dozen kilobytes should be enough to verify this works.
+        // Underlying buffer sizes are platform-specific, so let's increase this
+        // a bit to trigger different behavior on Linux vs Mac OS X.
+        $size = 136 * 1000;
+
         $stream = stream_socket_client('tls://httpbin.org:443');
 
+        // PHP < 7.1.4 (and PHP < 7.0.18) suffers from a bug when writing big
+        // chunks of data over TLS streams at once.
+        // We work around this by limiting the write chunk size to 8192 bytes
+        // here to also support older PHP versions.
+        // See https://github.com/reactphp/socket/issues/105
         $loop = Factory::create();
         $stream = new DuplexResourceStream(
             $stream,
