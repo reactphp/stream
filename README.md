@@ -40,6 +40,7 @@ but have an interface more suited for async, non-blocking I/O.
   * [WritableResourceStream](#writableresourcestream)
   * [DuplexResourceStream](#duplexresourcestream)
   * [ThroughStream](#throughstream)
+  * [TransformerStream](#transformerstream)
   * [CompositeStream](#compositestream)
 * [Usage](#usage)
 * [Install](#install)
@@ -1109,6 +1110,56 @@ $through->on('data', $this->expectCallableNever()));
 
 $through->write(2);
 ```
+
+### TransformerStream
+
+The `TransformerStream` is a basic class that will help you with the creation of
+new Stream transformations. By default, you will have to implement how this
+transformation is done by implementing the method `write`, having the object
+`output` as the [`WritableStreamInterface`](#writablestreaminterface) instance.
+
+```php
+final class SplitLettersStream extends TransformerStream
+{
+    public function write($data)
+    {
+        $letters = str_split($data);
+        foreach($letters as $letter) {
+            $this->writeToOutput($letter);
+        }
+    }
+}
+```
+
+In this example, you will write each splitted letter from the received chunk 
+in the output.
+
+```php
+$stdout = new WritableResourceStream(STDOUT, $loop);
+$splitLetterStream = new SplitLettersStream($stdout);
+$splitLetterStream->write('This is an input');
+```
+
+You can build an inline Transformer stream in an as well by defining a Callable.
+You will have to pass the output by reference inside the Callable in order write
+the transformed data.
+
+```php
+$stdout = new WritableResourceStream(STDOUT, $loop);
+$splitLetterStream = new TransformerStream::withCallback($stdout, function($data) use ($stdout) {
+    $letters = str_split($data);
+    foreach($letters as $letter) {
+        $stdout->write($letter);
+    }
+});
+$splitLetterStream->write('This is an input');
+```
+
+If you `write()` to the duplex stream, it execute your own `write()`
+implementation.
+
+Events `close`, `drain` and `error` will be propagated to the stream. Events
+`close` and `error` propagation will cause the stream to stop being writtable.
 
 ### CompositeStream
 
