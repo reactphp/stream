@@ -1159,7 +1159,7 @@ If you `write()` to the duplex stream, it execute your own `write()`
 implementation.
 
 Events `close`, `drain` and `error` will be propagated to the stream. Events
-`close` and `error` propagation will cause the stream to stop being writtable.
+`close` and `error` propagation will cause the stream to stop being writable.
 
 ### CompositeStream
 
