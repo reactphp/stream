@@ -1,12 +1,26 @@
 # Changelog
 
-## 1.1.0 (2018-01-01)
+## 1.1.1 (2020-05-04)
 
-*   Improvement: Increase performance by optimizing global function and constant look ups
+*   Fix: Fix faulty write buffer behavior when sending large data chunks over TLS (Mac OS X only).
+    (#150 by @clue)
+
+*   Minor code style improvements to fix phpstan analysis warnings and
+    add `.gitattributes` to exclude dev files from exports.
+    (#140 by @flow-control and #144 by @reedy)
+
+*   Improve test suite to run tests on PHP 7.4 and simplify test matrix.
+    (#147 by @clue)
+
+## 1.1.0 (2019-01-01)
+
+*   Improvement: Increase performance by optimizing global function and constant look ups.
     (#137 by @WyriHaximus)
-*   Travis: Test against PHP 7.3
+
+*   Travis: Test against PHP 7.3.
     (#138 by @WyriHaximus)
-*   Fix: Ignore empty reads 
+
+*   Fix: Ignore empty reads.
     (#139 by @WyriHaximus)
 
 ## 1.0.0 (2018-07-11)
