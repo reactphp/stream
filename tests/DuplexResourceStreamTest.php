@@ -38,18 +38,17 @@ class DuplexResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnInvalidStream()
     {
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('InvalidArgumentException');
         new DuplexResourceStream('breakme', $loop);
     }
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStream()
     {
@@ -59,12 +58,12 @@ class DuplexResourceStreamTest extends TestCase
 
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('InvalidArgumentException');
         new DuplexResourceStream(STDOUT, $loop);
     }
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStreamWithExcessiveMode()
     {
@@ -74,12 +73,12 @@ class DuplexResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
+        $this->setExpectedException('InvalidArgumentException');
         new DuplexResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
-     * @expectedException RunTimeException
      */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
@@ -90,6 +89,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('RunTimeException');
         new DuplexResourceStream($stream, $loop);
     }
 

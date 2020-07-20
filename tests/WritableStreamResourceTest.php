@@ -37,31 +37,30 @@ class WritableResourceStreamTest extends TestCase
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsIfNotAValidStreamResource()
     {
         $stream = null;
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnReadOnlyStream()
     {
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorThrowsExceptionOnReadOnlyStreamWithExcessiveMode()
     {
@@ -71,12 +70,12 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
+        $this->setExpectedException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
-     * @expectedException RuntimeException
      */
     public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
     {
@@ -87,6 +86,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
+        $this->setExpectedException('RuntimeException');
         new WritableResourceStream($stream, $loop);
     }
 
@@ -325,6 +325,10 @@ class WritableResourceStreamTest extends TestCase
      */
     public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('Not supported on HHVM');
+        }
+
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
@@ -480,8 +484,8 @@ class WritableResourceStreamTest extends TestCase
         $this->assertInstanceOf('Exception', $error);
 
         // the error messages differ between PHP versions, let's just check substrings
-        $this->assertContains('Unable to write to stream: ', $error->getMessage());
-        $this->assertContains(' not a valid stream resource', $error->getMessage(), '', true);
+        $this->assertContainsString('Unable to write to stream: ', $error->getMessage());
+        $this->assertContainsStringIgnoringCase(' Not a valid stream resource', $error->getMessage());
     }
 
     public function testWritingToClosedStream()
