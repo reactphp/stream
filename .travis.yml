@@ -29,8 +29,9 @@ jobs:
     - os: osx
 
 install:
-  - composer install --no-interaction
+  - composer install
 
 script:
-  - vendor/bin/phpunit --coverage-text
+  - if [[ "$TRAVIS_PHP_VERSION" > "7.2" ]]; then vendor/bin/phpunit --coverage-text; fi
+  - if [[ "$TRAVIS_PHP_VERSION" < "7.3" ]]; then vendor/bin/phpunit --coverage-text -c phpunit.xml.legacy; fi
   - time php examples/91-benchmark-throughput.php
