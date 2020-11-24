@@ -461,33 +461,6 @@ class WritableResourceStreamTest extends TestCase
         $this->assertSame('', $filterBuffer);
     }
 
-    /**
-     * @covers React\Stream\WritableResourceStream::handleWrite
-     */
-    public function testErrorWhenStreamResourceIsInvalid()
-    {
-        $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
-
-        $error = null;
-
-        $buffer = new WritableResourceStream($stream, $loop);
-        $buffer->on('error', function ($message) use (&$error) {
-            $error = $message;
-        });
-
-        // invalidate stream resource
-        fclose($stream);
-
-        $buffer->write('Attempting to write to bad stream');
-
-        $this->assertInstanceOf('Exception', $error);
-
-        // the error messages differ between PHP versions, let's just check substrings
-        $this->assertContainsString('Unable to write to stream: ', $error->getMessage());
-        $this->assertContainsStringIgnoringCase(' Not a valid stream resource', $error->getMessage());
-    }
-
     public function testWritingToClosedStream()
     {
         if ('Darwin' === PHP_OS) {
