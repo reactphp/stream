@@ -1,6 +1,6 @@
 # Stream
 
-[![Build Status](https://travis-ci.org/reactphp/stream.svg?branch=master)](https://travis-ci.org/reactphp/stream)
+[![CI status](https://github.com/reactphp/stream/workflows/CI/badge.svg)](https://github.com/reactphp/stream/actions)
 
 Event-driven readable and writable streams for non-blocking I/O in [ReactPHP](https://reactphp.org/).
 

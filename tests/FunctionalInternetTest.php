@@ -59,7 +59,7 @@ class FunctionalInternetTest extends TestCase
     public function testUploadKilobyteSecure()
     {
         $size = 1000;
-        $stream = stream_socket_client('tls://httpbin.org:443');
+        $stream = stream_socket_client('ssl://httpbin.org:443');
 
         $loop = Factory::create();
         $stream = new DuplexResourceStream($stream, $loop);
@@ -85,7 +85,7 @@ class FunctionalInternetTest extends TestCase
         // a bit to trigger different behavior on Linux vs Mac OS X.
         $size = 136 * 1000;
 
-        $stream = stream_socket_client('tls://httpbin.org:443');
+        $stream = stream_socket_client('ssl://httpbin.org:443');
 
         // PHP < 7.1.4 (and PHP < 7.0.18) suffers from a bug when writing big
         // chunks of data over TLS streams at once.
