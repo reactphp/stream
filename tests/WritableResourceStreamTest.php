@@ -485,7 +485,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->handleWrite();
 
         $this->assertInstanceOf('Exception', $error);
-        $this->assertSame('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
+        $this->assertSameIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()

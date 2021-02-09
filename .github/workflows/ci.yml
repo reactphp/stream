@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         php:
+          - 8.0
           - 7.4
           - 7.3
           - 7.2
@@ -41,7 +42,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
+          php-version: 8.0
           coverage: xdebug
       - run: composer install
       - run: vendor/bin/phpunit --coverage-text
