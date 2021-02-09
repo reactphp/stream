@@ -86,4 +86,15 @@ class TestCase extends BaseTestCase
             $this->assertContains($needle, $haystack, '', true);
         }
     }
+
+    public function assertSameIgnoringCase($expected, $actual)
+    {
+        if (method_exists($this, 'assertEqualsIgnoringCase')) {
+            // PHPUnit 7.5+
+            $this->assertEqualsIgnoringCase($expected, $actual);
+        } else {
+            // legacy PHPUnit 4 - PHPUnit 7.5
+            $this->assertSame($expected, $actual);
+        }
+    }
 }

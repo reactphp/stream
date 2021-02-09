@@ -1,6 +1,6 @@
 # Stream
 
-[![Build Status](https://travis-ci.org/reactphp/stream.svg?branch=master)](https://travis-ci.org/reactphp/stream)
+[![CI status](https://github.com/reactphp/stream/workflows/CI/badge.svg)](https://github.com/reactphp/stream/actions)
 
 Event-driven readable and writable streams for non-blocking I/O in [ReactPHP](https://reactphp.org/).
 
@@ -1185,7 +1185,7 @@ $ composer require react/stream:^1.1.1
 See also the [CHANGELOG](CHANGELOG.md) for details about version upgrades.
 
 This project aims to run on any platform and thus does not require any PHP
-extensions and supports running on legacy PHP 5.3 through current PHP 7+ and HHVM.
+extensions and supports running on legacy PHP 5.3 through current PHP 8+ and HHVM.
 It's *highly recommended to use PHP 7+* for this project due to its vast
 performance improvements.
 
