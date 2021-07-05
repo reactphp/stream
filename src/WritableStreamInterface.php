@@ -330,7 +330,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * ```php
      * $stream->end();
-     * $loop->addTimer(1.0, function () use ($stream) {
+     * Loop::addTimer(1.0, function () use ($stream) {
      *     $stream->close();
      * });
      * ```

@@ -11,7 +11,6 @@
 // $ php examples/02-https.php
 // $ php examples/02-https.php reactphp.org
 
-use React\EventLoop\Factory;
 use React\Stream\DuplexResourceStream;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -25,8 +24,7 @@ if (!$resource) {
     exit(1);
 }
 
-$loop = Factory::create();
-$stream = new DuplexResourceStream($resource, $loop);
+$stream = new DuplexResourceStream($resource);
 
 $stream->on('data', function ($chunk) {
     echo $chunk;
@@ -36,5 +34,3 @@ $stream->on('close', function () {
 });
 
 $stream->write("GET / HTTP/1.0\r\nHost: $host\r\n\r\n");
-
-$loop->run();

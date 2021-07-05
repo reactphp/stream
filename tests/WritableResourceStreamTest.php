@@ -19,6 +19,19 @@ class WritableResourceStreamTest extends TestCase
         new WritableResourceStream($stream, $loop);
     }
 
+    public function testConstructWithoutLoopAssignsLoopAutomatically()
+    {
+        $resource = fopen('php://temp', 'r+');
+
+        $stream = new WritableResourceStream($resource);
+
+        $ref = new \ReflectionProperty($stream, 'loop');
+        $ref->setAccessible(true);
+        $loop = $ref->getValue($stream);
+
+        $this->assertInstanceOf('React\EventLoop\LoopInterface', $loop);
+    }
+
     /**
      * @covers React\Stream\WritableResourceStream::__construct
      * @doesNotPerformAssertions

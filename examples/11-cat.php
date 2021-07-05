@@ -8,7 +8,6 @@
 // $ php examples/11-cat.php < README.md
 // $ echo hello | php examples/11-cat.php
 
-use React\EventLoop\Factory;
 use React\Stream\ReadableResourceStream;
 use React\Stream\WritableResourceStream;
 
@@ -19,10 +18,6 @@ if (DIRECTORY_SEPARATOR === '\\') {
     exit(1);
 }
 
-$loop = Factory::create();
-
-$stdout = new WritableResourceStream(STDOUT, $loop);
-$stdin = new ReadableResourceStream(STDIN, $loop);
+$stdout = new WritableResourceStream(STDOUT);
+$stdin = new ReadableResourceStream(STDIN);
 $stdin->pipe($stdout);
-
-$loop->run();
