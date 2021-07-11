@@ -20,6 +20,19 @@ class DuplexResourceStreamTest extends TestCase
         new DuplexResourceStream($stream, $loop);
     }
 
+    public function testConstructWithoutLoopAssignsLoopAutomatically()
+    {
+        $resource = fopen('php://temp', 'r+');
+
+        $stream = new DuplexResourceStream($resource);
+
+        $ref = new \ReflectionProperty($stream, 'loop');
+        $ref->setAccessible(true);
+        $loop = $ref->getValue($stream);
+
+        $this->assertInstanceOf('React\EventLoop\LoopInterface', $loop);
+    }
+
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
      * @doesNotPerformAssertions
