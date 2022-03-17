@@ -1,6 +1,7 @@
 # Stream
 
 [![CI status](https://github.com/reactphp/stream/workflows/CI/badge.svg)](https://github.com/reactphp/stream/actions)
+[![installs on Packagist](https://img.shields.io/packagist/dt/react/stream?color=blue&label=installs%20on%20Packagist)](https://packagist.org/packages/react/stream)
 
 Event-driven readable and writable streams for non-blocking I/O in [ReactPHP](https://reactphp.org/).
 
