@@ -117,7 +117,25 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
-        $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
+        new DuplexResourceStream($stream, $loop, null, $buffer);
+    }
+
+    /**
+     * @covers React\Stream\DuplexResourceStream::__construct
+     */
+    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlockingWithBufferGiven()
+    {
+        if (!in_array('blocking', stream_get_wrappers())) {
+            stream_wrapper_register('blocking', 'React\Tests\Stream\EnforceBlockingWrapper');
+        }
+
+        $stream = fopen('blocking://test', 'r+');
+        $loop = $this->createLoopMock();
+
+        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+
+        $this->setExpectedException('RunTimeException');
+        new DuplexResourceStream($stream, $loop, null, $buffer);
     }
 
     public function testCloseShouldEmitCloseEvent()
