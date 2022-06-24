@@ -157,14 +157,23 @@ class WritableResourceStreamTest extends TestCase
     public function testWriteReturnsFalseWhenWritableResourceStreamIsFull()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createWriteableLoopMock();
-        $loop->preventWrites = true;
+
+        $preventWrites = true;
+        $loop = $this->createLoopMock();
+        $loop
+            ->expects($this->any())
+            ->method('addWriteStream')
+            ->will($this->returnCallback(function ($stream, $listener) use (&$preventWrites) {
+                if (!$preventWrites) {
+                    call_user_func($listener, $stream);
+                }
+            }));
 
         $buffer = new WritableResourceStream($stream, $loop, 4);
         $buffer->on('error', $this->expectCallableNever());
 
         $this->assertTrue($buffer->write("foo"));
-        $loop->preventWrites = false;
+        $preventWrites = false;
         $this->assertFalse($buffer->write("bar\n"));
     }
 
@@ -504,14 +513,11 @@ class WritableResourceStreamTest extends TestCase
     private function createWriteableLoopMock()
     {
         $loop = $this->createLoopMock();
-        $loop->preventWrites = false;
         $loop
             ->expects($this->any())
             ->method('addWriteStream')
-            ->will($this->returnCallback(function ($stream, $listener) use ($loop) {
-                if (!$loop->preventWrites) {
-                    call_user_func($listener, $stream);
-                }
+            ->will($this->returnCallback(function ($stream, $listener) {
+                call_user_func($listener, $stream);
             }));
 
         return $loop;

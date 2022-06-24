@@ -5,10 +5,12 @@ namespace React\Tests\Stream;
 /**
  * Used to test dummy stream resources that do not support setting non-blocking mode
  *
- * @link http://php.net/manual/de/class.streamwrapper.php
+ * @link https://www.php.net/manual/en/class.streamwrapper.php
  */
 class EnforceBlockingWrapper
 {
+    public $context;
+
     public function stream_open($path, $mode, $options, &$opened_path)
     {
         return true;
