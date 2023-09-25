@@ -96,6 +96,30 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventEndsStream()
+    {
+        $through = new ThroughStream();
+        $through->on('data', function () use ($through) {
+            $through->end();
+        });
+        $ret = $through->write('foo');
+
+        $this->assertFalse($ret);
+    }
+
+    /** @test */
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventClosesStream()
+    {
+        $through = new ThroughStream();
+        $through->on('data', function () use ($through) {
+            $through->close();
+        });
+        $ret = $through->write('foo');
+
+        $this->assertFalse($ret);
+    }
+
+    /** @test */
     public function itShouldEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenToItWhenPaused()
     {
         $through = new ThroughStream();
@@ -104,6 +128,40 @@ class ThroughStreamTest extends TestCase
 
         $through->on('drain', $this->expectCallableOnce());
         $through->resume();
+    }
+
+    /** @test */
+    public function itShouldNotEmitDrainOnResumeAfterClose()
+    {
+        $through = new ThroughStream();
+        $through->close();
+
+        $through->on('drain', $this->expectCallableNever());
+        $through->resume();
+    }
+
+    /** @test */
+    public function itShouldNotEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenThatCausesStreamToClose()
+    {
+        $through = new ThroughStream();
+        $through->on('data', function () use ($through) { $through->close(); });
+        $through->write('foo');
+
+        $through->on('drain', $this->expectCallableNever());
+        $through->resume();
+    }
+
+    /** @test */
+    public function itShouldReturnFalseForAnyDataWrittenToItAfterPausingFromDrainEvent()
+    {
+        $through = new ThroughStream();
+        $through->pause();
+        $through->write('foo');
+
+        $through->on('drain', function () use ($through) { $through->pause(); });
+        $through->resume();
+
+        $this->assertFalse($through->write('bar'));
     }
 
     /** @test */
