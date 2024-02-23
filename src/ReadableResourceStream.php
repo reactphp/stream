@@ -4,7 +4,6 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 use React\EventLoop\Loop;
-use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
 final class ReadableResourceStream extends EventEmitter implements ReadableStreamInterface
@@ -13,9 +12,6 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
      * @var resource
      */
     private $stream;
-
-    /** @var LoopInterface */
-    private $loop;
 
     /**
      * Controls the maximum buffer size in bytes to read at once from the stream.
@@ -40,7 +36,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     private $closed = false;
     private $listening = false;
 
-    public function __construct($stream, LoopInterface $loop = null, $readChunkSize = null)
+    public function __construct($stream, $readChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -71,7 +67,6 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         }
 
         $this->stream = $stream;
-        $this->loop = $loop ?: Loop::get();
         $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
 
         $this->resume();
@@ -85,7 +80,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function pause()
     {
         if ($this->listening) {
-            $this->loop->removeReadStream($this->stream);
+            Loop::get()->removeReadStream($this->stream);
             $this->listening = false;
         }
     }
@@ -93,7 +88,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function resume()
     {
         if (!$this->listening && !$this->closed) {
-            $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            Loop::get()->addReadStream($this->stream, array($this, 'handleData'));
             $this->listening = true;
         }
     }

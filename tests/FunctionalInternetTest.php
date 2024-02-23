@@ -3,7 +3,9 @@
 namespace React\Tests\Stream;
 
 use React\EventLoop\Factory;
+use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\StreamSelectLoop;
 use React\Stream\DuplexResourceStream;
 use React\Stream\WritableResourceStream;
 
@@ -12,13 +14,18 @@ use React\Stream\WritableResourceStream;
  */
 class FunctionalInternetTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        Loop::set(new StreamSelectLoop());
+    }
+
     public function testUploadKilobytePlain()
     {
         $size = 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
 
-        $loop = Factory::create();
-        $stream = new DuplexResourceStream($stream, $loop);
+        $loop = Loop::get();
+        $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -39,8 +46,8 @@ class FunctionalInternetTest extends TestCase
         $size = 50 * 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
 
-        $loop = Factory::create();
-        $stream = new DuplexResourceStream($stream, $loop);
+        $loop = Loop::get();
+        $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -61,8 +68,8 @@ class FunctionalInternetTest extends TestCase
         $size = 1000;
         $stream = stream_socket_client('ssl://httpbin.org:443');
 
-        $loop = Factory::create();
-        $stream = new DuplexResourceStream($stream, $loop);
+        $loop = Loop::get();
+        $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -92,12 +99,11 @@ class FunctionalInternetTest extends TestCase
         // We work around this by limiting the write chunk size to 8192 bytes
         // here to also support older PHP versions.
         // See https://github.com/reactphp/socket/issues/105
-        $loop = Factory::create();
+        $loop = Loop::get();
         $stream = new DuplexResourceStream(
             $stream,
-            $loop,
             null,
-            new WritableResourceStream($stream, $loop, null, 8192)
+            new WritableResourceStream($stream, null, 8192)
         );
 
         $buffer = '';

@@ -4,15 +4,11 @@ namespace React\Stream;
 
 use Evenement\EventEmitter;
 use React\EventLoop\Loop;
-use React\EventLoop\LoopInterface;
 use InvalidArgumentException;
 
 final class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
     private $stream;
-
-    /** @var LoopInterface */
-    private $loop;
 
     /**
      * Controls the maximum buffer size in bytes to read at once from the stream.
@@ -38,7 +34,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     private $closing = false;
     private $listening = false;
 
-    public function __construct($stream, LoopInterface $loop = null, $readChunkSize = null, WritableStreamInterface $buffer = null)
+    public function __construct($stream, $readChunkSize = null, WritableStreamInterface $buffer = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -69,11 +65,10 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         }
 
         if ($buffer === null) {
-            $buffer = new WritableResourceStream($stream, $loop);
+            $buffer = new WritableResourceStream($stream);
         }
 
         $this->stream = $stream;
-        $this->loop = $loop ?: Loop::get();
         $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
         $this->buffer = $buffer;
 
@@ -105,7 +100,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     public function pause()
     {
         if ($this->listening) {
-            $this->loop->removeReadStream($this->stream);
+            Loop::get()->removeReadStream($this->stream);
             $this->listening = false;
         }
     }
@@ -113,7 +108,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     public function resume()
     {
         if (!$this->listening && $this->readable) {
-            $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            Loop::get()->addReadStream($this->stream, array($this, 'handleData'));
             $this->listening = true;
         }
     }

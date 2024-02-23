@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use Clue\StreamFilter as Filter;
+use React\EventLoop\Loop;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
@@ -23,7 +24,8 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                     return true;
                 },
                 function () {
-                    return new StreamSelectLoop();
+                    Loop::set(new StreamSelectLoop());
+                    return Loop::get();
                 }
             ),
             array(
@@ -31,7 +33,10 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                     return function_exists('event_base_new');
                 },
                 function () {
-                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop();
+                    Loop::set(
+                        class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop()
+                    );
+                    return Loop::get();
                 }
             ),
             array(
@@ -39,7 +44,10 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                     return class_exists('libev\EventLoop');
                 },
                 function () {
-                    return class_exists('React\EventLoop\ExtLibevLoop') ? new ExtLibevLoop() : new LibEvLoop();
+                    Loop::set(
+                        class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop()
+                    );
+                    return Loop::get();
                 }
             ),
             array(
@@ -47,7 +55,8 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                     return class_exists('EventBase') && class_exists('React\EventLoop\ExtEventLoop');
                 },
                 function () {
-                    return new ExtEventLoop();
+                    Loop::set(new ExtEventLoop());
+                    return Loop::get();
                 }
             )
         );
@@ -62,13 +71,13 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
         $bufferSize = 4096;
-        $streamA = new DuplexResourceStream($sockA, $loop, $bufferSize);
-        $streamB = new DuplexResourceStream($sockB, $loop, $bufferSize);
+        $streamA = new DuplexResourceStream($sockA, $bufferSize);
+        $streamB = new DuplexResourceStream($sockB, $bufferSize);
 
         $testString = str_repeat("*", $bufferSize + 1);
 
@@ -79,9 +88,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         $streamA->write($testString);
 
-        $this->loopTick($loop);
-        $this->loopTick($loop);
-        $this->loopTick($loop);
+        $this->loopTick(Loop::get());
+        $this->loopTick(Loop::get());
+        $this->loopTick(Loop::get());
 
         $streamA->close();
         $streamB->close();
@@ -98,12 +107,12 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new DuplexResourceStream($sockA, $loop);
-        $streamB = new DuplexResourceStream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA);
+        $streamB = new DuplexResourceStream($sockB);
 
         // limit seems to be 192 KiB
         $size = 256 * 1024;
@@ -121,7 +130,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('close', $this->expectCallableOnce());
         $streamB->on('error', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
 
         $streamA->close();
         $streamB->close();
@@ -138,12 +147,12 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new DuplexResourceStream($sockA, $loop);
-        $streamB = new DuplexResourceStream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA);
+        $streamB = new DuplexResourceStream($sockB);
 
         // end streamA without writing any data
         $streamA->end();
@@ -151,7 +160,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         // streamB should not emit any data
         $streamB->on('data', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
 
         $streamA->close();
         $streamB->close();
@@ -166,12 +175,12 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         list($sockA, $sockB) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
 
-        $streamA = new DuplexResourceStream($sockA, $loop);
-        $streamB = new DuplexResourceStream($sockB, $loop);
+        $streamA = new DuplexResourceStream($sockA);
+        $streamB = new DuplexResourceStream($sockB);
 
         // end streamA without writing any data
         $streamA->pause();
@@ -181,7 +190,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        $loop->run();
+        Loop::get()->run();
 
         $streamA->close();
         $streamB->close();
@@ -196,15 +205,15 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         $server = stream_socket_server('tcp://127.0.0.1:0');
 
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
 
-        $streamA = new DuplexResourceStream($client, $loop);
-        $streamB = new DuplexResourceStream($peer, $loop);
+        $streamA = new DuplexResourceStream($client);
+        $streamB = new DuplexResourceStream($peer);
 
         // end streamA without writing any data
         $streamA->pause();
@@ -214,7 +223,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        $loop->run();
+        Loop::get()->run();
 
         $streamA->close();
         $streamB->close();
@@ -229,15 +238,15 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
         $server = stream_socket_server('tcp://127.0.0.1:0');
 
         $client = stream_socket_client(stream_socket_get_name($server, false));
         $peer = stream_socket_accept($server);
 
-        $streamA = new DuplexResourceStream($peer, $loop);
-        $streamB = new DuplexResourceStream($client, $loop);
+        $streamA = new DuplexResourceStream($peer);
+        $streamB = new DuplexResourceStream($client);
 
         // end streamA without writing any data
         $streamA->pause();
@@ -247,7 +256,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        $loop->run();
+        Loop::get()->run();
 
         $streamA->close();
         $streamB->close();
@@ -262,14 +271,14 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('echo test', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('echo test', 'r'));
         $stream->on('data', $this->expectCallableOnceWith("test\n"));
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
     }
 
     /**
@@ -281,9 +290,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('echo a;sleep 0.1;echo b;sleep 0.1;echo c', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('echo a;sleep 0.1;echo b;sleep 0.1;echo c', 'r'));
 
         $buffer = '';
         $stream->on('data', function ($chunk) use (&$buffer) {
@@ -293,7 +302,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
 
         $this->assertEquals("a\n" . "b\n" . "c\n", $buffer);
     }
@@ -307,9 +316,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'));
 
         $bytes = 0;
         $stream->on('data', function ($chunk) use (&$bytes) {
@@ -319,7 +328,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
 
         $this->assertEquals(12345 * 1234, $bytes);
     }
@@ -333,14 +342,14 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return $this->markTestSkipped('Loop implementation not available');
         }
 
-        $loop = $loopFactory();
+        $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('true', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('true', 'r'));
         $stream->on('data', $this->expectCallableNever());
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        $loop->run();
+        Loop::get()->run();
     }
 
     /**
@@ -364,9 +373,9 @@ class DuplexResourceStreamIntegrationTest extends TestCase
             return '';
         }, STREAM_FILTER_READ);
 
-        $loop = $loopFactory();
+        $loopFactory();
 
-        $conn = new DuplexResourceStream($stream, $loop);
+        $conn = new DuplexResourceStream($stream);
         $conn->on('error', $this->expectCallableNever());
         $conn->on('data', $this->expectCallableNever());
         $conn->on('end', $this->expectCallableNever());
