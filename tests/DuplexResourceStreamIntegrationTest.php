@@ -6,11 +6,7 @@ use Clue\StreamFilter as Filter;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
-use React\EventLoop\ExtLibeventLoop;
-use React\EventLoop\ExtLibevLoop;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\LibEventLoop;
-use React\EventLoop\LibEvLoop;
 use React\EventLoop\StreamSelectLoop;
 
 class DuplexResourceStreamIntegrationTest extends TestCase
@@ -24,22 +20,6 @@ class DuplexResourceStreamIntegrationTest extends TestCase
                 },
                 function () {
                     return new StreamSelectLoop();
-                }
-            ),
-            array(
-                function () {
-                    return function_exists('event_base_new');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('libev\EventLoop');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibevLoop') ? new ExtLibevLoop() : new LibEvLoop();
                 }
             ),
             array(

@@ -87,8 +87,8 @@ class FunctionalInternetTest extends TestCase
 
         $stream = stream_socket_client('ssl://httpbin.org:443');
 
-        // PHP < 7.1.4 (and PHP < 7.0.18) suffers from a bug when writing big
-        // chunks of data over TLS streams at once.
+        // PHP < 7.1.4 suffers from a bug when writing big chunks of data over
+        // TLS streams at once.
         // We work around this by limiting the write chunk size to 8192 bytes
         // here to also support older PHP versions.
         // See https://github.com/reactphp/socket/issues/105

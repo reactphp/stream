@@ -347,10 +347,6 @@ class WritableResourceStreamTest extends TestCase
      */
     public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('Not supported on HHVM');
-        }
-
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
