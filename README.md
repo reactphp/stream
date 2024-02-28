@@ -353,7 +353,7 @@ By default, this will call `end()` on the destination stream once the
 source stream emits an `end` event. This can be disabled like this:
 
 ```php
-$source->pipe($dest, array('end' => false));
+$source->pipe($dest, ['end' => false]);
 ```
 
 Note that this only applies to the `end` event.
@@ -1126,7 +1126,7 @@ $through = new ThroughStream(function ($data) {
 });
 $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
 
-$through->write(array(2, true));
+$through->write([2, true]);
 ```
 
 The callback function is allowed to throw an `Exception`. In this case,
@@ -1217,9 +1217,8 @@ composer require react/stream:^3@dev
 See also the [CHANGELOG](CHANGELOG.md) for details about version upgrades.
 
 This project aims to run on any platform and thus does not require any PHP
-extensions and supports running on legacy PHP 5.3 through current PHP 8+ and HHVM.
-It's *highly recommended to use PHP 7+* for this project due to its vast
-performance improvements.
+extensions and supports running on PHP 7.1 through current PHP 8+.
+It's *highly recommended to use the latest supported PHP version* for this project.
 
 ## Tests
 

@@ -56,7 +56,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = null;
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
@@ -68,7 +68,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
@@ -83,7 +83,7 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new WritableResourceStream($stream, $loop);
     }
 
@@ -99,7 +99,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException('RuntimeException');
         new WritableResourceStream($stream, $loop);
     }
 
@@ -347,10 +347,6 @@ class WritableResourceStreamTest extends TestCase
      */
     public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('Not supported on HHVM');
-        }
-
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
@@ -411,7 +407,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
 
-        $this->assertEquals(array(), $buffer->listeners('close'));
+        $this->assertEquals([], $buffer->listeners('close'));
     }
 
     /**
@@ -507,7 +503,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->handleWrite();
 
         $this->assertInstanceOf('Exception', $error);
-        $this->assertSameIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
+        $this->assertEqualsIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()

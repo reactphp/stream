@@ -55,7 +55,7 @@ class ReadableResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream(false, $loop);
     }
 
@@ -64,13 +64,9 @@ class ReadableResourceStreamTest extends TestCase
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStream()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('HHVM does not report fopen mode for STDOUT');
-        }
-
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream(STDOUT, $loop);
     }
 
@@ -85,7 +81,7 @@ class ReadableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream($stream, $loop);
     }
 
@@ -101,7 +97,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException('RuntimeException');
         new ReadableResourceStream($stream, $loop);
     }
 
@@ -150,7 +146,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
         $this->assertSame("foobar\n", $capturedData);
     }
 
@@ -173,7 +172,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
 
         $this->assertTrue($conn->isReadable());
         $this->assertEquals(4321, strlen($capturedData));
@@ -199,7 +201,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
 
         $this->assertTrue($conn->isReadable());
         $this->assertEquals(100000, strlen($capturedData));
@@ -216,7 +221,10 @@ class ReadableResourceStreamTest extends TestCase
         $conn = new ReadableResourceStream($stream, $loop);
         $conn->on('data', $this->expectCallableNever());
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     public function testPipeShouldReturnDestination()
@@ -247,7 +255,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     /**
@@ -346,7 +357,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
         $this->assertSame("foobr\n", $capturedData);
     }
 
@@ -375,7 +389,10 @@ class ReadableResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     /**
@@ -391,7 +408,9 @@ class ReadableResourceStreamTest extends TestCase
         $conn->on('data', $this->expectCallableNever());
         $conn->on('end', $this->expectCallableNever());
 
-        $conn->handleData();
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
 
         fclose($stream);
         fclose($_);
