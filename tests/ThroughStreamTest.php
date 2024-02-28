@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\ThroughStream;
+use React\Stream\WritableStreamInterface;
 
 /**
  * @covers React\Stream\ThroughStream
@@ -14,7 +15,7 @@ class ThroughStreamTest extends TestCase
      */
     public function itShouldRejectInvalidCallback()
     {
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new ThroughStream(123);
     }
 
@@ -311,7 +312,7 @@ class ThroughStreamTest extends TestCase
     /** @test */
     public function pipeShouldPipeCorrectly()
     {
-        $output = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $output = $this->createMock(WritableStreamInterface::class);
         $output->expects($this->any())->method('isWritable')->willReturn(True);
         $output
             ->expects($this->once())

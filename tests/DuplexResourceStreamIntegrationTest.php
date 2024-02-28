@@ -13,24 +13,22 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 {
     public function loopProvider()
     {
-        return array(
-            array(
-                function() {
-                    return true;
-                },
-                function () {
-                    return new StreamSelectLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('EventBase') && class_exists('React\EventLoop\ExtEventLoop');
-                },
-                function () {
-                    return new ExtEventLoop();
-                }
-            )
-        );
+        yield [
+            function() {
+                return true;
+            },
+            function () {
+                return new StreamSelectLoop();
+            }
+        ];
+        yield [
+            function () {
+                return class_exists('EventBase');
+            },
+            function () {
+                return new ExtEventLoop();
+            }
+        ];
     }
 
     /**

@@ -2,7 +2,9 @@
 
 namespace React\Tests\Stream;
 
+use React\EventLoop\LoopInterface;
 use React\Stream\ReadableResourceStream;
+use React\Stream\WritableStreamInterface;
 use function Clue\StreamFilter\append as filter_append;
 
 class ReadableResourceStreamTest extends TestCase
@@ -55,7 +57,7 @@ class ReadableResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new ReadableResourceStream(false, $loop);
     }
 
@@ -66,7 +68,7 @@ class ReadableResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new ReadableResourceStream(STDOUT, $loop);
     }
 
@@ -81,7 +83,7 @@ class ReadableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new ReadableResourceStream($stream, $loop);
     }
 
@@ -97,7 +99,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException(\RuntimeException::class);
         new ReadableResourceStream($stream, $loop);
     }
 
@@ -221,7 +223,7 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
-        $dest = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $dest = $this->createMock(WritableStreamInterface::class);
 
         $this->assertSame($dest, $conn->pipe($dest));
     }
@@ -395,6 +397,6 @@ class ReadableResourceStreamTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
+        return $this->createMock(LoopInterface::class);
     }
 }

@@ -2,8 +2,10 @@
 
 namespace React\Tests\Stream;
 
+use React\EventLoop\LoopInterface;
 use React\Stream\DuplexResourceStream;
 use React\Stream\WritableResourceStream;
+use React\Stream\WritableStreamInterface;
 use function Clue\StreamFilter\append as filter_append;
 
 class DuplexResourceStreamTest extends TestCase
@@ -56,7 +58,7 @@ class DuplexResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new DuplexResourceStream('breakme', $loop);
     }
 
@@ -67,7 +69,7 @@ class DuplexResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new DuplexResourceStream(STDOUT, $loop);
     }
 
@@ -82,7 +84,7 @@ class DuplexResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new DuplexResourceStream($stream, $loop);
     }
 
@@ -98,7 +100,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RunTimeException');
+        $this->expectException(\RuntimeException::class);
         new DuplexResourceStream($stream, $loop);
     }
 
@@ -111,7 +113,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $buffer = $this->createMock(WritableStreamInterface::class);
 
         new DuplexResourceStream($stream, $loop, null, $buffer);
     }
@@ -130,7 +132,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
-        $this->setExpectedException('RunTimeException');
+        $this->expectException(\RuntimeException::class);
         new DuplexResourceStream($stream, $loop, null, $buffer);
     }
 
@@ -153,7 +155,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $buffer = $this->createMock(WritableStreamInterface::class);
         $buffer->expects($this->once())->method('end')->with('foo');
 
         $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
@@ -166,7 +168,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
 
-        $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $buffer = $this->createMock(WritableStreamInterface::class);
         $buffer->expects($this->never())->method('end');
 
         $conn = new DuplexResourceStream($stream, $loop);
@@ -406,7 +408,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $conn = new DuplexResourceStream($stream, $loop);
-        $dest = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $dest = $this->createMock(WritableStreamInterface::class);
 
         $this->assertSame($dest, $conn->pipe($dest));
     }
@@ -517,6 +519,6 @@ class DuplexResourceStreamTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
+        return $this->createMock(LoopInterface::class);
     }
 }

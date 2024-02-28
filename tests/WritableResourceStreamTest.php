@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\EventLoop\LoopInterface;
 use React\Stream\WritableResourceStream;
 use function Clue\StreamFilter\append as filter_append;
 
@@ -56,7 +57,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = null;
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -68,7 +69,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -83,7 +84,7 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -99,7 +100,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException(\RuntimeException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -502,8 +503,8 @@ class WritableResourceStreamTest extends TestCase
         $buffer->write('bar');
         $buffer->handleWrite();
 
-        $this->assertInstanceOf('Exception', $error);
-        $this->assertSameIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
+        $this->assertInstanceOf(\Exception::class, $error);
+        $this->assertEqualsIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()
@@ -521,6 +522,6 @@ class WritableResourceStreamTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
+        return $this->createMock(LoopInterface::class);
     }
 }
