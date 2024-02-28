@@ -353,7 +353,7 @@ By default, this will call `end()` on the destination stream once the
 source stream emits an `end` event. This can be disabled like this:
 
 ```php
-$source->pipe($dest, array('end' => false));
+$source->pipe($dest, ['end' => false]);
 ```
 
 Note that this only applies to the `end` event.
@@ -1126,7 +1126,7 @@ $through = new ThroughStream(function ($data) {
 });
 $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
 
-$through->write(array(2, true));
+$through->write([2, true]);
 ```
 
 The callback function is allowed to throw an `Exception`. In this case,

@@ -3,7 +3,7 @@
 namespace React\Tests\Stream;
 
 use React\Stream\ReadableResourceStream;
-use Clue\StreamFilter as Filter;
+use function Clue\StreamFilter\append as filter_append;
 
 class ReadableResourceStreamTest extends TestCase
 {
@@ -326,7 +326,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
 
         // add a filter which removes every 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             return str_replace('a', '', $chunk);
         }, STREAM_FILTER_READ);
 
@@ -354,7 +354,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
 
         // add a filter which returns an error when encountering an 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             if (strpos($chunk, 'a') !== false) {
                 throw new \Exception('Invalid');
             }

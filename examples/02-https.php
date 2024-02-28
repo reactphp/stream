@@ -15,7 +15,7 @@ use React\Stream\DuplexResourceStream;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$host = isset($argv[1]) ? $argv[1] : 'www.google.com';
+$host = $argv[1] ?? 'www.google.com';
 
 // connect to tls://www.google.com:443 (blocking call!)
 // for illustration purposes only, should use react/http-client or react/socket instead!

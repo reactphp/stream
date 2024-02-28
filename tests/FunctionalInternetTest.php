@@ -120,10 +120,9 @@ class FunctionalInternetTest extends TestCase
             $loop->stop();
         });
 
-        $that = $this;
-        $loop->addTimer($timeout, function () use ($loop, $that) {
+        $loop->addTimer($timeout, function () use ($loop) {
             $loop->stop();
-            $that->fail('Timed out while waiting for stream to close');
+            $this->fail('Timed out while waiting for stream to close');
         });
 
         $loop->run();

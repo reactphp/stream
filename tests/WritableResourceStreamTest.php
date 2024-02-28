@@ -2,8 +2,8 @@
 
 namespace React\Tests\Stream;
 
-use Clue\StreamFilter as Filter;
 use React\Stream\WritableResourceStream;
+use function Clue\StreamFilter\append as filter_append;
 
 class WritableResourceStreamTest extends TestCase
 {
@@ -355,7 +355,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
-        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+        filter_append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
             return $chunk;
         });
@@ -407,7 +407,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
 
-        $this->assertEquals(array(), $buffer->listeners('close'));
+        $this->assertEquals([], $buffer->listeners('close'));
     }
 
     /**
@@ -466,7 +466,7 @@ class WritableResourceStreamTest extends TestCase
 
         $buffer = new WritableResourceStream($stream, $loop);
 
-        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+        filter_append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
             return $chunk;
         });

@@ -114,7 +114,7 @@ class UtilTest extends TestCase
             ->expects($this->never())
             ->method('end');
 
-        Util::pipe($readable, $writable, array('end' => false));
+        Util::pipe($readable, $writable, ['end' => false]);
 
         $readable->end();
     }
@@ -253,12 +253,12 @@ class UtilTest extends TestCase
         $source = new ThroughStream();
         $target = new ThroughStream();
 
-        Util::forwardEvents($source, $target, array('data'));
+        Util::forwardEvents($source, $target, ['data']);
         $target->on('data', $this->expectCallableOnce());
         $target->on('foo', $this->expectCallableNever());
 
-        $source->emit('data', array('hello'));
-        $source->emit('foo', array('bar'));
+        $source->emit('data', ['hello']);
+        $source->emit('foo', ['bar']);
     }
 
     private function createLoopMock()

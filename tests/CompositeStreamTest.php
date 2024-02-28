@@ -217,7 +217,7 @@ class CompositeStreamTest extends TestCase
         $composite->on('data', $this->expectCallableOnce());
         $composite->on('drain', $this->expectCallableOnce());
 
-        $readable->emit('data', array('foo'));
+        $readable->emit('data', ['foo']);
         $writable->emit('drain');
     }
 
@@ -241,7 +241,7 @@ class CompositeStreamTest extends TestCase
 
         $input = new ThroughStream();
         $input->pipe($composite);
-        $input->emit('data', array('foo'));
+        $input->emit('data', ['foo']);
     }
 
     /** @test */
@@ -262,6 +262,6 @@ class CompositeStreamTest extends TestCase
             ->with('foo');
 
         $composite->pipe($output);
-        $readable->emit('data', array('foo'));
+        $readable->emit('data', ['foo']);
     }
 }

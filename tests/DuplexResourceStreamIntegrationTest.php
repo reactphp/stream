@@ -2,12 +2,12 @@
 
 namespace React\Tests\Stream;
 
-use Clue\StreamFilter as Filter;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
+use function Clue\StreamFilter\append as filter_append;
 
 class DuplexResourceStreamIntegrationTest extends TestCase
 {
@@ -340,7 +340,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
 
         // add a filter which returns an error when encountering an 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             return '';
         }, STREAM_FILTER_READ);
 

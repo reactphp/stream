@@ -3,8 +3,8 @@
 namespace React\Tests\Stream;
 
 use React\Stream\DuplexResourceStream;
-use Clue\StreamFilter as Filter;
 use React\Stream\WritableResourceStream;
+use function Clue\StreamFilter\append as filter_append;
 
 class DuplexResourceStreamTest extends TestCase
 {
@@ -423,7 +423,7 @@ class DuplexResourceStreamTest extends TestCase
         $conn->on('error', $this->expectCallableOnce());
 
         $buffer->emit('drain');
-        $buffer->emit('error', array(new \RuntimeException('Whoops')));
+        $buffer->emit('error', [new \RuntimeException('Whoops')]);
     }
 
     /**
@@ -454,7 +454,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
 
         // add a filter which removes every 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             return str_replace('a', '', $chunk);
         }, STREAM_FILTER_READ);
 
@@ -482,7 +482,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
 
         // add a filter which returns an error when encountering an 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             if (strpos($chunk, 'a') !== false) {
                 throw new \Exception('Invalid');
             }
