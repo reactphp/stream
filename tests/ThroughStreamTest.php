@@ -185,7 +185,7 @@ class ThroughStreamTest extends TestCase
         $through->on('data', $this->expectCallableOnceWith('foo'));
 
         $readable->pipe($through);
-        $readable->emit('data', array('foo'));
+        $readable->emit('data', ['foo']);
     }
 
     /** @test */
@@ -243,7 +243,7 @@ class ThroughStreamTest extends TestCase
     public function writeDataWillCloseStreamShouldReturnFalse()
     {
         $through = new ThroughStream();
-        $through->on('data', array($through, 'close'));
+        $through->on('data', [$through, 'close']);
 
         $this->assertFalse($through->write('foo'));
     }

@@ -373,7 +373,10 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         fwrite($client, "foobar\n");
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
 
         fclose($stream);
         fclose($client);

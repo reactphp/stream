@@ -197,7 +197,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
         $this->assertSame("foobar\n", $capturedData);
     }
 
@@ -220,7 +223,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
 
         $this->assertTrue($conn->isReadable());
         $this->assertEquals(4321, strlen($capturedData));
@@ -246,7 +252,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, str_repeat("a", 100000));
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
 
         $this->assertTrue($conn->isReadable());
         $this->assertEquals(100000, strlen($capturedData));
@@ -263,7 +272,10 @@ class DuplexResourceStreamTest extends TestCase
         $conn = new DuplexResourceStream($stream, $loop);
         $conn->on('data', $this->expectCallableNever());
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     /**
@@ -427,7 +439,7 @@ class DuplexResourceStreamTest extends TestCase
         $conn->on('error', $this->expectCallableOnce());
 
         $buffer->emit('drain');
-        $buffer->emit('error', array(new \RuntimeException('Whoops')));
+        $buffer->emit('error', [new \RuntimeException('Whoops')]);
     }
 
     /**
@@ -447,7 +459,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     /**
@@ -474,7 +489,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
         $this->assertSame("foobr\n", $capturedData);
     }
 
@@ -503,7 +521,10 @@ class DuplexResourceStreamTest extends TestCase
         fwrite($stream, "foobar\n");
         rewind($stream);
 
-        $conn->handleData($stream);
+        $ref = new \ReflectionMethod($conn, 'handleData');
+        $ref->setAccessible(true);
+        $ref->invoke($conn, 'handleData');
+
     }
 
     private function createWriteableLoopMock()

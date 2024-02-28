@@ -20,19 +20,19 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
     // trigger data event
     public function write($data)
     {
-        $this->emit('data', array($data));
+        $this->emit('data', [$data]);
     }
 
     // trigger error event
     public function error($error)
     {
-        $this->emit('error', array($error));
+        $this->emit('error', [$error]);
     }
 
     // trigger end event
     public function end()
     {
-        $this->emit('end', array());
+        $this->emit('end', []);
     }
 
     public function pause()
@@ -52,7 +52,7 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
         $this->emit('close');
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = array())
+    public function pipe(WritableStreamInterface $dest, array $options = [])
     {
         Util::pipe($this, $dest, $options);
 

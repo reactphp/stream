@@ -411,7 +411,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
 
-        $this->assertEquals(array(), $buffer->listeners('close'));
+        $this->assertEquals([], $buffer->listeners('close'));
     }
 
     /**
