@@ -14,7 +14,7 @@ class ThroughStreamTest extends TestCase
      */
     public function itShouldRejectInvalidCallback()
     {
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ThroughStream(123);
     }
 

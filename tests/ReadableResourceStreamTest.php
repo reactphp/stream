@@ -55,7 +55,7 @@ class ReadableResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream(false, $loop);
     }
 
@@ -64,13 +64,9 @@ class ReadableResourceStreamTest extends TestCase
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStream()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('HHVM does not report fopen mode for STDOUT');
-        }
-
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream(STDOUT, $loop);
     }
 
@@ -85,7 +81,7 @@ class ReadableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new ReadableResourceStream($stream, $loop);
     }
 
@@ -101,7 +97,7 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException('RuntimeException');
         new ReadableResourceStream($stream, $loop);
     }
 

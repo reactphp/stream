@@ -56,7 +56,7 @@ class DuplexResourceStreamTest extends TestCase
     {
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new DuplexResourceStream('breakme', $loop);
     }
 
@@ -65,13 +65,9 @@ class DuplexResourceStreamTest extends TestCase
      */
     public function testConstructorThrowsExceptionOnWriteOnlyStream()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('HHVM does not report fopen mode for STDOUT');
-        }
-
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new DuplexResourceStream(STDOUT, $loop);
     }
 
@@ -86,7 +82,7 @@ class DuplexResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         new DuplexResourceStream($stream, $loop);
     }
 
@@ -102,7 +98,7 @@ class DuplexResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RunTimeException');
+        $this->expectException('RunTimeException');
         new DuplexResourceStream($stream, $loop);
     }
 
@@ -134,7 +130,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
-        $this->setExpectedException('RunTimeException');
+        $this->expectException('RunTimeException');
         new DuplexResourceStream($stream, $loop, null, $buffer);
     }
 

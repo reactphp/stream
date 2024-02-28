@@ -6,51 +6,47 @@ use Clue\StreamFilter as Filter;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
-use React\EventLoop\ExtLibeventLoop;
-use React\EventLoop\ExtLibevLoop;
+use React\EventLoop\ExtEvLoop;
+use React\EventLoop\ExtUvLoop;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\LibEventLoop;
-use React\EventLoop\LibEvLoop;
 use React\EventLoop\StreamSelectLoop;
 
 class DuplexResourceStreamIntegrationTest extends TestCase
 {
     public function loopProvider()
     {
-        return array(
-            array(
-                function() {
-                    return true;
-                },
-                function () {
-                    return new StreamSelectLoop();
-                }
-            ),
-            array(
-                function () {
-                    return function_exists('event_base_new');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('libev\EventLoop');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibevLoop') ? new ExtLibevLoop() : new LibEvLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('EventBase') && class_exists('React\EventLoop\ExtEventLoop');
-                },
-                function () {
-                    return new ExtEventLoop();
-                }
-            )
-        );
+        yield [
+            function() {
+                return true;
+            },
+            function () {
+                return new StreamSelectLoop();
+            }
+        ];
+        yield [
+            function () {
+                return class_exists('EvLoop');
+            },
+            function () {
+                return new ExtEvLoop();
+            }
+        ];
+        yield [
+            function () {
+                return \function_exists('uv_loop_new');
+            },
+            function () {
+                return new ExtUvLoop();
+            }
+        ];
+        yield [
+            function () {
+                return class_exists('EventBase') && class_exists('React\EventLoop\ExtEventLoop');
+            },
+            function () {
+                return new ExtEventLoop();
+            }
+        ];
     }
 
     /**
