@@ -14,9 +14,13 @@ use React\Stream\WritableResourceStream;
  */
 class FunctionalInternetTest extends TestCase
 {
+    /** @var LoopInterface */
+    private static $loop;
+
     public static function setUpBeforeClass(): void
     {
         Loop::set(new StreamSelectLoop());
+        self::$loop = Loop::get();
     }
 
     public function testUploadKilobytePlain()
@@ -24,7 +28,6 @@ class FunctionalInternetTest extends TestCase
         $size = 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
 
-        $loop = Loop::get();
         $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
@@ -36,7 +39,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $this->awaitStreamClose($stream, $loop);
+        $this->awaitStreamClose($stream);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -46,7 +49,6 @@ class FunctionalInternetTest extends TestCase
         $size = 50 * 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
 
-        $loop = Loop::get();
         $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
@@ -58,7 +60,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $this->awaitStreamClose($stream, $loop);
+        $this->awaitStreamClose($stream);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -68,7 +70,6 @@ class FunctionalInternetTest extends TestCase
         $size = 1000;
         $stream = stream_socket_client('ssl://httpbin.org:443');
 
-        $loop = Loop::get();
         $stream = new DuplexResourceStream($stream);
 
         $buffer = '';
@@ -80,7 +81,7 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $this->awaitStreamClose($stream, $loop);
+        $this->awaitStreamClose($stream);
 
         $this->assertNotEquals('', $buffer);
     }
@@ -99,7 +100,6 @@ class FunctionalInternetTest extends TestCase
         // We work around this by limiting the write chunk size to 8192 bytes
         // here to also support older PHP versions.
         // See https://github.com/reactphp/socket/issues/105
-        $loop = Loop::get();
         $stream = new DuplexResourceStream(
             $stream,
             null,
@@ -115,23 +115,23 @@ class FunctionalInternetTest extends TestCase
 
         $stream->write("POST /post HTTP/1.0\r\nHost: httpbin.org\r\nContent-Length: $size\r\n\r\n" . str_repeat('.', $size));
 
-        $this->awaitStreamClose($stream, $loop);
+        $this->awaitStreamClose($stream);
 
         $this->assertNotEquals('', $buffer);
     }
 
-    private function awaitStreamClose(DuplexResourceStream $stream, LoopInterface $loop, $timeout = 10.0)
+    private function awaitStreamClose(DuplexResourceStream $stream, float $timeout = 10.0)
     {
-        $stream->on('close', function () use ($loop) {
-            $loop->stop();
+        $stream->on('close', function () {
+            self::$loop->stop();
         });
 
         $that = $this;
-        $loop->addTimer($timeout, function () use ($loop, $that) {
-            $loop->stop();
+        self::$loop->addTimer($timeout, function () use ($that) {
+            self::$loop->stop();
             $that->fail('Timed out while waiting for stream to close');
         });
 
-        $loop->run();
+        self::$loop->run();
     }
 }

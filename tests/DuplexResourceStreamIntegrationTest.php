@@ -8,7 +8,6 @@ use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
 use React\EventLoop\ExtLibeventLoop;
-use React\EventLoop\ExtLibevLoop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\LibEventLoop;
 use React\EventLoop\LibEvLoop;
