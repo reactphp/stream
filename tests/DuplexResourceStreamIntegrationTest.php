@@ -130,7 +130,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('close', $this->expectCallableOnce());
         $streamB->on('error', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
 
         $streamA->close();
         $streamB->close();
@@ -160,7 +160,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         // streamB should not emit any data
         $streamB->on('data', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
 
         $streamA->close();
         $streamB->close();
@@ -190,7 +190,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        Loop::get()->run();
+        Loop::run();
 
         $streamA->close();
         $streamB->close();
@@ -223,7 +223,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        Loop::get()->run();
+        Loop::run();
 
         $streamA->close();
         $streamB->close();
@@ -256,7 +256,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $streamB->on('data', $this->expectCallableNever());
         $streamB->close();
 
-        Loop::get()->run();
+        Loop::run();
 
         $streamA->close();
         $streamB->close();
@@ -278,7 +278,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
     }
 
     /**
@@ -302,7 +302,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
 
         $this->assertEquals("a\n" . "b\n" . "c\n", $buffer);
     }
@@ -328,7 +328,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
 
         $this->assertEquals(12345 * 1234, $bytes);
     }
@@ -349,7 +349,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
         $stream->on('end', $this->expectCallableOnce());
         $stream->on('error', $this->expectCallableNever());
 
-        Loop::get()->run();
+        Loop::run();
     }
 
     /**

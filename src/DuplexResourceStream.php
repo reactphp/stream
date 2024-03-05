@@ -100,7 +100,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     public function pause()
     {
         if ($this->listening) {
-            Loop::get()->removeReadStream($this->stream);
+            Loop::removeReadStream($this->stream);
             $this->listening = false;
         }
     }
@@ -108,7 +108,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     public function resume()
     {
         if (!$this->listening && $this->readable) {
-            Loop::get()->addReadStream($this->stream, array($this, 'handleData'));
+            Loop::addReadStream($this->stream, array($this, 'handleData'));
             $this->listening = true;
         }
     }

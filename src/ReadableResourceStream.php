@@ -80,7 +80,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function pause()
     {
         if ($this->listening) {
-            Loop::get()->removeReadStream($this->stream);
+            Loop::removeReadStream($this->stream);
             $this->listening = false;
         }
     }
@@ -88,7 +88,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function resume()
     {
         if (!$this->listening && !$this->closed) {
-            Loop::get()->addReadStream($this->stream, array($this, 'handleData'));
+            Loop::addReadStream($this->stream, array($this, 'handleData'));
             $this->listening = true;
         }
     }

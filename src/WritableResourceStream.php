@@ -64,7 +64,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         if (!$this->listening && $this->data !== '') {
             $this->listening = true;
 
-            Loop::get()->addWriteStream($this->stream, array($this, 'handleWrite'));
+            Loop::addWriteStream($this->stream, array($this, 'handleWrite'));
         }
 
         return !isset($this->data[$this->softLimit - 1]);
@@ -93,7 +93,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 
         if ($this->listening) {
             $this->listening = false;
-            Loop::get()->removeWriteStream($this->stream);
+            Loop::removeWriteStream($this->stream);
         }
 
         $this->closed = true;
@@ -151,7 +151,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         if ($this->data === '') {
             // stop waiting for resource to be writable
             if ($this->listening) {
-                Loop::get()->removeWriteStream($this->stream);
+                Loop::removeWriteStream($this->stream);
                 $this->listening = false;
             }
 
