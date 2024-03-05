@@ -3,6 +3,7 @@
 namespace React\Tests\Stream;
 
 use Clue\StreamFilter as Filter;
+use React\EventLoop\Loop;
 use React\Stream\WritableResourceStream;
 
 class WritableResourceStreamTest extends TestCase
@@ -15,21 +16,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        new WritableResourceStream($stream, $loop);
-    }
-
-    public function testConstructWithoutLoopAssignsLoopAutomatically()
-    {
-        $resource = fopen('php://temp', 'r+');
-
-        $stream = new WritableResourceStream($resource);
-
-        $ref = new \ReflectionProperty($stream, 'loop');
-        $ref->setAccessible(true);
-        $loop = $ref->getValue($stream);
-
-        $this->assertInstanceOf('React\EventLoop\LoopInterface', $loop);
+        new WritableResourceStream($stream);
     }
 
     /**
@@ -44,7 +33,8 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $buffer = new WritableResourceStream($stream, $loop);
+        Loop::set($loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->close();
     }
 
@@ -55,9 +45,10 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = null;
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('InvalidArgumentException');
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream);
     }
 
     /**
@@ -67,9 +58,10 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('InvalidArgumentException');
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream);
     }
 
     /**
@@ -83,8 +75,9 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
+        Loop::set($loop);
         $this->setExpectedException('InvalidArgumentException');
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream);
     }
 
     /**
@@ -98,9 +91,10 @@ class WritableResourceStreamTest extends TestCase
 
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('RuntimeException');
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream);
     }
 
     /**
@@ -111,8 +105,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createWriteableLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
 
         $buffer->write("foobar\n");
@@ -128,8 +123,9 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addWriteStream')->with($this->equalTo($stream));
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
 
         $buffer->write("foobar\n");
     }
@@ -143,8 +139,9 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
         $loop->expects($this->never())->method('addWriteStream');
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
 
         $buffer->write("");
         $buffer->write(null);
@@ -168,8 +165,9 @@ class WritableResourceStreamTest extends TestCase
                     call_user_func($listener, $stream);
                 }
             }));
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 4);
+        $buffer = new WritableResourceStream($stream, 4);
         $buffer->on('error', $this->expectCallableNever());
 
         $this->assertTrue($buffer->write("foo"));
@@ -184,8 +182,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 3);
+        $buffer = new WritableResourceStream($stream, 3);
 
         $this->assertFalse($buffer->write("foo"));
     }
@@ -199,8 +198,9 @@ class WritableResourceStreamTest extends TestCase
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
         $loop = $this->createWriteableLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($a, $loop, 4);
+        $buffer = new WritableResourceStream($a, 4);
         $buffer->on('error', $this->expectCallableOnce());
 
         fclose($b);
@@ -216,8 +216,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 2);
+        $buffer = new WritableResourceStream($stream, 2);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -233,8 +234,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 2);
+        $buffer = new WritableResourceStream($stream, 2);
         $buffer->on('error', $this->expectCallableNever());
 
         $buffer->once('drain', function () use ($buffer) {
@@ -257,8 +259,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 2);
+        $buffer = new WritableResourceStream($stream, 2);
 
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -274,8 +277,9 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop, 2);
+        $buffer = new WritableResourceStream($stream, 2);
 
         $buffer->on('drain', $this->expectCallableOnce());
 
@@ -292,9 +296,10 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
-        $buffer = new WritableResourceStream($stream, $loop, 2);
+        $buffer = new WritableResourceStream($stream, 2);
 
         $buffer->on('drain', function () use ($buffer) {
             $buffer->close();
@@ -313,8 +318,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -330,8 +336,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableNever());
 
@@ -354,8 +361,9 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -379,8 +387,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableNever());
 
@@ -402,8 +411,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
@@ -421,7 +431,8 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new WritableResourceStream($stream, $loop);
+        Loop::set($loop);
+        $buffer = new WritableResourceStream($stream);
 
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
@@ -436,7 +447,8 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new WritableResourceStream($stream, $loop);
+        Loop::set($loop);
+        $buffer = new WritableResourceStream($stream);
 
         $loop->expects($this->never())->method('removeWriteStream');
 
@@ -450,8 +462,9 @@ class WritableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
         $buffer->on('close', $this->expectCallableOnce());
 
         $buffer->close();
@@ -467,8 +480,9 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $buffer = new WritableResourceStream($stream, $loop);
+        $buffer = new WritableResourceStream($stream);
 
         Filter\append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
@@ -491,10 +505,11 @@ class WritableResourceStreamTest extends TestCase
 
         list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $error = null;
 
-        $buffer = new WritableResourceStream($a, $loop);
+        $buffer = new WritableResourceStream($a);
         $buffer->on('error', function($message) use (&$error) {
             $error = $message;
         });

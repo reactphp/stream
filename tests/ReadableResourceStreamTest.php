@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\EventLoop\Loop;
 use React\Stream\ReadableResourceStream;
 use Clue\StreamFilter as Filter;
 
@@ -15,21 +16,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        new ReadableResourceStream($stream, $loop);
-    }
-
-    public function testConstructWithoutLoopAssignsLoopAutomatically()
-    {
-        $resource = fopen('php://temp', 'r+');
-
-        $stream = new ReadableResourceStream($resource);
-
-        $ref = new \ReflectionProperty($stream, 'loop');
-        $ref->setAccessible(true);
-        $loop = $ref->getValue($stream);
-
-        $this->assertInstanceOf('React\EventLoop\LoopInterface', $loop);
+        new ReadableResourceStream($stream);
     }
 
     /**
@@ -44,7 +33,8 @@ class ReadableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $buffer = new ReadableResourceStream($stream, $loop);
+        Loop::set($loop);
+        $buffer = new ReadableResourceStream($stream);
         $buffer->close();
     }
 
@@ -54,9 +44,10 @@ class ReadableResourceStreamTest extends TestCase
     public function testConstructorThrowsExceptionOnInvalidStream()
     {
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('InvalidArgumentException');
-        new ReadableResourceStream(false, $loop);
+        new ReadableResourceStream(false);
     }
 
     /**
@@ -69,9 +60,10 @@ class ReadableResourceStreamTest extends TestCase
         }
 
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('InvalidArgumentException');
-        new ReadableResourceStream(STDOUT, $loop);
+        new ReadableResourceStream(STDOUT);
     }
 
     /**
@@ -85,8 +77,9 @@ class ReadableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
+        Loop::set($loop);
         $this->setExpectedException('InvalidArgumentException');
-        new ReadableResourceStream($stream, $loop);
+        new ReadableResourceStream($stream);
     }
 
     /**
@@ -100,18 +93,18 @@ class ReadableResourceStreamTest extends TestCase
 
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $this->setExpectedException('RuntimeException');
-        new ReadableResourceStream($stream, $loop);
+        new ReadableResourceStream($stream);
     }
 
 
     public function testCloseShouldEmitCloseEvent()
     {
         $stream = fopen('php://temp', 'r+');
-        $loop = $this->createLoopMock();
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('close', $this->expectCallableOnce());
 
         $conn->close();
@@ -123,8 +116,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('close', $this->expectCallableOnce());
 
         $conn->close();
@@ -139,10 +133,11 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
@@ -162,10 +157,11 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop, 4321);
+        $conn = new ReadableResourceStream($stream, 4321);
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
@@ -187,10 +183,11 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop, -1);
+        $conn = new ReadableResourceStream($stream, -1);
 
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
@@ -212,8 +209,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('data', $this->expectCallableNever());
 
         $conn->handleData($stream);
@@ -223,8 +221,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $dest = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
 
         $this->assertSame($dest, $conn->pipe($dest));
@@ -237,8 +236,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('error', $this->expectCallableNever());
         $conn->on('data', function ($data) use ($conn) {
             $conn->close();
@@ -259,8 +259,9 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->pause();
         $conn->pause();
     }
@@ -273,8 +274,9 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->resume();
         $conn->resume();
     }
@@ -288,8 +290,9 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->close();
     }
 
@@ -302,8 +305,9 @@ class ReadableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->pause();
         $conn->close();
     }
@@ -316,8 +320,9 @@ class ReadableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->close();
         $conn->resume();
     }
@@ -335,10 +340,11 @@ class ReadableResourceStreamTest extends TestCase
         }, STREAM_FILTER_READ);
 
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
         $capturedData = null;
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('data', function ($data) use (&$capturedData) {
             $capturedData = $data;
         });
@@ -366,8 +372,9 @@ class ReadableResourceStreamTest extends TestCase
         }, STREAM_FILTER_READ);
 
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('data', $this->expectCallableNever());
         $conn->on('error', $this->expectCallableOnce());
         $conn->on('close', $this->expectCallableOnce());
@@ -385,8 +392,9 @@ class ReadableResourceStreamTest extends TestCase
     {
         list($stream, $_) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
         $loop = $this->createLoopMock();
+        Loop::set($loop);
 
-        $conn = new ReadableResourceStream($stream, $loop);
+        $conn = new ReadableResourceStream($stream);
         $conn->on('error', $this->expectCallableNever());
         $conn->on('data', $this->expectCallableNever());
         $conn->on('end', $this->expectCallableNever());

@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use React\EventLoop\Loop;
 use React\Stream\WritableResourceStream;
 use React\Stream\Util;
 use React\Stream\CompositeStream;
@@ -176,7 +177,8 @@ class UtilTest extends TestCase
 
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createLoopMock();
-        $buffer = new WritableResourceStream($stream, $loop);
+        Loop::set($loop);
+        $buffer = new WritableResourceStream($stream);
 
         $readable->pipe($buffer);
 

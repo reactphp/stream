@@ -10,9 +10,6 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 {
     private $stream;
 
-    /** @var LoopInterface */
-    private $loop;
-
     /**
      * @var int
      */
@@ -28,7 +25,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     private $closed = false;
     private $data = '';
 
-    public function __construct($stream, LoopInterface $loop = null, $writeBufferSoftLimit = null, $writeChunkSize = null)
+    public function __construct($stream, $writeBufferSoftLimit = null, $writeChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -47,7 +44,6 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         }
 
         $this->stream = $stream;
-        $this->loop = $loop ?: Loop::get();
         $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
         $this->writeChunkSize = ($writeChunkSize === null) ? -1 : (int)$writeChunkSize;
     }
@@ -68,7 +64,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         if (!$this->listening && $this->data !== '') {
             $this->listening = true;
 
-            $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));
+            Loop::addWriteStream($this->stream, array($this, 'handleWrite'));
         }
 
         return !isset($this->data[$this->softLimit - 1]);
@@ -97,7 +93,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 
         if ($this->listening) {
             $this->listening = false;
-            $this->loop->removeWriteStream($this->stream);
+            Loop::removeWriteStream($this->stream);
         }
 
         $this->closed = true;
@@ -155,7 +151,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         if ($this->data === '') {
             // stop waiting for resource to be writable
             if ($this->listening) {
-                $this->loop->removeWriteStream($this->stream);
+                Loop::removeWriteStream($this->stream);
                 $this->listening = false;
             }
 
