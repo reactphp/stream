@@ -44,7 +44,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
      * @param ?int $readChunkSize
      * @param ?WritableStreamInterface $buffer
      */
-    public function __construct($stream, ?LoopInterface $loop = null, $readChunkSize = null, ?WritableStreamInterface $buffer = null)
+    public function __construct($stream, ?LoopInterface $loop = null, ?int $readChunkSize = null, ?WritableStreamInterface $buffer = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -75,7 +75,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         $this->stream = $stream;
         $this->loop = $loop ?: Loop::get();
-        $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
+        $this->bufferSize = $readChunkSize ?? 65536;
         $this->buffer = $buffer;
 
         $this->buffer->on('error', function ($error) {
@@ -91,17 +91,17 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->resume();
     }
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return $this->readable;
     }
 
-    public function isWritable()
+    public function isWritable(): bool
     {
         return $this->writable;
     }
 
-    public function pause()
+    public function pause(): void
     {
         if ($this->listening) {
             $this->loop->removeReadStream($this->stream);
@@ -109,7 +109,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         }
     }
 
-    public function resume()
+    public function resume(): void
     {
         if (!$this->listening && $this->readable) {
             $this->loop->addReadStream($this->stream, [$this, 'handleData']);
@@ -117,7 +117,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         }
     }
 
-    public function write($data)
+    public function write($data): bool
     {
         if (!$this->writable) {
             return false;
@@ -126,7 +126,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         return $this->buffer->write($data);
     }
 
-    public function close()
+    public function close(): void
     {
         if (!$this->writable && !$this->closing) {
             return;
@@ -147,7 +147,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         }
     }
 
-    public function end($data = null)
+    public function end($data = null): void
     {
         if (!$this->writable) {
             return;
@@ -162,7 +162,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->buffer->end($data);
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         return Util::pipe($this, $dest, $options);
     }

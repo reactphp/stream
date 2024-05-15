@@ -194,7 +194,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      *
      * @return bool
      */
-    public function isReadable();
+    public function isReadable(): bool;
 
     /**
      * Pauses reading incoming data events.
@@ -226,7 +226,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * @see self::resume()
      * @return void
      */
-    public function pause();
+    public function pause(): void;
 
     /**
      * Resumes reading incoming data events.
@@ -247,7 +247,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * @see self::pause()
      * @return void
      */
-    public function resume();
+    public function resume(): void;
 
     /**
      * Pipes all the data from this readable source into the given writable destination.
@@ -322,7 +322,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * @param array $options
      * @return WritableStreamInterface $dest stream as-is
      */
-    public function pipe(WritableStreamInterface $dest, array $options = []);
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface;
 
     /**
      * Closes the stream (forcefully).
@@ -358,5 +358,5 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * @return void
      * @see WritableStreamInterface::close()
      */
-    public function close();
+    public function close(): void;
 }

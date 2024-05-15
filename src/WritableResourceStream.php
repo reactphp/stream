@@ -34,7 +34,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
      * @param ?int $writeBufferSoftLimit
      * @param ?int $writeChunkSize
      */
-    public function __construct($stream, ?LoopInterface $loop = null, $writeBufferSoftLimit = null, $writeChunkSize = null)
+    public function __construct($stream, ?LoopInterface $loop = null, ?int $writeBufferSoftLimit = null, ?int $writeChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');
@@ -54,16 +54,16 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 
         $this->stream = $stream;
         $this->loop = $loop ?: Loop::get();
-        $this->softLimit = ($writeBufferSoftLimit === null) ? 65536 : (int)$writeBufferSoftLimit;
-        $this->writeChunkSize = ($writeChunkSize === null) ? -1 : (int)$writeChunkSize;
+        $this->softLimit = $writeBufferSoftLimit ?? 65536;
+        $this->writeChunkSize = $writeChunkSize ?? -1;
     }
 
-    public function isWritable()
+    public function isWritable(): bool
     {
         return $this->writable;
     }
 
-    public function write($data)
+    public function write($data): bool
     {
         if (!$this->writable) {
             return false;
@@ -80,7 +80,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         return !isset($this->data[$this->softLimit - 1]);
     }
 
-    public function end($data = null)
+    public function end($data = null): void
     {
         if (null !== $data) {
             $this->write($data);
@@ -95,7 +95,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         }
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->closed) {
             return;

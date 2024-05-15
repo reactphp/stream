@@ -82,22 +82,18 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
     private $drain = false;
     private $callback;
 
-    public function __construct($callback = null)
+    public function __construct(?callable $callback = null)
     {
-        if ($callback !== null && !\is_callable($callback)) {
-            throw new InvalidArgumentException('Invalid transformation callback given');
-        }
-
         $this->callback = $callback;
     }
 
-    public function pause()
+    public function pause(): void
     {
         // only allow pause if still readable, false otherwise
         $this->paused = $this->readable;
     }
 
-    public function resume()
+    public function resume(): void
     {
         $this->paused = false;
 
@@ -108,22 +104,22 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         return Util::pipe($this, $dest, $options);
     }
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return $this->readable;
     }
 
-    public function isWritable()
+    public function isWritable(): bool
     {
         return $this->writable;
     }
 
-    public function write($data)
+    public function write($data): bool
     {
         if (!$this->writable) {
             return false;
@@ -151,7 +147,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         return $this->writable && !$this->paused;
     }
 
-    public function end($data = null)
+    public function end($data = null): void
     {
         if (!$this->writable) {
             return;
@@ -175,7 +171,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         $this->close();
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->closed) {
             return;

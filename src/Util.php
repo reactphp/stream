@@ -13,7 +13,7 @@ final class Util
      * @return WritableStreamInterface $dest stream as-is
      * @see ReadableStreamInterface::pipe() for more details
      */
-    public static function pipe(ReadableStreamInterface $source, WritableStreamInterface $dest, array $options = [])
+    public static function pipe(ReadableStreamInterface $source, WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         // source not readable => NO-OP
         if (!$source->isReadable()) {
@@ -64,7 +64,13 @@ final class Util
         return $dest;
     }
 
-    public static function forwardEvents($source, $target, array $events)
+    /**
+     * @param ReadableStreamInterface|WritableStreamInterface $source
+     * @param ReadableStreamInterface|WritableStreamInterface $target
+     * @param string[] $events
+     * @return void
+     */
+    public static function forwardEvents($source, $target, array $events): void
     {
         foreach ($events as $event) {
             $source->on($event, function () use ($event, $target) {

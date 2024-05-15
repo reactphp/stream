@@ -12,7 +12,7 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
     public $readable = true;
     public $paused = false;
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return true;
     }
@@ -35,24 +35,24 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
         $this->emit('end', []);
     }
 
-    public function pause()
+    public function pause(): void
     {
         $this->paused = true;
     }
 
-    public function resume()
+    public function resume(): void
     {
         $this->paused = false;
     }
 
-    public function close()
+    public function close(): void
     {
         $this->readable = false;
 
         $this->emit('close');
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         Util::pipe($this, $dest, $options);
 
