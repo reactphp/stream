@@ -122,8 +122,9 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     public function handleWrite()
     {
         $error = null;
-        \set_error_handler(function ($_, $errstr) use (&$error) {
+        \set_error_handler(function ($_, $errstr) use (&$error): bool {
             $error = $errstr;
+            return true;
         });
 
         if ($this->writeChunkSize === -1) {

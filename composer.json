@@ -31,8 +31,9 @@
         "evenement/evenement": "^3.0 || ^2.0 || ^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.6 || ^7.5",
-        "clue/stream-filter": "~1.2"
+        "clue/stream-filter": "^1.2",
+        "phpstan/phpstan": "1.11.1 || 1.4.10",
+        "phpunit/phpunit": "^9.6 || ^7.5"
     },
     "autoload": {
         "psr-4": {

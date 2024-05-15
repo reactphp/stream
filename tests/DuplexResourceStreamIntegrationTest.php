@@ -37,7 +37,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testBufferReadsLargeChunks($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -73,7 +73,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testWriteLargeChunk($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -113,7 +113,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testDoesNotEmitDataIfNothingHasBeenWritten($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -141,7 +141,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testDoesNotWriteDataIfRemoteSideFromPairHasBeenClosed($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -171,7 +171,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testDoesNotWriteDataIfServerSideHasBeenClosed($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -204,7 +204,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testDoesNotWriteDataIfClientSideHasBeenClosed($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -237,7 +237,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testReadsSingleChunkFromProcessPipe($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -256,7 +256,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testReadsMultipleChunksFromProcessPipe($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -282,7 +282,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testReadsLongChunksFromProcessPipe($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -308,7 +308,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testReadsNothingFromProcessPipeWithNoOutput($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $loop = $loopFactory();
@@ -328,7 +328,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
     public function testEmptyReadShouldntFcloseStream($condition, $loopFactory)
     {
         if (true !== $condition()) {
-            return $this->markTestSkipped('Loop implementation not available');
+            $this->markTestSkipped('Loop implementation not available');
         }
 
         $server = stream_socket_server('tcp://127.0.0.1:0');

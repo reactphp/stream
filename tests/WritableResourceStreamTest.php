@@ -58,7 +58,7 @@ class WritableResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $this->expectException(\InvalidArgumentException::class);
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream, $loop); // @phpstan-ignore-line
     }
 
     /**
@@ -165,6 +165,7 @@ class WritableResourceStreamTest extends TestCase
             ->expects($this->any())
             ->method('addWriteStream')
             ->will($this->returnCallback(function ($stream, $listener) use (&$preventWrites) {
+                /** @var bool $preventWrites */
                 if (!$preventWrites) {
                     call_user_func($listener, $stream);
                 }

@@ -1243,6 +1243,12 @@ If you do not want to run these, they can simply be skipped like this:
 vendor/bin/phpunit --exclude-group internet
 ```
 
+On top of this, we use PHPStan on level 5 to ensure type safety across the project:
+
+```bash
+vendor/bin/phpstan
+```
+
 ## License
 
 MIT, see [LICENSE file](LICENSE).

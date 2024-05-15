@@ -59,7 +59,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $this->expectException(\InvalidArgumentException::class);
-        new DuplexResourceStream('breakme', $loop);
+        new DuplexResourceStream('breakme', $loop); // @phpstan-ignore-line
     }
 
     /**
@@ -114,6 +114,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = $this->createMock(WritableStreamInterface::class);
+        assert($buffer instanceof WritableStreamInterface);
 
         new DuplexResourceStream($stream, $loop, null, $buffer);
     }
@@ -131,6 +132,7 @@ class DuplexResourceStreamTest extends TestCase
         $loop = $this->createLoopMock();
 
         $buffer = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        assert($buffer instanceof WritableStreamInterface);
 
         $this->expectException(\RuntimeException::class);
         new DuplexResourceStream($stream, $loop, null, $buffer);
@@ -157,6 +159,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->createMock(WritableStreamInterface::class);
         $buffer->expects($this->once())->method('end')->with('foo');
+        assert($buffer instanceof WritableStreamInterface);
 
         $conn = new DuplexResourceStream($stream, $loop, null, $buffer);
         $conn->end('foo');
@@ -170,6 +173,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $buffer = $this->createMock(WritableStreamInterface::class);
         $buffer->expects($this->never())->method('end');
+        assert($buffer instanceof WritableStreamInterface);
 
         $conn = new DuplexResourceStream($stream, $loop);
         $conn->close();
@@ -409,6 +413,7 @@ class DuplexResourceStreamTest extends TestCase
 
         $conn = new DuplexResourceStream($stream, $loop);
         $dest = $this->createMock(WritableStreamInterface::class);
+        assert($dest instanceof WritableStreamInterface);
 
         $this->assertSame($dest, $conn->pipe($dest));
     }

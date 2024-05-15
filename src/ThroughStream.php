@@ -144,6 +144,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         }
 
         // continue writing if still writable and not paused (throttled), false otherwise
+        // @phpstan-ignore-next-line (may be false when write() causes stream to close)
         return $this->writable && !$this->paused;
     }
 
@@ -157,6 +158,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
             $this->write($data);
 
             // return if write() already caused the stream to close
+            // @phpstan-ignore-next-line (may be false when write() causes stream to close)
             if (!$this->writable) {
                 return;
             }

@@ -216,7 +216,7 @@ class ThroughStreamTest extends TestCase
     public function endTwiceShouldOnlyEmitOnce()
     {
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableOnce('first'));
+        $through->on('data', $this->expectCallableOnceWith('first'));
         $through->end('first');
         $through->end('ignored');
     }
@@ -309,6 +309,7 @@ class ThroughStreamTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with('foo');
+        assert($output instanceof WritableStreamInterface);
 
         $through = new ThroughStream();
         $through->pipe($output);

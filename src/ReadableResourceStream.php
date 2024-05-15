@@ -124,7 +124,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function handleData()
     {
         $error = null;
-        \set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error) {
+        \set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error): bool {
             $error = new \ErrorException(
                 $errstr,
                 0,
@@ -132,6 +132,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
                 $errfile,
                 $errline
             );
+            return true;
         });
 
         $data = \stream_get_contents($this->stream, $this->bufferSize);

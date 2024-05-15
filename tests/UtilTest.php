@@ -18,8 +18,10 @@ class UtilTest extends TestCase
     public function testPipeReturnsDestinationStream()
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
+        assert($readable instanceof ReadableStreamInterface);
 
         $writable = $this->createMock(WritableStreamInterface::class);
+        assert($writable instanceof WritableStreamInterface);
 
         $ret = Util::pipe($readable, $writable);
 
@@ -33,6 +35,7 @@ class UtilTest extends TestCase
             ->expects($this->any())
             ->method('isReadable')
             ->willReturn(false);
+        assert($readable instanceof ReadableStreamInterface);
 
         $writable = $this->createMock(WritableStreamInterface::class);
         $writable
@@ -41,6 +44,7 @@ class UtilTest extends TestCase
         $writable
             ->expects($this->never())
             ->method('end');
+        assert($writable instanceof WritableStreamInterface);
 
         Util::pipe($readable, $writable);
     }
@@ -55,6 +59,7 @@ class UtilTest extends TestCase
         $readable
             ->expects($this->once())
             ->method('pause');
+        assert($readable instanceof ReadableStreamInterface);
 
         $writable = $this->createMock(WritableStreamInterface::class);
         $writable
@@ -64,6 +69,7 @@ class UtilTest extends TestCase
         $writable
             ->expects($this->never())
             ->method('end');
+        assert($writable instanceof WritableStreamInterface);
 
         Util::pipe($readable, $writable);
     }
@@ -78,6 +84,7 @@ class UtilTest extends TestCase
         $readable
             ->expects($this->once())
             ->method('pause');
+        assert($readable instanceof ReadableStreamInterface);
 
         $writable = new ThroughStream();
 
@@ -98,6 +105,7 @@ class UtilTest extends TestCase
         $writable
             ->expects($this->once())
             ->method('end');
+        assert($writable instanceof WritableStreamInterface);
 
         Util::pipe($readable, $writable);
 
@@ -116,6 +124,7 @@ class UtilTest extends TestCase
         $writable
             ->expects($this->never())
             ->method('end');
+        assert($writable instanceof WritableStreamInterface);
 
         Util::pipe($readable, $writable, ['end' => false]);
 
@@ -136,6 +145,7 @@ class UtilTest extends TestCase
             ->method('write')
             ->with('some data')
             ->will($this->returnValue(false));
+        assert($writable instanceof WritableStreamInterface);
 
         $readable->pipe($writable);
 
@@ -163,6 +173,7 @@ class UtilTest extends TestCase
                     $onDrain = $callback;
                 }
             }));
+        assert($writable instanceof WritableStreamInterface);
 
         $readable->pipe($writable);
         $readable->pause();
@@ -179,6 +190,7 @@ class UtilTest extends TestCase
 
         $stream = fopen('php://temp', 'r+');
         $loop = $this->createMock(LoopInterface::class);
+        assert($loop instanceof LoopInterface);
         $buffer = new WritableResourceStream($stream, $loop);
 
         $readable->pipe($buffer);
@@ -239,8 +251,12 @@ class UtilTest extends TestCase
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable->expects($this->any())->method('isReadable')->willReturn(true);
+        assert($readable instanceof ReadableStreamInterface);
+
         $writable = $this->createMock(WritableStreamInterface::class);
         $writable->expects($this->any())->method('isWritable')->willReturn(true);
+        assert($writable instanceof WritableStreamInterface);
+
         $duplex = new CompositeStream($readable, $writable);
 
         Util::pipe($duplex, $duplex);
