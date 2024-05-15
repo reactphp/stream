@@ -22,8 +22,11 @@ if (DIRECTORY_SEPARATOR === '\\') {
 
 $args = getopt('i:o:t:');
 $if = $args['i'] ?? '/dev/zero';
+assert(is_string($if));
 $of = $args['o'] ?? '/dev/null';
+assert(is_string($of));
 $t  = $args['t'] ?? 1;
+assert(is_numeric($t));
 
 // passing file descriptors requires mapping paths (https://bugs.php.net/bug.php?id=53465)
 $if = str_replace('/dev/fd/', 'php://fd/', $if);
@@ -38,18 +41,21 @@ $info->write('piping from ' . $if . ' to ' . $of . ' (for max ' . $t . ' second(
 
 // setup input and output streams and pipe inbetween
 $fh = fopen($if, 'r');
+assert(is_resource($fh));
+$fo = fopen($of, 'w');
+assert(is_resource($fo));
 $in = new React\Stream\ReadableResourceStream($fh);
-$out = new React\Stream\WritableResourceStream(fopen($of, 'w'));
+$out = new React\Stream\WritableResourceStream($fo);
 $in->pipe($out);
 
 // stop input stream in $t seconds
 $start = microtime(true);
-$timeout = Loop::addTimer($t, function () use ($in) {
+$timeout = Loop::addTimer((float) $t, function () use ($in): void {
     $in->close();
 });
 
 // print stream position once stream closes
-$in->on('close', function () use ($fh, $start, $timeout, $info) {
+$in->on('close', function () use ($fh, $start, $timeout, $info): void {
     $t = microtime(true) - $start;
     Loop::cancelTimer($timeout);
 

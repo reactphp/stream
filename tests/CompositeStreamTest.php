@@ -13,7 +13,7 @@ use React\Stream\WritableStreamInterface;
 class CompositeStreamTest extends TestCase
 {
     /** @test */
-    public function itShouldCloseReadableIfNotWritable()
+    public function itShouldCloseReadableIfNotWritable(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -39,7 +39,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldCloseWritableIfNotReadable()
+    public function itShouldCloseWritableIfNotReadable(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -61,7 +61,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldForwardWritableCallsToWritableStream()
+    public function itShouldForwardWritableCallsToWritableStream(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -87,7 +87,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldForwardReadableCallsToReadableStream()
+    public function itShouldForwardReadableCallsToReadableStream(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -116,7 +116,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldNotForwardResumeIfStreamIsNotWritable()
+    public function itShouldNotForwardResumeIfStreamIsNotWritable(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -140,7 +140,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function endShouldDelegateToWritableWithData()
+    public function endShouldDelegateToWritableWithData(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -165,7 +165,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function closeShouldCloseBothStreams()
+    public function closeShouldCloseBothStreams(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -192,7 +192,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldForwardCloseOnlyOnce()
+    public function itShouldForwardCloseOnlyOnce(): void
     {
         $readable = new ThroughStream();
         $writable = new ThroughStream();
@@ -205,7 +205,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldForwardCloseAndRemoveAllListeners()
+    public function itShouldForwardCloseAndRemoveAllListeners(): void
     {
         $in = new ThroughStream();
 
@@ -224,7 +224,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReceiveForwardedEvents()
+    public function itShouldReceiveForwardedEvents(): void
     {
         $readable = new ThroughStream();
         $writable = new ThroughStream();
@@ -238,7 +238,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldHandlePipingCorrectly()
+    public function itShouldHandlePipingCorrectly(): void
     {
         $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
@@ -263,7 +263,7 @@ class CompositeStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldForwardPipeCallsToReadableStream()
+    public function itShouldForwardPipeCallsToReadableStream(): void
     {
         $readable = new ThroughStream();
 

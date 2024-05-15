@@ -16,7 +16,7 @@ use Evenement\EventEmitterInterface;
  *     previously and is now ready to accept more data.
  *
  *     ```php
- *     $stream->on('drain', function () use ($stream) {
+ *     $stream->on('drain', function () use ($stream): void {
  *         echo 'Stream is now ready to accept more data';
  *     });
  *     ```
@@ -37,11 +37,11 @@ use Evenement\EventEmitterInterface;
  *     source stream.
  *
  *     ```php
- *     $stream->on('pipe', function (ReadableStreamInterface $source) use ($stream) {
+ *     $stream->on('pipe', function (ReadableStreamInterface $source) use ($stream): void {
  *         echo 'Now receiving piped data';
  *
  *         // explicitly close target if source emits an error
- *         $source->on('error', function () use ($stream) {
+ *         $source->on('error', function () use ($stream): void {
  *             $stream->close();
  *         });
  *     });
@@ -64,7 +64,7 @@ use Evenement\EventEmitterInterface;
  *     The event receives a single `Exception` argument for the error instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on('error', function (Exception $e): void {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
@@ -93,7 +93,7 @@ use Evenement\EventEmitterInterface;
  *     The `close` event will be emitted once the stream closes (terminates).
  *
  *     ```php
- *     $stream->on('close', function () {
+ *     $stream->on('close', function (): void {
  *         echo 'CLOSED';
  *     });
  *     ```
@@ -330,7 +330,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * ```php
      * $stream->end();
-     * Loop::addTimer(1.0, function () use ($stream) {
+     * Loop::addTimer(1.0, function () use ($stream): void {
      *     $stream->close();
      * });
      * ```

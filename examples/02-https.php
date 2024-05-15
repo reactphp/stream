@@ -26,10 +26,10 @@ if (!$resource) {
 
 $stream = new DuplexResourceStream($resource);
 
-$stream->on('data', function ($chunk) {
+$stream->on('data', function (string $chunk): void {
     echo $chunk;
 });
-$stream->on('close', function () {
+$stream->on('close', function (): void {
     echo '[CLOSED]' . PHP_EOL;
 });
 

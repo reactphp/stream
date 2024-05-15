@@ -9,7 +9,7 @@ final class Util
      *
      * @param ReadableStreamInterface $source
      * @param WritableStreamInterface $dest
-     * @param array $options
+     * @param array{end?:bool} $options
      * @return WritableStreamInterface $dest stream as-is
      * @see ReadableStreamInterface::pipe() for more details
      */
@@ -30,33 +30,33 @@ final class Util
         $dest->emit('pipe', [$source]);
 
         // forward all source data events as $dest->write()
-        $source->on('data', $dataer = function ($data) use ($source, $dest) {
+        $source->on('data', $dataer = function ($data) use ($source, $dest): void {
             $feedMore = $dest->write($data);
 
             if (false === $feedMore) {
                 $source->pause();
             }
         });
-        $dest->on('close', function () use ($source, $dataer) {
+        $dest->on('close', function () use ($source, $dataer): void {
             $source->removeListener('data', $dataer);
             $source->pause();
         });
 
         // forward destination drain as $source->resume()
-        $dest->on('drain', $drainer = function () use ($source) {
+        $dest->on('drain', $drainer = function () use ($source): void {
             $source->resume();
         });
-        $source->on('close', function () use ($dest, $drainer) {
+        $source->on('close', function () use ($dest, $drainer): void {
             $dest->removeListener('drain', $drainer);
         });
 
         // forward end event from source as $dest->end()
         $end = isset($options['end']) ? $options['end'] : true;
         if ($end) {
-            $source->on('end', $ender = function () use ($dest) {
+            $source->on('end', $ender = function () use ($dest): void {
                 $dest->end();
             });
-            $dest->on('close', function () use ($source, $ender) {
+            $dest->on('close', function () use ($source, $ender): void {
                 $source->removeListener('end', $ender);
             });
         }
@@ -73,7 +73,7 @@ final class Util
     public static function forwardEvents($source, $target, array $events): void
     {
         foreach ($events as $event) {
-            $source->on($event, function () use ($event, $target) {
+            $source->on($event, function () use ($event, $target): void {
                 $target->emit($event, \func_get_args());
             });
         }

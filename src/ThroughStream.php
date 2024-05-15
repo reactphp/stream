@@ -3,7 +3,6 @@
 namespace React\Stream;
 
 use Evenement\EventEmitter;
-use InvalidArgumentException;
 
 /**
  * The `ThroughStream` implements the
@@ -43,7 +42,7 @@ use InvalidArgumentException;
  * a newline-delimited JSON (NDJSON) stream like this:
  *
  * ```php
- * $through = new ThroughStream(function ($data) {
+ * $through = new ThroughStream(function (mixed $data): string {
  *     return json_encode($data) . PHP_EOL;
  * });
  * $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
@@ -55,7 +54,7 @@ use InvalidArgumentException;
  * the stream will emit an `error` event and then [`close()`](#close-1) the stream.
  *
  * ```php
- * $through = new ThroughStream(function ($data) {
+ * $through = new ThroughStream(function (mixed $data): string {
  *     if (!is_string($data)) {
  *         throw new \UnexpectedValueException('Only strings allowed');
  *     }
@@ -75,13 +74,27 @@ use InvalidArgumentException;
  */
 final class ThroughStream extends EventEmitter implements DuplexStreamInterface
 {
+    /** @var bool */
     private $readable = true;
+
+    /** @var bool */
     private $writable = true;
+
+    /** @var bool */
     private $closed = false;
+
+    /** @var bool */
     private $paused = false;
+
+    /** @var bool */
     private $drain = false;
+
+    /** @var ?callable */
     private $callback;
 
+    /**
+     * @param ?callable $callback
+     */
     public function __construct(?callable $callback = null)
     {
         $this->callback = $callback;

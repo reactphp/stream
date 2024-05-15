@@ -9,24 +9,25 @@ namespace React\Tests\Stream;
  */
 class EnforceBlockingWrapper
 {
+    /** @var resource */
     public $context;
 
-    public function stream_open($path, $mode, $options, &$opened_path)
+    public function stream_open(string $path, string $mode, int $options, ?string &$opened_path): bool
     {
         return true;
     }
 
-    public function stream_cast($cast_as)
+    public function stream_cast(int $cast_as): bool
     {
         return false;
     }
 
-    public function stream_eof()
+    public function stream_eof(): bool
     {
         return false;
     }
 
-    public function stream_set_option($option, $arg1, $arg2)
+    public function stream_set_option(int $option, int $arg1, ?int $arg2): bool
     {
         if ($option === STREAM_OPTION_BLOCKING) {
             return false;

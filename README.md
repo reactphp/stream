@@ -111,7 +111,7 @@ from this source stream.
 The event receives a single mixed argument for incoming data.
 
 ```php
-$stream->on('data', function ($data) {
+$stream->on('data', function (mixed $data): void {
     echo $data;
 });
 ```
@@ -142,7 +142,7 @@ The `end` event will be emitted once the source stream has successfully
 reached the end of the stream (EOF).
 
 ```php
-$stream->on('end', function () {
+$stream->on('end', function (): void {
     echo 'END';
 });
 ```
@@ -180,7 +180,7 @@ trying to read from this stream.
 The event receives a single `Exception` argument for the error instance.
 
 ```php
-$server->on('error', function (Exception $e) {
+$server->on('error', function (Exception $e): void {
     echo 'Error: ' . $e->getMessage() . PHP_EOL;
 });
 ```
@@ -213,7 +213,7 @@ stream which should result in the same error processing.
 The `close` event will be emitted once the stream closes (terminates).
 
 ```php
-$stream->on('close', function () {
+$stream->on('close', function (): void {
     echo 'CLOSED';
 });
 ```
@@ -312,7 +312,7 @@ Re-attach the data source after a previous `pause()`.
 ```php
 $stream->pause();
 
-Loop::addTimer(1.0, function () use ($stream) {
+Loop::addTimer(1.0, function () use ($stream): void {
     $stream->resume();
 });
 ```
@@ -362,7 +362,7 @@ you'll have to manually close the destination stream:
 
 ```php
 $source->pipe($dest);
-$source->on('close', function () use ($dest) {
+$source->on('close', function () use ($dest): void {
     $dest->end('BYE!');
 });
 ```
@@ -456,7 +456,7 @@ The `drain` event will be emitted whenever the write buffer became full
 previously and is now ready to accept more data.
 
 ```php
-$stream->on('drain', function () use ($stream) {
+$stream->on('drain', function () use ($stream): void {
     echo 'Stream is now ready to accept more data';
 });
 ```
@@ -478,11 +478,11 @@ The event receives a single `ReadableStreamInterface` argument for the
 source stream.
 
 ```php
-$stream->on('pipe', function (ReadableStreamInterface $source) use ($stream) {
+$stream->on('pipe', function (ReadableStreamInterface $source) use ($stream): void {
     echo 'Now receiving piped data';
 
     // explicitly close target if source emits an error
-    $source->on('error', function () use ($stream) {
+    $source->on('error', function () use ($stream): void {
         $stream->close();
     });
 });
@@ -506,7 +506,7 @@ trying to write to this stream.
 The event receives a single `Exception` argument for the error instance.
 
 ```php
-$stream->on('error', function (Exception $e) {
+$stream->on('error', function (Exception $e): void {
     echo 'Error: ' . $e->getMessage() . PHP_EOL;
 });
 ```
@@ -536,7 +536,7 @@ stream which should result in the same error processing.
 The `close` event will be emitted once the stream closes (terminates).
 
 ```php
-$stream->on('close', function () {
+$stream->on('close', function (): void {
     echo 'CLOSED';
 });
 ```
@@ -746,7 +746,7 @@ stream in order to stop waiting for the stream to flush its final data.
 
 ```php
 $stream->end();
-Loop::addTimer(1.0, function () use ($stream) {
+Loop::addTimer(1.0, function () use ($stream): void {
     $stream->close();
 });
 ```
@@ -831,10 +831,10 @@ readable mode or a stream such as `STDIN`:
 
 ```php
 $stream = new ReadableResourceStream(STDIN);
-$stream->on('data', function ($chunk) {
+$stream->on('data', function (string $chunk): void {
     echo $chunk;
 });
-$stream->on('end', function () {
+$stream->on('end', function (): void {
     echo 'END';
 });
 ```
@@ -1121,7 +1121,7 @@ used to convert data, for example for transforming any structured data into
 a newline-delimited JSON (NDJSON) stream like this:
 
 ```php
-$through = new ThroughStream(function ($data) {
+$through = new ThroughStream(function (mixed $data): string {
     return json_encode($data) . PHP_EOL;
 });
 $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
@@ -1133,7 +1133,7 @@ The callback function is allowed to throw an `Exception`. In this case,
 the stream will emit an `error` event and then [`close()`](#close-1) the stream.
 
 ```php
-$through = new ThroughStream(function ($data) {
+$through = new ThroughStream(function (mixed $data): string {
     if (!is_string($data)) {
         throw new \UnexpectedValueException('Only strings allowed');
     }
@@ -1164,7 +1164,7 @@ $stdout = new WritableResourceStream(STDOUT);
 
 $stdio = new CompositeStream($stdin, $stdout);
 
-$stdio->on('data', function ($chunk) use ($stdio) {
+$stdio->on('data', function (string $chunk) use ($stdio): void {
     $stdio->write('You said: ' . $chunk);
 });
 ```
@@ -1243,7 +1243,7 @@ If you do not want to run these, they can simply be skipped like this:
 vendor/bin/phpunit --exclude-group internet
 ```
 
-On top of this, we use PHPStan on level 5 to ensure type safety across the project:
+On top of this, we use PHPStan on max level to ensure type safety across the project:
 
 ```bash
 vendor/bin/phpstan

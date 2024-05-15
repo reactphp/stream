@@ -9,6 +9,7 @@ use InvalidArgumentException;
 
 final class DuplexResourceStream extends EventEmitter implements DuplexStreamInterface
 {
+    /** @var resource */
     private $stream;
 
     /** @var LoopInterface */
@@ -31,11 +32,20 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
      * @var int
      */
     private $bufferSize;
+
+    /** @var WritableStreamInterface */
     private $buffer;
 
+    /** @var bool */
     private $readable = true;
+
+    /** @var bool */
     private $writable = true;
+
+    /** @var bool */
     private $closing = false;
+
+    /** @var bool */
     private $listening = false;
 
     /**
@@ -78,13 +88,13 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->bufferSize = $readChunkSize ?? 65536;
         $this->buffer = $buffer;
 
-        $this->buffer->on('error', function ($error) {
+        $this->buffer->on('error', function (\Exception $error): void {
             $this->emit('error', [$error]);
         });
 
         $this->buffer->on('close', [$this, 'close']);
 
-        $this->buffer->on('drain', function () {
+        $this->buffer->on('drain', function (): void {
             $this->emit('drain');
         });
 
@@ -167,11 +177,14 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         return Util::pipe($this, $dest, $options);
     }
 
-    /** @internal */
-    public function handleData($stream)
+    /**
+     * @internal
+     * @param resource $stream
+     */
+    public function handleData($stream): void
     {
         $error = null;
-        \set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error): bool {
+        \set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use (&$error): bool {
             $error = new \ErrorException(
                 $errstr,
                 0,

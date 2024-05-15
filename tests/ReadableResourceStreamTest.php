@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use React\EventLoop\LoopInterface;
 use React\Stream\ReadableResourceStream;
 use React\Stream\WritableStreamInterface;
@@ -13,17 +14,20 @@ class ReadableResourceStreamTest extends TestCase
      * @covers React\Stream\ReadableResourceStream::__construct
      * @doesNotPerformAssertions
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         new ReadableResourceStream($stream, $loop);
     }
 
-    public function testConstructWithoutLoopAssignsLoopAutomatically()
+    public function testConstructWithoutLoopAssignsLoopAutomatically(): void
     {
         $resource = fopen('php://temp', 'r+');
+        assert(is_resource($resource));
 
         $stream = new ReadableResourceStream($resource);
 
@@ -38,11 +42,12 @@ class ReadableResourceStreamTest extends TestCase
      * @covers React\Stream\ReadableResourceStream::__construct
      * @doesNotPerformAssertions
      */
-    public function testConstructorWithExcessiveMode()
+    public function testConstructorWithExcessiveMode(): void
     {
         // excessive flags are ignored for temp streams, so we have to use a file stream
-        $name = tempnam(sys_get_temp_dir(), 'test');
-        $stream = @fopen($name, 'r+eANYTHING');
+        $name = (string) tempnam(sys_get_temp_dir(), 'test');
+        $stream = fopen($name, 'r+eANYTHING');
+        assert(is_resource($stream));
         unlink($name);
 
         $loop = $this->createLoopMock();
@@ -53,7 +58,7 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionOnInvalidStream()
+    public function testConstructorThrowsExceptionOnInvalidStream(): void
     {
         $loop = $this->createLoopMock();
 
@@ -64,7 +69,7 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionOnWriteOnlyStream()
+    public function testConstructorThrowsExceptionOnWriteOnlyStream(): void
     {
         $loop = $this->createLoopMock();
 
@@ -75,11 +80,12 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionOnWriteOnlyStreamWithExcessiveMode()
+    public function testConstructorThrowsExceptionOnWriteOnlyStreamWithExcessiveMode(): void
     {
         // excessive flags are ignored for temp streams, so we have to use a file stream
-        $name = tempnam(sys_get_temp_dir(), 'test');
+        $name = (string) tempnam(sys_get_temp_dir(), 'test');
         $stream = fopen($name, 'weANYTHING');
+        assert(is_resource($stream));
         unlink($name);
 
         $loop = $this->createLoopMock();
@@ -90,23 +96,26 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
+    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking(): void
     {
         if (!in_array('blocking', stream_get_wrappers())) {
             stream_wrapper_register('blocking', 'React\Tests\Stream\EnforceBlockingWrapper');
         }
 
         $stream = fopen('blocking://test', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $this->expectException(\RuntimeException::class);
         new ReadableResourceStream($stream, $loop);
     }
 
-
-    public function testCloseShouldEmitCloseEvent()
+    public function testCloseShouldEmitCloseEvent(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -117,9 +126,11 @@ class ReadableResourceStreamTest extends TestCase
         $this->assertFalse($conn->isReadable());
     }
 
-    public function testCloseTwiceShouldEmitCloseEventOnce()
+    public function testCloseTwiceShouldEmitCloseEventOnce(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -133,9 +144,11 @@ class ReadableResourceStreamTest extends TestCase
      * @covers React\Stream\ReadableResourceStream::__construct
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testDataEvent()
+    public function testDataEvent(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $capturedData = null;
@@ -156,9 +169,11 @@ class ReadableResourceStreamTest extends TestCase
      * @covers React\Stream\ReadableResourceStream::__construct
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testDataEventDoesEmitOneChunkMatchingBufferSize()
+    public function testDataEventDoesEmitOneChunkMatchingBufferSize(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $capturedData = null;
@@ -181,9 +196,11 @@ class ReadableResourceStreamTest extends TestCase
      * @covers React\Stream\ReadableResourceStream::__construct
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testDataEventDoesEmitOneChunkUntilStreamEndsWhenBufferSizeIsInfinite()
+    public function testDataEventDoesEmitOneChunkUntilStreamEndsWhenBufferSizeIsInfinite(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $capturedData = null;
@@ -206,9 +223,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testEmptyStreamShouldNotEmitData()
+    public function testEmptyStreamShouldNotEmitData(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -217,9 +236,11 @@ class ReadableResourceStreamTest extends TestCase
         $conn->handleData();
     }
 
-    public function testPipeShouldReturnDestination()
+    public function testPipeShouldReturnDestination(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -232,9 +253,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testClosingStreamInDataEventShouldNotTriggerError()
+    public function testClosingStreamInDataEventShouldNotTriggerError(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -252,9 +275,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::pause
      */
-    public function testPauseRemovesReadStreamFromLoop()
+    public function testPauseRemovesReadStreamFromLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
@@ -267,9 +292,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::pause
      */
-    public function testResumeDoesAddStreamToLoopOnlyOnce()
+    public function testResumeDoesAddStreamToLoopOnlyOnce(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
 
@@ -281,9 +308,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::close
      */
-    public function testCloseRemovesReadStreamFromLoop()
+    public function testCloseRemovesReadStreamFromLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
@@ -295,9 +324,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::close
      */
-    public function testCloseAfterPauseRemovesReadStreamFromLoopOnce()
+    public function testCloseAfterPauseRemovesReadStreamFromLoopOnce(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
         $loop->expects($this->once())->method('removeReadStream')->with($stream);
@@ -310,9 +341,11 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::close
      */
-    public function testResumeAfterCloseDoesAddReadStreamToLoopOnlyOnce()
+    public function testResumeAfterCloseDoesAddReadStreamToLoopOnlyOnce(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addReadStream')->with($stream);
 
@@ -324,9 +357,10 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testDataFiltered()
+    public function testDataFiltered(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
 
         // add a filter which removes every 'a' when reading
         filter_append($stream, function ($chunk) {
@@ -352,9 +386,10 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testDataErrorShouldEmitErrorAndClose()
+    public function testDataErrorShouldEmitErrorAndClose(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
 
         // add a filter which returns an error when encountering an 'a' when reading
         filter_append($stream, function ($chunk) {
@@ -380,9 +415,12 @@ class ReadableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\ReadableResourceStream::handleData
      */
-    public function testEmptyReadShouldntFcloseStream()
+    public function testEmptyReadShouldntFcloseStream(): void
     {
-        list($stream, $_) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+        $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+        assert(is_array($pair));
+        [$stream, $_] = $pair;
+
         $loop = $this->createLoopMock();
 
         $conn = new ReadableResourceStream($stream, $loop);
@@ -396,8 +434,10 @@ class ReadableResourceStreamTest extends TestCase
         fclose($_);
     }
 
-    private function createLoopMock()
+    /** @return MockObject&LoopInterface */
+    private function createLoopMock(): MockObject
     {
+        /** @var MockObject&LoopInterface */
         return $this->createMock(LoopInterface::class);
     }
 }

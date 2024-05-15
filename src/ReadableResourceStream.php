@@ -37,7 +37,10 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
      */
     private $bufferSize;
 
+    /** @var bool */
     private $closed = false;
+
+    /** @var bool */
     private $listening = false;
 
     /**
@@ -121,10 +124,10 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     }
 
     /** @internal */
-    public function handleData()
+    public function handleData(): void
     {
         $error = null;
-        \set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$error): bool {
+        \set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use (&$error): bool {
             $error = new \ErrorException(
                 $errstr,
                 0,
