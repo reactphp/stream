@@ -48,7 +48,7 @@ use InvalidArgumentException;
  * });
  * $through->on('data', $this->expectCallableOnceWith("[2, true]\n"));
  *
- * $through->write(array(2, true));
+ * $through->write([2, true]);
  * ```
  *
  * The callback function is allowed to throw an `Exception`. In this case,
@@ -108,7 +108,7 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
         }
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = array())
+    public function pipe(WritableStreamInterface $dest, array $options = [])
     {
         return Util::pipe($this, $dest, $options);
     }
@@ -133,14 +133,14 @@ final class ThroughStream extends EventEmitter implements DuplexStreamInterface
             try {
                 $data = \call_user_func($this->callback, $data);
             } catch (\Exception $e) {
-                $this->emit('error', array($e));
+                $this->emit('error', [$e]);
                 $this->close();
 
                 return false;
             }
         }
 
-        $this->emit('data', array($data));
+        $this->emit('data', [$data]);
 
         // emit drain event on next resume if currently paused (throttled)
         if ($this->paused) {

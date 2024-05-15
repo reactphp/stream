@@ -3,7 +3,9 @@
 namespace React\Tests\Stream;
 
 use React\Stream\CompositeStream;
+use React\Stream\ReadableStreamInterface;
 use React\Stream\ThroughStream;
+use React\Stream\WritableStreamInterface;
 
 /**
  * @covers React\Stream\CompositeStream
@@ -13,7 +15,7 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldCloseReadableIfNotWritable()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
@@ -22,7 +24,7 @@ class CompositeStreamTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->once())
             ->method('isWritable')
@@ -37,13 +39,13 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldCloseWritableIfNotReadable()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
             ->willReturn(false);
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->once())
             ->method('close');
@@ -57,13 +59,13 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldForwardWritableCallsToWritableStream()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
             ->willReturn(true);
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->once())
             ->method('write')
@@ -81,7 +83,7 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldForwardReadableCallsToReadableStream()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->exactly(2))
             ->method('isReadable')
@@ -93,7 +95,7 @@ class CompositeStreamTest extends TestCase
             ->expects($this->once())
             ->method('resume');
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->any())
             ->method('isWritable')
@@ -108,7 +110,7 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function itShouldNotForwardResumeIfStreamIsNotWritable()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
@@ -117,7 +119,7 @@ class CompositeStreamTest extends TestCase
             ->expects($this->never())
             ->method('resume');
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->exactly(2))
             ->method('isWritable')
@@ -130,13 +132,13 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function endShouldDelegateToWritableWithData()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
             ->willReturn(true);
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->once())
             ->method('isWritable')
@@ -153,7 +155,7 @@ class CompositeStreamTest extends TestCase
     /** @test */
     public function closeShouldCloseBothStreams()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
@@ -162,7 +164,7 @@ class CompositeStreamTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable
             ->expects($this->once())
             ->method('isWritable')
@@ -217,20 +219,20 @@ class CompositeStreamTest extends TestCase
         $composite->on('data', $this->expectCallableOnce());
         $composite->on('drain', $this->expectCallableOnce());
 
-        $readable->emit('data', array('foo'));
+        $readable->emit('data', ['foo']);
         $writable->emit('drain');
     }
 
     /** @test */
     public function itShouldHandlePipingCorrectly()
     {
-        $readable = $this->getMockBuilder('React\Stream\ReadableStreamInterface')->getMock();
+        $readable = $this->createMock(ReadableStreamInterface::class);
         $readable
             ->expects($this->once())
             ->method('isReadable')
             ->willReturn(true);
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable->expects($this->any())->method('isWritable')->willReturn(True);
         $writable
             ->expects($this->once())
@@ -241,7 +243,7 @@ class CompositeStreamTest extends TestCase
 
         $input = new ThroughStream();
         $input->pipe($composite);
-        $input->emit('data', array('foo'));
+        $input->emit('data', ['foo']);
     }
 
     /** @test */
@@ -249,12 +251,12 @@ class CompositeStreamTest extends TestCase
     {
         $readable = new ThroughStream();
 
-        $writable = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $writable = $this->createMock(WritableStreamInterface::class);
         $writable->expects($this->any())->method('isWritable')->willReturn(True);
 
         $composite = new CompositeStream($readable, $writable);
 
-        $output = $this->getMockBuilder('React\Stream\WritableStreamInterface')->getMock();
+        $output = $this->createMock(WritableStreamInterface::class);
         $output->expects($this->any())->method('isWritable')->willReturn(True);
         $output
             ->expects($this->once())
@@ -262,6 +264,6 @@ class CompositeStreamTest extends TestCase
             ->with('foo');
 
         $composite->pipe($output);
-        $readable->emit('data', array('foo'));
+        $readable->emit('data', ['foo']);
     }
 }

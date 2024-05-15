@@ -46,7 +46,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
 
         // ensure resource is opened for reading and wrting (fopen mode must contain "+")
         $meta = \stream_get_meta_data($stream);
-        if (isset($meta['mode']) && $meta['mode'] !== '' && \strpos($meta['mode'], '+') === false) {
+        if (\strpos($meta['mode'], '+') === false) {
             throw new InvalidArgumentException('Given stream resource is not opened in read and write mode');
         }
 
@@ -59,14 +59,9 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         // Use unbuffered read operations on the underlying stream resource.
         // Reading chunks from the stream may otherwise leave unread bytes in
         // PHP's stream buffers which some event loop implementations do not
-        // trigger events on (edge triggered).
-        // This does not affect the default event loop implementation (level
-        // triggered), so we can ignore platforms not supporting this (HHVM).
-        // Pipe streams (such as STDIN) do not seem to require this and legacy
-        // PHP versions cause SEGFAULTs on unbuffered pipe streams, so skip this.
-        if (\function_exists('stream_set_read_buffer') && !$this->isLegacyPipe($stream)) {
-            \stream_set_read_buffer($stream, 0);
-        }
+        // trigger events on (edge triggered). This does not affect the default
+        // event loop implementation (level triggered).
+        \stream_set_read_buffer($stream, 0);
 
         if ($buffer === null) {
             $buffer = new WritableResourceStream($stream, $loop);
@@ -77,16 +72,14 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
         $this->buffer = $buffer;
 
-        $that = $this;
-
-        $this->buffer->on('error', function ($error) use ($that) {
-            $that->emit('error', array($error));
+        $this->buffer->on('error', function ($error) {
+            $this->emit('error', [$error]);
         });
 
-        $this->buffer->on('close', array($this, 'close'));
+        $this->buffer->on('close', [$this, 'close']);
 
-        $this->buffer->on('drain', function () use ($that) {
-            $that->emit('drain');
+        $this->buffer->on('drain', function () {
+            $this->emit('drain');
         });
 
         $this->resume();
@@ -113,7 +106,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     public function resume()
     {
         if (!$this->listening && $this->readable) {
-            $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            $this->loop->addReadStream($this->stream, [$this, 'handleData']);
             $this->listening = true;
         }
     }
@@ -163,7 +156,7 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         $this->buffer->end($data);
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = array())
+    public function pipe(WritableStreamInterface $dest, array $options = [])
     {
         return Util::pipe($this, $dest, $options);
     }
@@ -187,41 +180,17 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
         \restore_error_handler();
 
         if ($error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
+            $this->emit('error', [new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)]);
             $this->close();
             return;
         }
 
         if ($data !== '') {
-            $this->emit('data', array($data));
+            $this->emit('data', [$data]);
         } elseif (\feof($this->stream)) {
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
         }
-    }
-
-    /**
-     * Returns whether this is a pipe resource in a legacy environment
-     *
-     * This works around a legacy PHP bug (#61019) that was fixed in PHP 5.4.28+
-     * and PHP 5.5.12+ and newer.
-     *
-     * @param resource $resource
-     * @return bool
-     * @link https://github.com/reactphp/child-process/issues/40
-     *
-     * @codeCoverageIgnore
-     */
-    private function isLegacyPipe($resource)
-    {
-        if (\PHP_VERSION_ID < 50428 || (\PHP_VERSION_ID >= 50500 && \PHP_VERSION_ID < 50512)) {
-            $meta = \stream_get_meta_data($resource);
-
-            if (isset($meta['stream_type']) && $meta['stream_type'] === 'STDIO') {
-                return true;
-            }
-        }
-        return false;
     }
 }

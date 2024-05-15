@@ -278,7 +278,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * source stream emits an `end` event. This can be disabled like this:
      *
      * ```php
-     * $source->pipe($dest, array('end' => false));
+     * $source->pipe($dest, ['end' => false]);
      * ```
      *
      * Note that this only applies to the `end` event.
@@ -322,7 +322,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * @param array $options
      * @return WritableStreamInterface $dest stream as-is
      */
-    public function pipe(WritableStreamInterface $dest, array $options = array());
+    public function pipe(WritableStreamInterface $dest, array $options = []);
 
     /**
      * Closes the stream (forcefully).

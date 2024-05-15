@@ -2,8 +2,9 @@
 
 namespace React\Tests\Stream;
 
-use Clue\StreamFilter as Filter;
+use React\EventLoop\LoopInterface;
 use React\Stream\WritableResourceStream;
+use function Clue\StreamFilter\append as filter_append;
 
 class WritableResourceStreamTest extends TestCase
 {
@@ -56,7 +57,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = null;
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -68,7 +69,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('php://temp', 'r');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -83,7 +84,7 @@ class WritableResourceStreamTest extends TestCase
         unlink($name);
 
         $loop = $this->createLoopMock();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException(\InvalidArgumentException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -99,7 +100,7 @@ class WritableResourceStreamTest extends TestCase
         $stream = fopen('blocking://test', 'r+');
         $loop = $this->createLoopMock();
 
-        $this->setExpectedException('RuntimeException');
+        $this->expectException(\RuntimeException::class);
         new WritableResourceStream($stream, $loop);
     }
 
@@ -347,10 +348,6 @@ class WritableResourceStreamTest extends TestCase
      */
     public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
     {
-        if (defined('HHVM_VERSION')) {
-            $this->markTestSkipped('Not supported on HHVM');
-        }
-
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
@@ -359,7 +356,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->on('error', $this->expectCallableNever());
         $buffer->on('close', $this->expectCallableOnce());
 
-        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+        filter_append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
             return $chunk;
         });
@@ -411,7 +408,7 @@ class WritableResourceStreamTest extends TestCase
         $buffer->close();
         $this->assertFalse($buffer->isWritable());
 
-        $this->assertEquals(array(), $buffer->listeners('close'));
+        $this->assertEquals([], $buffer->listeners('close'));
     }
 
     /**
@@ -470,7 +467,7 @@ class WritableResourceStreamTest extends TestCase
 
         $buffer = new WritableResourceStream($stream, $loop);
 
-        Filter\append($stream, function ($chunk) use (&$filterBuffer) {
+        filter_append($stream, function ($chunk) use (&$filterBuffer) {
             $filterBuffer .= $chunk;
             return $chunk;
         });
@@ -506,8 +503,8 @@ class WritableResourceStreamTest extends TestCase
         $buffer->write('bar');
         $buffer->handleWrite();
 
-        $this->assertInstanceOf('Exception', $error);
-        $this->assertSameIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
+        $this->assertInstanceOf(\Exception::class, $error);
+        $this->assertEqualsIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
     private function createWriteableLoopMock()
@@ -525,6 +522,6 @@ class WritableResourceStreamTest extends TestCase
 
     private function createLoopMock()
     {
-        return $this->getMockBuilder('React\EventLoop\LoopInterface')->getMock();
+        return $this->createMock(LoopInterface::class);
     }
 }

@@ -2,55 +2,33 @@
 
 namespace React\Tests\Stream;
 
-use Clue\StreamFilter as Filter;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\EventLoop\ExtEventLoop;
-use React\EventLoop\ExtLibeventLoop;
-use React\EventLoop\ExtLibevLoop;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\LibEventLoop;
-use React\EventLoop\LibEvLoop;
 use React\EventLoop\StreamSelectLoop;
+use function Clue\StreamFilter\append as filter_append;
 
 class DuplexResourceStreamIntegrationTest extends TestCase
 {
     public function loopProvider()
     {
-        return array(
-            array(
-                function() {
-                    return true;
-                },
-                function () {
-                    return new StreamSelectLoop();
-                }
-            ),
-            array(
-                function () {
-                    return function_exists('event_base_new');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibeventLoop') ? new ExtLibeventLoop() : new LibEventLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('libev\EventLoop');
-                },
-                function () {
-                    return class_exists('React\EventLoop\ExtLibevLoop') ? new ExtLibevLoop() : new LibEvLoop();
-                }
-            ),
-            array(
-                function () {
-                    return class_exists('EventBase') && class_exists('React\EventLoop\ExtEventLoop');
-                },
-                function () {
-                    return new ExtEventLoop();
-                }
-            )
-        );
+        yield [
+            function() {
+                return true;
+            },
+            function () {
+                return new StreamSelectLoop();
+            }
+        ];
+        yield [
+            function () {
+                return class_exists('EventBase');
+            },
+            function () {
+                return new ExtEventLoop();
+            }
+        ];
     }
 
     /**
@@ -360,7 +338,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
 
         // add a filter which returns an error when encountering an 'a' when reading
-        Filter\append($stream, function ($chunk) {
+        filter_append($stream, function ($chunk) {
             return '';
         }, STREAM_FILTER_READ);
 

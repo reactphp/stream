@@ -48,7 +48,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
         // ensure resource is opened for reading (fopen mode must contain "r" or "+")
         $meta = \stream_get_meta_data($stream);
-        if (isset($meta['mode']) && $meta['mode'] !== '' && \strpos($meta['mode'], 'r') === \strpos($meta['mode'], '+')) {
+        if (\strpos($meta['mode'], 'r') === \strpos($meta['mode'], '+')) {
             throw new InvalidArgumentException('Given stream resource is not opened in read mode');
         }
 
@@ -61,14 +61,9 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         // Use unbuffered read operations on the underlying stream resource.
         // Reading chunks from the stream may otherwise leave unread bytes in
         // PHP's stream buffers which some event loop implementations do not
-        // trigger events on (edge triggered).
-        // This does not affect the default event loop implementation (level
-        // triggered), so we can ignore platforms not supporting this (HHVM).
-        // Pipe streams (such as STDIN) do not seem to require this and legacy
-        // PHP versions cause SEGFAULTs on unbuffered pipe streams, so skip this.
-        if (\function_exists('stream_set_read_buffer') && !$this->isLegacyPipe($stream)) {
-            \stream_set_read_buffer($stream, 0);
-        }
+        // trigger events on (edge triggered). This does not affect the default
+        // event loop implementation (level triggered).
+        \stream_set_read_buffer($stream, 0);
 
         $this->stream = $stream;
         $this->loop = $loop ?: Loop::get();
@@ -93,12 +88,12 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     public function resume()
     {
         if (!$this->listening && !$this->closed) {
-            $this->loop->addReadStream($this->stream, array($this, 'handleData'));
+            $this->loop->addReadStream($this->stream, [$this, 'handleData']);
             $this->listening = true;
         }
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = array())
+    public function pipe(WritableStreamInterface $dest, array $options = [])
     {
         return Util::pipe($this, $dest, $options);
     }
@@ -139,41 +134,17 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         \restore_error_handler();
 
         if ($error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)));
+            $this->emit('error', [new \RuntimeException('Unable to read from stream: ' . $error->getMessage(), 0, $error)]);
             $this->close();
             return;
         }
 
         if ($data !== '') {
-            $this->emit('data', array($data));
+            $this->emit('data', [$data]);
         } elseif (\feof($this->stream)) {
             // no data read => we reached the end and close the stream
             $this->emit('end');
             $this->close();
         }
-    }
-
-    /**
-     * Returns whether this is a pipe resource in a legacy environment
-     *
-     * This works around a legacy PHP bug (#61019) that was fixed in PHP 5.4.28+
-     * and PHP 5.5.12+ and newer.
-     *
-     * @param resource $resource
-     * @return bool
-     * @link https://github.com/reactphp/child-process/issues/40
-     *
-     * @codeCoverageIgnore
-     */
-    private function isLegacyPipe($resource)
-    {
-        if (\PHP_VERSION_ID < 50428 || (\PHP_VERSION_ID >= 50500 && \PHP_VERSION_ID < 50512)) {
-            $meta = \stream_get_meta_data($resource);
-
-            if (isset($meta['stream_type']) && $meta['stream_type'] === 'STDIO') {
-                return true;
-            }
-        }
-        return false;
     }
 }

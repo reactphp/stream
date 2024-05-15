@@ -21,9 +21,9 @@ if (DIRECTORY_SEPARATOR === '\\') {
 }
 
 $args = getopt('i:o:t:');
-$if = isset($args['i']) ? $args['i'] : '/dev/zero';
-$of = isset($args['o']) ? $args['o'] : '/dev/null';
-$t  = isset($args['t']) ? $args['t'] : 1;
+$if = $args['i'] ?? '/dev/zero';
+$of = $args['o'] ?? '/dev/null';
+$t  = $args['t'] ?? 1;
 
 // passing file descriptors requires mapping paths (https://bugs.php.net/bug.php?id=53465)
 $if = str_replace('/dev/fd/', 'php://fd/', $if);

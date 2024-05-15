@@ -36,7 +36,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
 
         // ensure resource is opened for writing (fopen mode must contain either of "waxc+")
         $meta = \stream_get_meta_data($stream);
-        if (isset($meta['mode']) && $meta['mode'] !== '' && \strtr($meta['mode'], 'waxc+', '.....') === $meta['mode']) {
+        if (\strtr($meta['mode'], 'waxc+', '.....') === $meta['mode']) {
             throw new \InvalidArgumentException('Given stream resource is not opened in write mode');
         }
 
@@ -68,7 +68,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         if (!$this->listening && $this->data !== '') {
             $this->listening = true;
 
-            $this->loop->addWriteStream($this->stream, array($this, 'handleWrite'));
+            $this->loop->addWriteStream($this->stream, [$this, 'handleWrite']);
         }
 
         return !isset($this->data[$this->softLimit - 1]);
@@ -137,7 +137,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         // Should this turn out to be a permanent error later, it will eventually
         // send *nothing* and we can detect this.
         if (($sent === 0 || $sent === false) && $error !== null) {
-            $this->emit('error', array(new \RuntimeException('Unable to write to stream: ' . $error)));
+            $this->emit('error', [new \RuntimeException('Unable to write to stream: ' . $error)]);
             $this->close();
 
             return;
