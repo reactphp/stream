@@ -38,7 +38,13 @@ final class DuplexResourceStream extends EventEmitter implements DuplexStreamInt
     private $closing = false;
     private $listening = false;
 
-    public function __construct($stream, LoopInterface $loop = null, $readChunkSize = null, WritableStreamInterface $buffer = null)
+    /**
+     * @param resource $stream
+     * @param ?LoopInterface $loop
+     * @param ?int $readChunkSize
+     * @param ?WritableStreamInterface $buffer
+     */
+    public function __construct($stream, ?LoopInterface $loop = null, $readChunkSize = null, ?WritableStreamInterface $buffer = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');

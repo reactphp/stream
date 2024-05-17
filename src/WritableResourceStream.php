@@ -28,7 +28,13 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     private $closed = false;
     private $data = '';
 
-    public function __construct($stream, LoopInterface $loop = null, $writeBufferSoftLimit = null, $writeChunkSize = null)
+    /**
+     * @param resource $stream
+     * @param ?LoopInterface $loop
+     * @param ?int $writeBufferSoftLimit
+     * @param ?int $writeChunkSize
+     */
+    public function __construct($stream, ?LoopInterface $loop = null, $writeBufferSoftLimit = null, $writeChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
             throw new \InvalidArgumentException('First parameter must be a valid stream resource');

@@ -40,7 +40,12 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
     private $closed = false;
     private $listening = false;
 
-    public function __construct($stream, LoopInterface $loop = null, $readChunkSize = null)
+    /**
+     * @param resource $stream
+     * @param ?LoopInterface $loop
+     * @param ?int $readChunkSize
+     */
+    public function __construct($stream, ?LoopInterface $loop = null, $readChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
