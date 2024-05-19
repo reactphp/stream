@@ -170,7 +170,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      *
      * @return bool
      */
-    public function isWritable();
+    public function isWritable(): bool;
 
     /**
      * Write some data into the stream.
@@ -219,7 +219,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      * @param mixed|string $data
      * @return bool
      */
-    public function write($data);
+    public function write($data): bool;
 
     /**
      * Successfully ends the stream (after optionally sending some final data).
@@ -292,7 +292,7 @@ interface WritableStreamInterface extends EventEmitterInterface
      * @param mixed|string|null $data
      * @return void
      */
-    public function end($data = null);
+    public function end($data = null): void;
 
     /**
      * Closes the stream (forcefully).
@@ -343,5 +343,5 @@ interface WritableStreamInterface extends EventEmitterInterface
      * @return void
      * @see ReadableStreamInterface::close()
      */
-    public function close();
+    public function close(): void;
 }

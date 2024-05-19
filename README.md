@@ -324,7 +324,7 @@ See also `pause()`.
 
 #### pipe()
 
-The `pipe(WritableStreamInterface $dest, array $options = [])` method can be used to
+The `pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface` method can be used to
 pipe all the data from this readable source into the given writable destination.
 
 Automatically sends all incoming data to the destination.

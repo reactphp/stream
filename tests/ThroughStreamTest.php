@@ -10,15 +10,6 @@ use React\Stream\WritableStreamInterface;
  */
 class ThroughStreamTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function itShouldRejectInvalidCallback()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new ThroughStream(123);
-    }
-
     /** @test */
     public function itShouldReturnTrueForAnyDataWrittenToIt()
     {

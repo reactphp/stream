@@ -45,7 +45,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
      * @param ?LoopInterface $loop
      * @param ?int $readChunkSize
      */
-    public function __construct($stream, ?LoopInterface $loop = null, $readChunkSize = null)
+    public function __construct($stream, ?LoopInterface $loop = null, ?int $readChunkSize = null)
     {
         if (!\is_resource($stream) || \get_resource_type($stream) !== "stream") {
              throw new InvalidArgumentException('First parameter must be a valid stream resource');
@@ -72,17 +72,17 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
 
         $this->stream = $stream;
         $this->loop = $loop ?: Loop::get();
-        $this->bufferSize = ($readChunkSize === null) ? 65536 : (int)$readChunkSize;
+        $this->bufferSize = $readChunkSize ?? 65536;
 
         $this->resume();
     }
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return !$this->closed;
     }
 
-    public function pause()
+    public function pause(): void
     {
         if ($this->listening) {
             $this->loop->removeReadStream($this->stream);
@@ -90,7 +90,7 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         }
     }
 
-    public function resume()
+    public function resume(): void
     {
         if (!$this->listening && !$this->closed) {
             $this->loop->addReadStream($this->stream, [$this, 'handleData']);
@@ -98,12 +98,12 @@ final class ReadableResourceStream extends EventEmitter implements ReadableStrea
         }
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         return Util::pipe($this, $dest, $options);
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->closed) {
             return;

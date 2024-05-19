@@ -27,17 +27,17 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
         $this->writable->on('close', [$this, 'close']);
     }
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return $this->readable->isReadable();
     }
 
-    public function pause()
+    public function pause(): void
     {
         $this->readable->pause();
     }
 
-    public function resume()
+    public function resume(): void
     {
         if (!$this->writable->isWritable()) {
             return;
@@ -46,28 +46,28 @@ final class CompositeStream extends EventEmitter implements DuplexStreamInterfac
         $this->readable->resume();
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         return Util::pipe($this, $dest, $options);
     }
 
-    public function isWritable()
+    public function isWritable(): bool
     {
         return $this->writable->isWritable();
     }
 
-    public function write($data)
+    public function write($data): bool
     {
         return $this->writable->write($data);
     }
 
-    public function end($data = null)
+    public function end($data = null): void
     {
         $this->readable->pause();
         $this->writable->end($data);
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->closed) {
             return;
