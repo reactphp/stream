@@ -106,6 +106,22 @@ class DuplexResourceStreamTest extends TestCase
         new DuplexResourceStream($stream, $loop);
     }
 
+    public function testContructorThrowsExceptionForInvalidLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+
+        $this->setExpectedException('InvalidArgumentException', 'Argument #2 ($loop) expected null|React\EventLoop\LoopInterface');
+        new DuplexResourceStream($stream, 42);
+    }
+
+    public function testContructorThrowsExceptionForInvalidBuffer()
+    {
+        $stream = fopen('php://temp', 'r+');
+
+        $this->setExpectedException('InvalidArgumentException', 'Argument #4 ($buffer) expected null|React\Stream\WritableStreamInterface');
+        new DuplexResourceStream($stream, null, null, 42);
+    }
+
     /**
      * @covers React\Stream\DuplexResourceStream::__construct
      * @doesNotPerformAssertions

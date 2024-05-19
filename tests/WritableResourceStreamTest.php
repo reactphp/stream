@@ -103,6 +103,14 @@ class WritableResourceStreamTest extends TestCase
         new WritableResourceStream($stream, $loop);
     }
 
+    public function testContructorThrowsExceptionForInvalidLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+
+        $this->setExpectedException('InvalidArgumentException', 'Argument #2 ($loop) expected null|React\EventLoop\LoopInterface');
+        new WritableResourceStream($stream, 42);
+    }
+
     /**
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite

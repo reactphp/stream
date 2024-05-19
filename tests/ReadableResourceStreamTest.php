@@ -105,6 +105,13 @@ class ReadableResourceStreamTest extends TestCase
         new ReadableResourceStream($stream, $loop);
     }
 
+    public function testContructorThrowsExceptionForInvalidLoop()
+    {
+        $stream = fopen('php://temp', 'r+');
+
+        $this->setExpectedException('InvalidArgumentException', 'Argument #2 ($loop) expected null|React\EventLoop\LoopInterface');
+        new ReadableResourceStream($stream, 42);
+    }
 
     public function testCloseShouldEmitCloseEvent()
     {
