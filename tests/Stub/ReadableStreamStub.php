@@ -9,7 +9,10 @@ use React\Stream\Util;
 
 class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
 {
+    /** @var bool */
     public $readable = true;
+
+    /** @var bool */
     public $paused = false;
 
     public function isReadable(): bool
@@ -17,20 +20,25 @@ class ReadableStreamStub extends EventEmitter implements ReadableStreamInterface
         return true;
     }
 
-    // trigger data event
-    public function write($data)
+    /**
+     * trigger data event
+     *
+     * @param mixed $data
+     * @return void
+     */
+    public function write($data): void
     {
         $this->emit('data', [$data]);
     }
 
     // trigger error event
-    public function error($error)
+    public function error(\Exception $error): void
     {
         $this->emit('error', [$error]);
     }
 
     // trigger end event
-    public function end()
+    public function end(): void
     {
         $this->emit('end', []);
     }

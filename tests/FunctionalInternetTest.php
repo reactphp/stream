@@ -12,10 +12,11 @@ use React\Stream\WritableResourceStream;
  */
 class FunctionalInternetTest extends TestCase
 {
-    public function testUploadKilobytePlain()
+    public function testUploadKilobytePlain(): void
     {
         $size = 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
+        assert(is_resource($stream));
 
         $loop = Factory::create();
         $stream = new DuplexResourceStream($stream, $loop);
@@ -34,10 +35,11 @@ class FunctionalInternetTest extends TestCase
         $this->assertNotEquals('', $buffer);
     }
 
-    public function testUploadBiggerBlockPlain()
+    public function testUploadBiggerBlockPlain(): void
     {
         $size = 50 * 1000;
         $stream = stream_socket_client('tcp://httpbin.org:80');
+        assert(is_resource($stream));
 
         $loop = Factory::create();
         $stream = new DuplexResourceStream($stream, $loop);
@@ -56,10 +58,11 @@ class FunctionalInternetTest extends TestCase
         $this->assertNotEquals('', $buffer);
     }
 
-    public function testUploadKilobyteSecure()
+    public function testUploadKilobyteSecure(): void
     {
         $size = 1000;
         $stream = stream_socket_client('ssl://httpbin.org:443');
+        assert(is_resource($stream));
 
         $loop = Factory::create();
         $stream = new DuplexResourceStream($stream, $loop);
@@ -78,7 +81,7 @@ class FunctionalInternetTest extends TestCase
         $this->assertNotEquals('', $buffer);
     }
 
-    public function testUploadBiggerBlockSecure()
+    public function testUploadBiggerBlockSecure(): void
     {
         // A few dozen kilobytes should be enough to verify this works.
         // Underlying buffer sizes are platform-specific, so let's increase this
@@ -86,6 +89,7 @@ class FunctionalInternetTest extends TestCase
         $size = 136 * 1000;
 
         $stream = stream_socket_client('ssl://httpbin.org:443');
+        assert(is_resource($stream));
 
         // PHP < 7.1.4 suffers from a bug when writing big chunks of data over
         // TLS streams at once.
@@ -114,7 +118,7 @@ class FunctionalInternetTest extends TestCase
         $this->assertNotEquals('', $buffer);
     }
 
-    private function awaitStreamClose(DuplexResourceStream $stream, LoopInterface $loop, $timeout = 10.0)
+    private function awaitStreamClose(DuplexResourceStream $stream, LoopInterface $loop, float $timeout = 10.0): void
     {
         $stream->on('close', function () use ($loop) {
             $loop->stop();

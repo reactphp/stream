@@ -6,8 +6,13 @@ use Evenement\EventEmitter;
 
 final class CompositeStream extends EventEmitter implements DuplexStreamInterface
 {
+    /** @var ReadableStreamInterface */
     private $readable;
+
+    /** @var WritableStreamInterface */
     private $writable;
+
+    /** @var bool */
     private $closed = false;
 
     public function __construct(ReadableStreamInterface $readable, WritableStreamInterface $writable)

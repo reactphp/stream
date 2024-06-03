@@ -1,0 +1,7 @@
+parameters:
+    level: max
+
+    paths:
+        - examples/
+        - src/
+        - tests/

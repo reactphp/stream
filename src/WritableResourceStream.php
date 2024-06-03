@@ -8,24 +8,28 @@ use React\EventLoop\LoopInterface;
 
 final class WritableResourceStream extends EventEmitter implements WritableStreamInterface
 {
+    /** @var resource */
     private $stream;
 
     /** @var LoopInterface */
     private $loop;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $softLimit;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $writeChunkSize;
 
+    /** @var bool */
     private $listening = false;
+
+    /** @var bool */
     private $writable = true;
+
+    /** @var bool */
     private $closed = false;
+
+    /** @var string */
     private $data = '';
 
     /**
@@ -119,16 +123,18 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
     }
 
     /** @internal */
-    public function handleWrite()
+    public function handleWrite(): void
     {
         $error = null;
-        \set_error_handler(function ($_, $errstr) use (&$error) {
+        \set_error_handler(function (int $_, string $errstr) use (&$error): bool {
             $error = $errstr;
+            return true;
         });
 
         if ($this->writeChunkSize === -1) {
             $sent = \fwrite($this->stream, $this->data);
         } else {
+            \assert($this->writeChunkSize >= -1);
             $sent = \fwrite($this->stream, $this->data, $this->writeChunkSize);
         }
 
@@ -150,7 +156,7 @@ final class WritableResourceStream extends EventEmitter implements WritableStrea
         }
 
         $exceeded = isset($this->data[$this->softLimit - 1]);
-        $this->data = (string) \substr($this->data, $sent);
+        $this->data = (string) \substr($this->data, (int) $sent);
 
         // buffer has been above limit and is now below limit
         if ($exceeded && !isset($this->data[$this->softLimit - 1])) {

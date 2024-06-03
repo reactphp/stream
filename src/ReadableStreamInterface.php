@@ -17,7 +17,7 @@ use Evenement\EventEmitterInterface;
  *     The event receives a single mixed argument for incoming data.
  *
  *     ```php
- *     $stream->on('data', function ($data) {
+ *     $stream->on('data', function (mixed $data): void {
  *         echo $data;
  *     });
  *     ```
@@ -47,7 +47,7 @@ use Evenement\EventEmitterInterface;
  *     reached the end of the stream (EOF).
  *
  *     ```php
- *     $stream->on('end', function () {
+ *     $stream->on('end', function (): void {
  *         echo 'END';
  *     });
  *     ```
@@ -84,7 +84,7 @@ use Evenement\EventEmitterInterface;
  *     The event receives a single `Exception` argument for the error instance.
  *
  *     ```php
- *     $stream->on('error', function (Exception $e) {
+ *     $stream->on('error', function (Exception $e): void {
  *         echo 'Error: ' . $e->getMessage() . PHP_EOL;
  *     });
  *     ```
@@ -116,7 +116,7 @@ use Evenement\EventEmitterInterface;
  *     The `close` event will be emitted once the stream closes (terminates).
  *
  *     ```php
- *     $stream->on('close', function () {
+ *     $stream->on('close', function (): void {
  *         echo 'CLOSED';
  *     });
  *     ```
@@ -236,7 +236,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * ```php
      * $stream->pause();
      *
-     * Loop::addTimer(1.0, function () use ($stream) {
+     * Loop::addTimer(1.0, function () use ($stream): void {
      *     $stream->resume();
      * });
      * ```
@@ -287,7 +287,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      *
      * ```php
      * $source->pipe($dest);
-     * $source->on('close', function () use ($dest) {
+     * $source->on('close', function () use ($dest): void {
      *     $dest->end('BYE!');
      * });
      * ```
@@ -319,7 +319,7 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * a `pipe` event with this source stream an event argument.
      *
      * @param WritableStreamInterface $dest
-     * @param array $options
+     * @param array{end?:bool} $options
      * @return WritableStreamInterface $dest stream as-is
      */
     public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface;

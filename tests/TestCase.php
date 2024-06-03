@@ -2,11 +2,12 @@
 
 namespace React\Tests\Stream;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
-    protected function expectCallableOnce()
+    protected function expectCallableOnce(): callable
     {
         $mock = $this->createCallableMock();
         $mock
@@ -16,7 +17,8 @@ class TestCase extends BaseTestCase
         return $mock;
     }
 
-    protected function expectCallableOnceWith($value)
+    /** @param mixed $value */
+    protected function expectCallableOnceWith($value): callable
     {
         $callback = $this->createCallableMock();
         $callback
@@ -27,7 +29,7 @@ class TestCase extends BaseTestCase
         return $callback;
     }
 
-    protected function expectCallableNever()
+    protected function expectCallableNever(): callable
     {
         $mock = $this->createCallableMock();
         $mock
@@ -37,15 +39,19 @@ class TestCase extends BaseTestCase
         return $mock;
     }
 
-    protected function createCallableMock()
+    /** @return MockObject&callable */
+    protected function createCallableMock(): MockObject
     {
         $builder = $this->getMockBuilder(\stdClass::class);
         if (method_exists($builder, 'addMethods')) {
             // PHPUnit 9+
-            return $builder->addMethods(['__invoke'])->getMock();
+            $mock = $builder->addMethods(['__invoke'])->getMock();
         } else {
             // legacy PHPUnit
-            return $builder->setMethods(['__invoke'])->getMock();
+            $mock = $builder->setMethods(['__invoke'])->getMock();
         }
+        assert($mock instanceof MockObject && is_callable($mock));
+
+        return $mock;
     }
 }

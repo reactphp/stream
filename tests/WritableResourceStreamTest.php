@@ -2,6 +2,7 @@
 
 namespace React\Tests\Stream;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use React\EventLoop\LoopInterface;
 use React\Stream\WritableResourceStream;
 use function Clue\StreamFilter\append as filter_append;
@@ -12,17 +13,20 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::__construct
      * @doesNotPerformAssertions
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         new WritableResourceStream($stream, $loop);
     }
 
-    public function testConstructWithoutLoopAssignsLoopAutomatically()
+    public function testConstructWithoutLoopAssignsLoopAutomatically(): void
     {
         $resource = fopen('php://temp', 'r+');
+        assert(is_resource($resource));
 
         $stream = new WritableResourceStream($resource);
 
@@ -37,11 +41,12 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::__construct
      * @doesNotPerformAssertions
      */
-    public function testConstructorWithExcessiveMode()
+    public function testConstructorWithExcessiveMode(): void
     {
         // excessive flags are ignored for temp streams, so we have to use a file stream
-        $name = tempnam(sys_get_temp_dir(), 'test');
-        $stream = @fopen($name, 'w+eANYTHING');
+        $name = (string) tempnam(sys_get_temp_dir(), 'test');
+        $stream = fopen($name, 'w+eANYTHING');
+        assert(is_resource($stream));
         unlink($name);
 
         $loop = $this->createLoopMock();
@@ -52,21 +57,23 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::__construct
      */
-    public function testConstructorThrowsIfNotAValidStreamResource()
+    public function testConstructorThrowsIfNotAValidStreamResource(): void
     {
         $stream = null;
         $loop = $this->createLoopMock();
 
         $this->expectException(\InvalidArgumentException::class);
-        new WritableResourceStream($stream, $loop);
+        new WritableResourceStream($stream, $loop); // @phpstan-ignore-line
     }
 
     /**
      * @covers React\Stream\WritableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionOnReadOnlyStream()
+    public function testConstructorThrowsExceptionOnReadOnlyStream(): void
     {
         $stream = fopen('php://temp', 'r');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $this->expectException(\InvalidArgumentException::class);
@@ -76,11 +83,12 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionOnReadOnlyStreamWithExcessiveMode()
+    public function testConstructorThrowsExceptionOnReadOnlyStreamWithExcessiveMode(): void
     {
         // excessive flags are ignored for temp streams, so we have to use a file stream
-        $name = tempnam(sys_get_temp_dir(), 'test');
+        $name = (string) tempnam(sys_get_temp_dir(), 'test');
         $stream = fopen($name, 'reANYTHING');
+        assert(is_resource($stream));
         unlink($name);
 
         $loop = $this->createLoopMock();
@@ -91,13 +99,15 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::__construct
      */
-    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking()
+    public function testConstructorThrowsExceptionIfStreamDoesNotSupportNonBlocking(): void
     {
         if (!in_array('blocking', stream_get_wrappers())) {
             stream_wrapper_register('blocking', 'React\Tests\Stream\EnforceBlockingWrapper');
         }
 
         $stream = fopen('blocking://test', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $this->expectException(\RuntimeException::class);
@@ -108,9 +118,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWrite()
+    public function testWrite(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createWriteableLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -124,9 +136,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::write
      */
-    public function testWriteWithDataDoesAddResourceToLoop()
+    public function testWriteWithDataDoesAddResourceToLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('addWriteStream')->with($this->equalTo($stream));
 
@@ -139,9 +153,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testEmptyWriteDoesNotAddToLoop()
+    public function testEmptyWriteDoesNotAddToLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->never())->method('addWriteStream');
 
@@ -155,9 +171,10 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWriteReturnsFalseWhenWritableResourceStreamIsFull()
+    public function testWriteReturnsFalseWhenWritableResourceStreamIsFull(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
 
         $preventWrites = true;
         $loop = $this->createLoopMock();
@@ -165,6 +182,7 @@ class WritableResourceStreamTest extends TestCase
             ->expects($this->any())
             ->method('addWriteStream')
             ->will($this->returnCallback(function ($stream, $listener) use (&$preventWrites) {
+                /** @var bool $preventWrites */
                 if (!$preventWrites) {
                     call_user_func($listener, $stream);
                 }
@@ -181,9 +199,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::write
      */
-    public function testWriteReturnsFalseWhenWritableResourceStreamIsExactlyFull()
+    public function testWriteReturnsFalseWhenWritableResourceStreamIsExactlyFull(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 3);
@@ -195,9 +215,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWriteDetectsWhenOtherSideIsClosed()
+    public function testWriteDetectsWhenOtherSideIsClosed(): void
     {
-        list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        assert(is_array($pair));
+        [$a, $b] = $pair;
 
         $loop = $this->createWriteableLoopMock();
 
@@ -213,9 +235,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testEmitsDrainAfterWriteWhichExceedsBuffer()
+    public function testEmitsDrainAfterWriteWhichExceedsBuffer(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
@@ -230,9 +254,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testWriteInDrain()
+    public function testWriteInDrain(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
@@ -254,9 +280,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testDrainAfterWrite()
+    public function testDrainAfterWrite(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop, 2);
@@ -270,9 +298,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testDrainAfterWriteWillRemoveResourceFromLoopWithoutClosing()
+    public function testDrainAfterWriteWillRemoveResourceFromLoopWithoutClosing(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
@@ -289,9 +319,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::handleWrite
      */
-    public function testClosingDuringDrainAfterWriteWillRemoveResourceFromLoopOnceAndClose()
+    public function testClosingDuringDrainAfterWriteWillRemoveResourceFromLoopOnceAndClose(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $loop->expects($this->once())->method('removeWriteStream')->with($stream);
 
@@ -310,9 +342,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithoutDataClosesImmediatelyIfWritableResourceStreamIsEmpty()
+    public function testEndWithoutDataClosesImmediatelyIfWritableResourceStreamIsEmpty(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -327,9 +361,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithoutDataDoesNotCloseIfWritableResourceStreamIsFull()
+    public function testEndWithoutDataDoesNotCloseIfWritableResourceStreamIsFull(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -346,9 +382,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes()
+    public function testEndWithDataClosesImmediatelyIfWritableResourceStreamFlushes(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $filterBuffer = '';
         $loop = $this->createLoopMock();
 
@@ -372,9 +410,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::end
      */
-    public function testEndWithDataDoesNotCloseImmediatelyIfWritableResourceStreamIsFull()
+    public function testEndWithDataDoesNotCloseImmediatelyIfWritableResourceStreamIsFull(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -395,9 +435,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::isWritable
      * @covers React\Stream\WritableResourceStream::close
      */
-    public function testClose()
+    public function testClose(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -414,9 +456,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::close
      */
-    public function testClosingAfterWriteRemovesStreamFromLoop()
+    public function testClosingAfterWriteRemovesStreamFromLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $buffer = new WritableResourceStream($stream, $loop);
 
@@ -429,9 +473,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::close
      */
-    public function testClosingWithoutWritingDoesNotRemoveStreamFromLoop()
+    public function testClosingWithoutWritingDoesNotRemoveStreamFromLoop(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
         $buffer = new WritableResourceStream($stream, $loop);
 
@@ -443,9 +489,11 @@ class WritableResourceStreamTest extends TestCase
     /**
      * @covers React\Stream\WritableResourceStream::close
      */
-    public function testDoubleCloseWillEmitOnlyOnce()
+    public function testDoubleCloseWillEmitOnlyOnce(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $loop = $this->createLoopMock();
 
         $buffer = new WritableResourceStream($stream, $loop);
@@ -459,9 +507,11 @@ class WritableResourceStreamTest extends TestCase
      * @covers React\Stream\WritableResourceStream::write
      * @covers React\Stream\WritableResourceStream::close
      */
-    public function testWritingToClosedWritableResourceStreamShouldNotWriteToStream()
+    public function testWritingToClosedWritableResourceStreamShouldNotWriteToStream(): void
     {
         $stream = fopen('php://temp', 'r+');
+        assert(is_resource($stream));
+
         $filterBuffer = '';
         $loop = $this->createLoopMock();
 
@@ -480,13 +530,16 @@ class WritableResourceStreamTest extends TestCase
         $this->assertSame('', $filterBuffer);
     }
 
-    public function testWritingToClosedStream()
+    public function testWritingToClosedStream(): void
     {
         if ('Darwin' === PHP_OS) {
             $this->markTestSkipped('OS X issue with shutting down pair for writing');
         }
 
-        list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        assert(is_array($pair));
+        [$a, $b] = $pair;
+
         $loop = $this->createLoopMock();
 
         $error = null;
@@ -507,7 +560,7 @@ class WritableResourceStreamTest extends TestCase
         $this->assertEqualsIgnoringCase('Unable to write to stream: fwrite(): send of 3 bytes failed with errno=32 Broken pipe', $error->getMessage());
     }
 
-    private function createWriteableLoopMock()
+    private function createWriteableLoopMock(): LoopInterface
     {
         $loop = $this->createLoopMock();
         $loop
@@ -520,8 +573,10 @@ class WritableResourceStreamTest extends TestCase
         return $loop;
     }
 
-    private function createLoopMock()
+    /** @return MockObject&LoopInterface */
+    private function createLoopMock(): MockObject
     {
+        /** @var MockObject&LoopInterface */
         return $this->createMock(LoopInterface::class);
     }
 }

@@ -11,7 +11,7 @@ use React\Stream\WritableStreamInterface;
 class ThroughStreamTest extends TestCase
 {
     /** @test */
-    public function itShouldReturnTrueForAnyDataWrittenToIt()
+    public function itShouldReturnTrueForAnyDataWrittenToIt(): void
     {
         $through = new ThroughStream();
         $ret = $through->write('foo');
@@ -20,7 +20,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitAnyDataWrittenToIt()
+    public function itShouldEmitAnyDataWrittenToIt(): void
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
@@ -28,7 +28,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitAnyDataWrittenToItPassedThruFunction()
+    public function itShouldEmitAnyDataWrittenToItPassedThruFunction(): void
     {
         $through = new ThroughStream('strtoupper');
         $through->on('data', $this->expectCallableOnceWith('FOO'));
@@ -36,7 +36,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitAnyDataWrittenToItPassedThruCallback()
+    public function itShouldEmitAnyDataWrittenToItPassedThruCallback(): void
     {
         $through = new ThroughStream('strtoupper');
         $through->on('data', $this->expectCallableOnceWith('FOO'));
@@ -44,7 +44,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitErrorAndCloseIfCallbackThrowsException()
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsException(): void
     {
         $through = new ThroughStream(function () {
             throw new \RuntimeException();
@@ -61,7 +61,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitErrorAndCloseIfCallbackThrowsExceptionOnEnd()
+    public function itShouldEmitErrorAndCloseIfCallbackThrowsExceptionOnEnd(): void
     {
         $through = new ThroughStream(function () {
             throw new \RuntimeException();
@@ -78,7 +78,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReturnFalseForAnyDataWrittenToItWhenPaused()
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenPaused(): void
     {
         $through = new ThroughStream();
         $through->pause();
@@ -88,7 +88,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventEndsStream()
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventEndsStream(): void
     {
         $through = new ThroughStream();
         $through->on('data', function () use ($through) {
@@ -100,7 +100,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventClosesStream()
+    public function itShouldReturnFalseForAnyDataWrittenToItWhenDataEventClosesStream(): void
     {
         $through = new ThroughStream();
         $through->on('data', function () use ($through) {
@@ -112,7 +112,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenToItWhenPaused()
+    public function itShouldEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenToItWhenPaused(): void
     {
         $through = new ThroughStream();
         $through->pause();
@@ -123,7 +123,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldNotEmitDrainOnResumeAfterClose()
+    public function itShouldNotEmitDrainOnResumeAfterClose(): void
     {
         $through = new ThroughStream();
         $through->close();
@@ -133,7 +133,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldNotEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenThatCausesStreamToClose()
+    public function itShouldNotEmitDrainOnResumeAfterReturnFalseForAnyDataWrittenThatCausesStreamToClose(): void
     {
         $through = new ThroughStream();
         $through->on('data', function () use ($through) { $through->close(); });
@@ -144,7 +144,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReturnFalseForAnyDataWrittenToItAfterPausingFromDrainEvent()
+    public function itShouldReturnFalseForAnyDataWrittenToItAfterPausingFromDrainEvent(): void
     {
         $through = new ThroughStream();
         $through->pause();
@@ -157,7 +157,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldReturnTrueForAnyDataWrittenToItWhenResumedAfterPause()
+    public function itShouldReturnTrueForAnyDataWrittenToItWhenResumedAfterPause(): void
     {
         $through = new ThroughStream();
         $through->on('drain', $this->expectCallableNever());
@@ -169,7 +169,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function pipingStuffIntoItShouldWork()
+    public function pipingStuffIntoItShouldWork(): void
     {
         $readable = new ThroughStream();
 
@@ -181,7 +181,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function endShouldEmitEndAndClose()
+    public function endShouldEmitEndAndClose(): void
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableNever());
@@ -191,7 +191,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function endShouldCloseTheStream()
+    public function endShouldCloseTheStream(): void
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableNever());
@@ -202,7 +202,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function endShouldWriteDataBeforeClosing()
+    public function endShouldWriteDataBeforeClosing(): void
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableOnceWith('foo'));
@@ -213,16 +213,16 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function endTwiceShouldOnlyEmitOnce()
+    public function endTwiceShouldOnlyEmitOnce(): void
     {
         $through = new ThroughStream();
-        $through->on('data', $this->expectCallableOnce('first'));
+        $through->on('data', $this->expectCallableOnceWith('first'));
         $through->end('first');
         $through->end('ignored');
     }
 
     /** @test */
-    public function writeAfterEndShouldReturnFalse()
+    public function writeAfterEndShouldReturnFalse(): void
     {
         $through = new ThroughStream();
         $through->on('data', $this->expectCallableNever());
@@ -232,7 +232,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function writeDataWillCloseStreamShouldReturnFalse()
+    public function writeDataWillCloseStreamShouldReturnFalse(): void
     {
         $through = new ThroughStream();
         $through->on('data', [$through, 'close']);
@@ -241,7 +241,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function writeDataToPausedShouldReturnFalse()
+    public function writeDataToPausedShouldReturnFalse(): void
     {
         $through = new ThroughStream();
         $through->pause();
@@ -250,7 +250,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function writeDataToResumedShouldReturnTrue()
+    public function writeDataToResumedShouldReturnTrue(): void
     {
         $through = new ThroughStream();
         $through->pause();
@@ -260,21 +260,21 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function itShouldBeReadableByDefault()
+    public function itShouldBeReadableByDefault(): void
     {
         $through = new ThroughStream();
         $this->assertTrue($through->isReadable());
     }
 
     /** @test */
-    public function itShouldBeWritableByDefault()
+    public function itShouldBeWritableByDefault(): void
     {
         $through = new ThroughStream();
         $this->assertTrue($through->isWritable());
     }
 
     /** @test */
-    public function closeShouldCloseOnce()
+    public function closeShouldCloseOnce(): void
     {
         $through = new ThroughStream();
 
@@ -287,7 +287,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function doubleCloseShouldCloseOnce()
+    public function doubleCloseShouldCloseOnce(): void
     {
         $through = new ThroughStream();
 
@@ -301,7 +301,7 @@ class ThroughStreamTest extends TestCase
     }
 
     /** @test */
-    public function pipeShouldPipeCorrectly()
+    public function pipeShouldPipeCorrectly(): void
     {
         $output = $this->createMock(WritableStreamInterface::class);
         $output->expects($this->any())->method('isWritable')->willReturn(True);
@@ -309,6 +309,7 @@ class ThroughStreamTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with('foo');
+        assert($output instanceof WritableStreamInterface);
 
         $through = new ThroughStream();
         $through->pipe($output);
