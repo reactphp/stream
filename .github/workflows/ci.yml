@@ -7,10 +7,11 @@ on:
 jobs:
   PHPUnit:
     name: PHPUnit (PHP ${{ matrix.php }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         php:
+          - 8.4
           - 8.3
           - 8.2
           - 8.1
@@ -35,7 +36,7 @@ jobs:
 
   PHPUnit-macOS:
     name: PHPUnit (macOS)
-    runs-on: macos-12
+    runs-on: macos-14
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -50,10 +51,11 @@ jobs:
 
   PHPStan:
     name: PHPStan (PHP ${{ matrix.php }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         php:
+          - 8.4
           - 8.3
           - 8.2
           - 8.1
