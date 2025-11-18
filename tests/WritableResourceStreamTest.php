@@ -474,6 +474,10 @@ class WritableResourceStreamTest extends TestCase
      */
     public function testWritingToClosedWritableResourceStreamShouldNotWriteToStream()
     {
+        if (PHP_VERSION_ID >= 80500) {
+            $this->markTestSkipped('Since PHP 8.5 attempting to write to a closed stream will result in an error');
+        }
+
         $stream = fopen('php://temp', 'r+');
         $filterBuffer = '';
         $loop = $this->createLoopMock();
