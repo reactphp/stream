@@ -33,7 +33,7 @@
     "require-dev": {
         "clue/stream-filter": "^1.2",
         "phpstan/phpstan": "1.12.19 || 1.4.10",
-        "phpunit/phpunit": "^9.6 || ^7.5"
+        "phpunit/phpunit": "^9.6 || ^8.5 || ^7.5"
     },
     "autoload": {
         "psr-4": {
