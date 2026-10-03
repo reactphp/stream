@@ -26,7 +26,9 @@ class ReadableResourceStreamTest extends TestCase
         $stream = new ReadableResourceStream($resource);
 
         $ref = new \ReflectionProperty($stream, 'loop');
-        $ref->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $ref->setAccessible(true);
+        }
         $loop = $ref->getValue($stream);
 
         $this->assertInstanceOf('React\EventLoop\LoopInterface', $loop);
