@@ -318,9 +318,10 @@ interface ReadableStreamInterface extends EventEmitterInterface
      * Once the pipe is set up successfully, the destination stream MUST emit
      * a `pipe` event with this source stream an event argument.
      *
-     * @param WritableStreamInterface $dest
+     * @template T of WritableStreamInterface
+     * @param T $dest
      * @param array $options
-     * @return WritableStreamInterface $dest stream as-is
+     * @return T $dest stream as-is
      */
     public function pipe(WritableStreamInterface $dest, array $options = array());
 

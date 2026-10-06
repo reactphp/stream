@@ -7,10 +7,11 @@ final class Util
     /**
      * Pipes all the data from the given $source into the $dest
      *
+     * @template T of WritableStreamInterface
      * @param ReadableStreamInterface $source
-     * @param WritableStreamInterface $dest
+     * @param T $dest
      * @param array $options
-     * @return WritableStreamInterface $dest stream as-is
+     * @return T $dest stream as-is
      * @see ReadableStreamInterface::pipe() for more details
      */
     public static function pipe(ReadableStreamInterface $source, WritableStreamInterface $dest, array $options = array())
