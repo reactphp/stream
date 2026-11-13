@@ -309,7 +309,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r'), $loop);
+        $stream = new ReadableResourceStream(popen('dd if=/dev/zero bs=12345 count=1234 2>/dev/null', 'r'), $loop);
 
         $bytes = 0;
         $stream->on('data', function ($chunk) use (&$bytes) {

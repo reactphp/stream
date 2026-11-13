@@ -27,7 +27,7 @@
     ],
     "require": {
         "php": ">=5.3.8",
-        "react/event-loop": "^1.2",
+        "react/event-loop": "^1.6",
         "evenement/evenement": "^3.0 || ^2.0 || ^1.0"
     },
     "require-dev": {
