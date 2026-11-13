@@ -309,7 +309,7 @@ class DuplexResourceStreamIntegrationTest extends TestCase
 
         $loop = $loopFactory();
 
-        $fh = popen('dd if=/dev/zero bs=12345 count=1234 2>&-', 'r');
+        $fh = popen('dd if=/dev/zero bs=12345 count=1234 2>/dev/null', 'r');
         assert(is_resource($fh));
 
         $stream = new ReadableResourceStream($fh, $loop);
